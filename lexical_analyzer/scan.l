@@ -21,7 +21,7 @@ id ({letter}|_)({letter}|{digit}|_)*
 integer [+|-]?{digit}+
 bad_id ({digit})({digit}|{letter}|_)*
 
-%x string
+%x string MULTICOMMENT SINGLECOMMENT
 
 %%
 
@@ -40,6 +40,18 @@ bad_id ({digit})({digit}|{letter}|_)*
   return STRING_T;
 }
 <string>.     { yymore(); }
+
+"/*"            { BEGIN(MULTICOMMENT); }
+<MULTICOMMENT>[^*\n]+ /* Gobble comment */
+<MULTICOMMENT>"*" /* Gobble star */
+<MULTICOMMENT>\n /* Gobble new line */
+<MULTICOMMENT>"*/" {
+  BEGIN(INITIAL);
+}
+
+"//"          { BEGIN(SINGLECOMMENT); }
+<SINGLECOMMENT>[^\n] /* Gobble comment */
+<SINGLECOMMENT>\n { BEGIN(INITIAL); }
 
 "+"           return ADD_T;
 "-"           return SUB_T;
