@@ -32,3 +32,5 @@
 
 # Debug files
 *.dSYM/
+
+lexical_analyzer/results/

@@ -20,7 +20,7 @@ enum TokTypes { ID_T = 258, INT_T, STRING_T, TYPEINT_T,
 			OSQR_T, CSQR_T, OCRLY_T, CCRLY_T,
 			PCENT_T, EOF_T, COMMENT_T, OTHER_T };
 			
-static const char * tok_names[] =
+static char * tok_names[] =
 	{ "ID", "INT", "STRING", "TYPEINT",
 	"IF", "ELSE", "WHILE", "RETURN", "FOR",
 	"VOID", "READ", "PRINT",
@@ -31,5 +31,7 @@ static const char * tok_names[] =
 	"SEMICOLON", "COMMA", "OPAREN", "CPAREN", 
 	"OSQR", "CSQR", "OCRLY", "CCRLY",
 	"PCENT", "EOF", "COMMENT", "OTHER" };
+
+#define FIRST_BIG_TOKEN ID_T
 
 #endif
