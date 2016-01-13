@@ -25,14 +25,8 @@ intbad
 "" 	
 "mystring"
 "my second string"
-"this is not a good string
-"
-
-/* comment 1 */
-// inline
-/*
- * multiline commment
- * */ // hello! 
+"this is not a good string 
+multiline strings are bad"
 
 if
 else
@@ -49,10 +43,14 @@ print
 ; , ( ) [ ] { } 
 % 
 
-// real tests
-
 int a,b;
 a = b[100];
 a = - 100;
 a = -77;
 c = {100,"first",67, - 7, 042}
+
+/* comment 1 */
+// inline
+/*
+ * multiline commment
+ * */ // hello! 

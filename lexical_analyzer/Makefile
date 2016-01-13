@@ -9,7 +9,7 @@
 
 #SRCDIR = ./
 #FLEX_FILE = scan.l
-EXECUTABLE = scan
+#EXECUTABLE = scan
 
 CC = gcc
 FLEXFLAGS = -ll
@@ -18,16 +18,17 @@ FLEXFLAGS = -ll
 .SUFFIXES: .c
 
 # Scanner and caller both in C
-$(EXECUTABLE): lex.yy.o cscan.o
+scan: lex.yy.o cscan.o
 	$(CC) -o $@ lex.yy.o cscan.o $(FLEXFLAGS)
 
+scanner_test: lex.yy.o scanner_test.o
+	$(CC) -o $@ lex.yy.o scanner_test.o $(FLEXFLAGS) 
+
 .c.o:
-	echo $?
 	$(CC) -c $< 
 
 lex.yy.c: scan.l
 	flex $<
 
-
 clean:
-	rm -f lex.yy.* *.o  $(EXECUTABLE) *~
+	rm -f lex.yy.* *.o scan scanner_test *~
