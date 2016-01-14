@@ -1,9 +1,11 @@
 /*
- * file: cscan.c -- reads tokens from stdin
+ * FILE: cscan.c -- reads tokens from stdin
  *
- * Delights - CS57 16W
+ * AUTHOR: SWS
  *
- * Author: SWS
+ * PURPOSE: reads through stdin and returns matched tokens
+ *
+ * ATTRIBUTIONS: SWS
  */
 
 #include <stdio.h>

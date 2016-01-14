@@ -1,9 +1,11 @@
 /*
- * Yondon Fu and Matt McFarland
- * CS57 - 16W
+ * FILE: toktypes.h
+ * Authors: Yondon Fu and Matt McFarland - Delights (CS57 - 16W)
  * 
- * Token definition file. 
- * Inspired by SWS's toktype.h 
+ * PURPOSE: Token definition file.
+ * 
+ * ATTRIBUTIONS:  Inspired by SWS's toktype.h 
+ *
  */
 
 #ifndef TOKTYPES_H

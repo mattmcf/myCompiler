@@ -1,8 +1,11 @@
 /*
- * Yondon Fu and Matt McFarland
- * CS57 - 16W
+ * FILE: scan.l
+ * AUTHORS: Yondon Fu and Matt McFarland - Delights (CS57 - 16W)
  * 
- * Flex file 
+ * PURPOSE: Flex file for scanner
+ *
+ * ATTRIBUTIONS: SWS for inspiration and kwloopup function model (cscan.l)
+ * 
  */
  
 %option yylineno 

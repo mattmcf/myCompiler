@@ -43,14 +43,17 @@ print
 ; , ( ) [ ] { } 
 % 
 
+/* comment 1 */
+// inline
+/*
+ * multiline commment
+ * This will get skipped by the scanner. Won't return any token.
+ * */ // hello! 
+
 int a,b;
 a = b[100];
 a = - 100;
 a = -77;
 c = {100,"first",67, - 7, 042}
 
-/* comment 1 */
-// inline
-/*
- * multiline commment
- * */ // hello! 
+

@@ -1,16 +1,15 @@
 /*
- * scanner_test.c
- * Yondon Fu and Matt McFarland - Delights
- * CS 57 - 16W
+ * FILE: scanner_test.c
+ * AUTHORS: Yondon Fu and Matt McFarland - Delights (CS 57 - 16W)
  *
- * Tests the yylex() function of our compiler's scanner
+ * PURPOSE: Tests the yylex() function of our compiler's scanner against an "answer sheet"
  *
- * reads a token from a token file and compares the token to 
+ * Reads a token from a token file and compares the token to 
  * to a hand coded "answer sheet"
  *
- * USAGE: ./scanner_test [TEST_FILE] [ANSWER_FILE]
+ * USAGE: ./scanner_test [ANSWER_FILE] < [TEST_FILE]
  * 
- * to make and access flex's library :use -lfl for Linux; -ll for OSX
+ * Make note: to make and access flex's library :use -lfl for Linux; -ll for OSX
  */
 
 #include <stdio.h>		// for reading and writing to files
@@ -18,7 +17,7 @@
 #include <stdlib.h> 	// for free (to free strings on heap from strdup)
 #include "toktypes.h"  	// enumerated token definitions
 
-extern char *yytext;		//
+extern char *yytext;		
 extern int yyleng; 			// length of yytext
 extern int yylex (void); 	// linked with -ll / lfl
 extern int yylineno; 		// enable with %option yylineno
@@ -48,7 +47,7 @@ int main(int argc, char ** argv) {
 	FILE * tok_fp, * ans_fp;
 	char buf[TOKEN_LEN] = "";
 
-	if (argc != 2) {
+	if (argc < 2) {
 		fprintf(stderr,"error in scanner_test: improper usage. Invoke with ./scanner_test [ANSWER_FILE] < [TEST_FILE]\n");
 		return 1;
 	}
@@ -70,10 +69,6 @@ int main(int argc, char ** argv) {
 	 */
 	while ( (token = yylex()) != EOF_T ) {
 		fscanf(ans_fp, "%s", buf);
-		// why is yylex() not getting from stdin?
-		
-		
-		// note -> yylineno will report the line number of the last character in the matched token
 		
 		tok_str = token_name(token);
 		printf("LINE %d -- saw %s. YYlex returns %s. Expecting %s.\n", yylineno, yytext, tok_str, buf);
@@ -83,18 +78,23 @@ int main(int argc, char ** argv) {
 			errors++;
 		}
 		
-		/* free token string and reset tok_str ptr */
-		if (tok_str != NULL) {
-			//free(tok_str);
-			tok_str = NULL;
-		}
+		/* 
+		 * Would like to free tok_str to plug memory leaks, but can't because token_name
+		 * may or may not have called strdup. Breaks if you try to free un-malloced return.
+		 */
+		// free(tok_str);
 	
 	}
 
+	if (fscanf(ans_fp, "%s", buf) != EOF) {
+		printf("There were still tokens to read in the answer key!\n");
+		errors++;
+	}
+
 	if (errors)
-		printf("Total Errors: %d\n",errors);
+		printf("\n--- Total Errors: %d\n",errors);
 	else
-		printf("No Errors!");
+		printf("\n--- No Errors!\n");
 
 	fclose(ans_fp);
 
