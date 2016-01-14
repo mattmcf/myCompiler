@@ -33,4 +33,8 @@
 # Debug files
 *.dSYM/
 
+# TAR files
+*.gz
+*.tar
+
 lexical_analyzer/results/
