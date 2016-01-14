@@ -34,7 +34,7 @@ bad_id ({digit})({digit}|{letter}|_)*
 \"            { BEGIN(string); } /* Transition to string state */
 <string>\n    {
   BEGIN(INITIAL);
-  yytext[--yyleng] = '\0';
+  yytext[--yyleng] = '\0'; /* Remove trailing double-quote */
   return OTHER_T;
 }
 <string>\\\"  { yymore(); }
