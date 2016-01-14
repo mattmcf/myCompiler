@@ -39,15 +39,15 @@ For multi-line comment gobbling we use the MULTICOMMENT start condition. When th
 All test files live in the tests directory
 
 ## Token_Test
-# token_test_src.txt and token_test_ans.txt
+### token_test_src.txt and token_test_ans.txt
 This file manually steps through all possible tokens and some edge cases.
 
 ## Hallway
-# hallway.c and hallway_tok.txt
+### hallway.c and hallway_tok.txt
 Sample c program that tests a lot of nested for loops statements.
 
 ## Print_Matrix
-# print_matrix.c and print_matrix_tok.txt
+### print_matrix.c and print_matrix_tok.txt
 Sample c program that tests a lot of comparision and if statements.
 
 
