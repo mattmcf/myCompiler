@@ -32,7 +32,11 @@ bad_id ({digit})({digit}|{letter}|_)*
 {bad_id}	  return OTHER_T;
 
 \"            { BEGIN(string); } /* Transition to string state */
-<string>\n    return OTHER_T;
+<string>\n    {
+  BEGIN(INITIAL);
+  yytext[--yyleng] = '\0';
+  return OTHER_T;
+}
 <string>\\\"  { yymore(); }
 <string>\"    {
   BEGIN(INITIAL); /* Return to initial normal state */
