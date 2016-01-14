@@ -1,17 +1,19 @@
 # COSC57 Compilers: Lexical Analyzer
+## Yondon Fu and Matt McFarland - Delights (CS57 - 16W)
 
 ## General Overview
 The structure of our lexer is as follows:
 
 * `scan.l` is our flex file with pattern specifications.
 * `toktypes.h` is a header file definining the types of tokens for the lexer.
-* `cscan.c` is a basic test runner that will print out the output tokens for a input file. We only used this for early stage testing.
+* `cscan.c` is a basic test runner that will print out the output tokens for a input file. We only used this for early stage testing. (From SWS.) To create the "scan" executable (the default executable in the Makefile), simply run "make".
 * `scanner_test.c` is a more rigorous test runner that will use an input and expected output file to determine whether token output from the lexer matches the expected output. After the early stage testing, we primarily used this runner for all other testing.
-* `mytest.sh` is a bash script file that automates lexer tests using `scanner_test.c`.
+* `mytest.sh` is a bash script file that automates lexer creation and testing using `scanner_test.c`.
 
 Instructions for running tests:
+
 `cd lexical_analyzer`
-`make`
+
 `./mytest.sh`
 
 ## Implementation Specifics
