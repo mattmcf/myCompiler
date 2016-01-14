@@ -7,7 +7,7 @@ The structure of our lexer is as follows:
 * `scan.l` is our flex file with pattern specifications.
 * `toktypes.h` is a header file definining the types of tokens for the lexer.
 * `cscan.c` is a basic test runner that will print out the output tokens for a input file. We only used this for early stage testing. (From SWS.) To create the "scan" executable (the default executable in the Makefile), simply run "make".
-* `scanner_test.c` is a more rigorous test runner that will use an input and expected output file to determine whether token output from the lexer matches the expected output. After the early stage testing, we primarily used this runner for all other testing.
+* `scanner_test.c` is a more rigorous test runner that will use an input and expected output file to determine whether token output from the lexer matches the expected output. After the early stage testing, we primarily used this runner for all other testing. This file contains the `main` function used in our tests.
 * `mytest.sh` is a bash script file that automates lexer creation and testing using `scanner_test.c`.
 
 Instructions for running tests:
@@ -34,4 +34,20 @@ We handle both single line comment gobbling and multi-line comment gobbling.
 For single line comment gobbling we use the SINGLECOMMENT start condition. When the pattern "//" is found, the lexer switches to the SINGLECOMMENT state. While in this state, anything besides the new line character is skipped. When a new line character is found, the lexer switches out of the SINGLECOMMENT state.
 
 For multi-line comment gobbling we use the MULTICOMMENT start condition. When the pattern "/*" is found, the lexer switches to the MULTICOMMENT state. While in this state, anything besides the "*/" is skipped. When the "*/" pattern is found, the lexer switches out of the MULTICOMMENT state.
+
+## Testing Files
+All test files live in the tests directory
+
+## Token_Test
+# token_test_src.txt and token_test_ans.txt
+This file manually steps through all possible tokens and some edge cases.
+
+## Hallway
+# hallway.c and hallway_tok.txt
+Sample c program that tests a lot of nested for loops statements.
+
+## Print_Matrix
+# print_matrix.c and print_matrix_tok.txt
+Sample c program that tests a lot of comparision and if statements.
+
 
