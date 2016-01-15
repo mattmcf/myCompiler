@@ -35,19 +35,19 @@ For single line comment gobbling we use the SINGLECOMMENT start condition. When 
 
 For multi-line comment gobbling we use the MULTICOMMENT start condition. When the pattern "/*" is found, the lexer switches to the MULTICOMMENT state. While in this state, anything besides the "*/" is skipped. When the "*/" pattern is found, the lexer switches out of the MULTICOMMENT state.
 
-## Testing Files
+### Testing Files
 All test files live in the tests directory
 
-## Token_Test
-### token_test_src.txt and token_test_ans.txt
+#### Token_Test
+##### token_test_src.txt and token_test_ans.txt
 This file manually steps through all possible tokens and some edge cases.
 
-## Hallway
-### hallway.c and hallway_tok.txt
+#### Hallway
+##### hallway.c and hallway_tok.txt
 Sample c program that tests a lot of nested for loops statements.
 
-## Print_Matrix
-### print_matrix.c and print_matrix_tok.txt
+#### Print_Matrix
+##### print_matrix.c and print_matrix_tok.txt
 Sample c program that tests a lot of comparision and if statements.
 
 
