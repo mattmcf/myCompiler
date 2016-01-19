@@ -11,9 +11,17 @@
 %option yylineno 
  
 %{
+
 #include <string.h>
-#include "toktypes.h"
+#include "parser.tab.h"
+// #include "toktypes.h"
 int kwLookup(char *);
+
+#define MAXTOKENLENGTH 201
+
+char savedIdText[MAXTOKENLENGTH];
+char savedLiteralText[MAXTOKENLENGTH];
+
 %}
 
 white [ \t\n]+
@@ -75,7 +83,7 @@ bad_id ({digit})({digit}|{letter}|_)*
 "{"           return OCRLY_T;
 "}"           return CCRLY_T;
 "%"           return PCENT_T;
-"="			  return ASSIGN_T;
+"="			      return ASSIGN_T;
 "<="          return LTE_T;
 ">="          return GTE_T;
 "=="          return EQ_T;

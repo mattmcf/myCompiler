@@ -10,8 +10,9 @@
 extern int yylex();
 int yyerror(char *s);
 extern char *yytext;
+extern int yylineno;
 
-extern int lineNumber;
+// extern int lineNumber;
 extern ast_node root;
 extern int parseError;
 
@@ -32,7 +33,6 @@ extern char savedLiteralText[];
 %left '+' '-'
 %left '*'
 %left UMINUS_T
-
 
 %%
 
@@ -92,7 +92,7 @@ ifStmt : IF_T '(' expr ')' stmt   %prec LOWER_THAN_ELSE {
 expr :
 IDENT_T {
   ast_node t1 = create_ast_node(ID_N);
-  t1->value_string = strdup(yytext);
+  t1->value_string = strdup(yytext); 			/* why save from yy text? */
   $1 = t1;
  } '=' expr {
   ast_node t2 = create_ast_node(OP_ASSIGN_N);
