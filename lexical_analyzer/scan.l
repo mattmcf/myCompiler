@@ -60,22 +60,6 @@ bad_id ({digit})({digit}|{letter}|_)*
 <SINGLECOMMENT>[^\n] /* Gobble comment */
 <SINGLECOMMENT>\n { BEGIN(INITIAL); }
 
-"+"           return ADD_T;
-"-"           return SUB_T;
-"*"           return MULT_T;
-"/"           return DIV_T;
-"<"           return LT_T;
-">"           return GT_T;
-";"           return SEMIC_T;
-","           return COMMA_T;
-"("           return OPAREN_T;
-")"           return CPAREN_T;
-"["           return OSQR_T;
-"]"           return CSQR_T;
-"{"           return OCRLY_T;
-"}"           return CCRLY_T;
-"%"           return PCENT_T;
-"="			  return ASSIGN_T;
 "<="          return LTE_T;
 ">="          return GTE_T;
 "=="          return EQ_T;
@@ -84,7 +68,23 @@ bad_id ({digit})({digit}|{letter}|_)*
 "--"          return DECR_T;
 "&&"          return AND_T;
 "||"          return OR_T;
-"!"           return NOT_T;
+"+"           return '+';
+"-"           return '-';
+"*"           return '*';
+"/"           return '/';
+"<"           return '<';
+">"           return '>';
+";"           return ';';
+","           return ',';
+"("           return '(';
+")"           return ')';
+"["           return '[';
+"]"           return ']';
+"{"           return '{';
+"}"           return '}';
+"%"           return '%';
+"="           return '=';
+"!"           return '!';
 
 <<EOF>>       return EOF_T;
 .             return OTHER_T;
