@@ -13,7 +13,7 @@
 %{
 #include <string.h>
 #include "toktypes.h"
-int kwLookup(char *);
+int kwLookup(char *); 
 %}
 
 white [ \t\n]+

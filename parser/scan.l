@@ -11,11 +11,9 @@
 %option yylineno 
  
 %{
-
 #include <string.h>
-#include "parser.tab.h"
-// #include "toktypes.h"
-int kwLookup(char *);
+#include "toktypes.h"
+int kwLookup(char *); 
 
 #define MAXTOKENLENGTH 201
 
@@ -38,9 +36,15 @@ bad_id ({digit})({digit}|{letter}|_)*
 
 {white}
 
-{id}          return kwLookup(yytext);
-{integer}     return INT_T;
-{bad_id}	  return OTHER_T;
+{id}          { 
+                strncpy(savedIdText, yytext, MAXTOKENLENGTH-1); 
+                return kwLookup(yytext); 
+}
+{integer}     {
+                strncpy(savedLiteralText, yytext, MAXTOKENLENGTH-1);
+                return INT_T;
+}
+{bad_id}	    return OTHER_T;
 
 \"            { BEGIN(string); } /* Transition to string state */
 <string>\n    {
@@ -68,22 +72,6 @@ bad_id ({digit})({digit}|{letter}|_)*
 <SINGLECOMMENT>[^\n] /* Gobble comment */
 <SINGLECOMMENT>\n { BEGIN(INITIAL); }
 
-"+"           return ADD_T;
-"-"           return SUB_T;
-"*"           return MULT_T;
-"/"           return DIV_T;
-"<"           return LT_T;
-">"           return GT_T;
-";"           return SEMIC_T;
-","           return COMMA_T;
-"("           return OPAREN_T;
-")"           return CPAREN_T;
-"["           return OSQR_T;
-"]"           return CSQR_T;
-"{"           return OCRLY_T;
-"}"           return CCRLY_T;
-"%"           return PCENT_T;
-"="			      return ASSIGN_T;
 "<="          return LTE_T;
 ">="          return GTE_T;
 "=="          return EQ_T;
@@ -92,7 +80,23 @@ bad_id ({digit})({digit}|{letter}|_)*
 "--"          return DECR_T;
 "&&"          return AND_T;
 "||"          return OR_T;
-"!"           return NOT_T;
+"+"           return '+';
+"-"           return '-';
+"*"           return '*';
+"/"           return '/';
+"<"           return '<';
+">"           return '>';
+";"           return ';';
+","           return ',';
+"("           return '(';
+")"           return ')';
+"["           return '[';
+"]"           return ']';
+"{"           return '{';
+"}"           return '}';
+"%"           return '%';
+"="           return '=';
+"!"           return '!';
 
 <<EOF>>       return EOF_T;
 .             return OTHER_T;
@@ -110,6 +114,7 @@ int kwLookup(char *s) {
   static kw_token keywords[] = {
     {"if", IF_T},
     {"else", ELSE_T},
+    {"do", DO_T},
     {"while", WHILE_T},
     {"return", RETURN_T},
     {"for", FOR_T},

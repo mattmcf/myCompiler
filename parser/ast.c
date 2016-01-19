@@ -21,6 +21,10 @@
    node. */
 ast_node create_ast_node(ast_node_type node_type) {
   ast_node new_node = calloc(1,sizeof(struct ast_node_struct));  // for zeros
+  if (!new_node) {
+    fprintf(stderr,"error creating node of type %s -- ran out of memory.\n", NODE_NAME(node_type));
+    exit(1);
+  }
   new_node->node_type = node_type;
   return new_node;
 }
