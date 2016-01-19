@@ -12,7 +12,7 @@
 #define TOKTYPES_H
 
 enum TokTypes { ID_T = 258, INT_T, STRING_T, TYPEINT_T,
-			IF_T, ELSE_T, WHILE_T, RETURN_T, FOR_T,
+			IF_T, ELSE_T, DO_T, WHILE_T, RETURN_T, FOR_T,
 			VOID_T, READ_T, PRINT_T,
 			ADD_T, SUB_T, MULT_T, DIV_T, ASSIGN_T,
 			LT_T, GT_T, LTE_T, GTE_T, EQ_T, NE_T,
@@ -24,7 +24,7 @@ enum TokTypes { ID_T = 258, INT_T, STRING_T, TYPEINT_T,
 			
 static char * tok_names[] =
 	{ "ID", "INT", "STRING", "TYPEINT",
-	"IF", "ELSE", "WHILE", "RETURN", "FOR",
+	"IF", "ELSE", "DO", "WHILE", "RETURN", "FOR",
 	"VOID", "READ", "PRINT",
 	"PLUS", "MINUS", "MULTIPLY", "DIVIDE", "ASSIGN",
 	"LESS", "GREATER", "LESSEQUAL", "GREATEREQUAL", "ISEQUAL", "NOTEQUAL",
