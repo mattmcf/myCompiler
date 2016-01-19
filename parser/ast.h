@@ -16,7 +16,7 @@
 /* You should fill in the various AST node types.  The following are given
    to you to start with.  You may add or remove node types as you
    wish. */
-typedef enum { PROGRAM_N,
+typedef enum { ROOT_N,
          DECLARATION_LIST_N,
 
          VAR_N,
@@ -31,13 +31,12 @@ typedef enum { PROGRAM_N,
 
 	       OP_ASSIGN_N, OP_PLUS_N, OP_MINUS_N, OP_NEG_N, OP_TIMES_N, OP_DIVIDE_N,
 	       OP_MOD_N, OP_LT_N, OP_LTE_N, OP_GT_N, OP_GTE_N, 
-         OP_EQUALS_N, OP_NEQ_N, OP_AND_N, OP_OR_N, OP_NOT_N,
+         OP_EQ_N, OP_NE_N, OP_AND_N, OP_OR_N, OP_NOT_N,
          OP_INC_N, OP_DECR_N,
 
 
 
-	       IF_STMT_N, IF_ELSE_STMT_N,
-	       ID_N, INT_LITERAL_N} ast_node_type;
+	       IF_STMT_N, IF_ELSE_STMT_N} ast_node_type;
 
 
 
@@ -53,7 +52,7 @@ typedef struct {
 
 
 static val_name_pair token_table[] = {
-  { PROGRAM_N, "PROGRAM" },
+  { ROOT_N, "ROOT" },
   { DECLARATION_LIST_N, "DECLARATION LIST"},
 
   { VAR_N, "VARIABLE"},
@@ -77,8 +76,8 @@ static val_name_pair token_table[] = {
   { OP_LTE_N, "<="},
   { OP_GT_N, ">"},
   { OP_GTE_N, ">="},
-  { OP_EQUALS_N, "==" },
-  { OP_NEQ_N, "!="},
+  { OP_EQ_N, "==" },
+  { OP_NE_N, "!="},
   { OP_AND_N, "&&"},
   { OP_OR_N, "||"},
   { OP_NOT_N, "!"},
@@ -87,8 +86,6 @@ static val_name_pair token_table[] = {
 
   { IF_STMT_N, "IF_STMT" },
   { IF_ELSE_STMT_N, "IF_ELSE_STMT" },
-  { ID_N, "ID" },
-  { INT_LITERAL_N, "INT_LITERAL"} ,
   { 0, NULL }
 };
 

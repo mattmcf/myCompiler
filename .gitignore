@@ -38,3 +38,5 @@
 *.tar
 
 lexical_analyzer/results/
+*.tab*
+*.output

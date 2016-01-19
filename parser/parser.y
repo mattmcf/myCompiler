@@ -56,11 +56,11 @@ int yyerror(char *s);
 
 %%
 
-program : declarationList {
-	ast_node t = create_ast_node(ROOT_N);
-	t->left_child = $1;
-	root = $$ = t; }
-;
+// program : declarationList {
+// 	ast_node t = create_ast_node(ROOT_N);
+// 	t->left_child = $1;
+// 	root = $$ = t; }
+// ;
 
 /* 
  * RULE 26
@@ -70,7 +70,7 @@ expression : var '=' expression {
 	t->left_child = $1;
 	t->left_child->right_sibling = $3;
 	$$ = t; }
-| r-value {
+| r_value {
 	ast_node t = create_ast_node(EXPRESSION_N);
 	t->left_child = $1;
 	$$ = t; }
@@ -94,7 +94,7 @@ var : ID_T {
  * RULE 28
  * taken from tree.5.y and modified / expanded for our grammar 
  */
-r-value : 
+r_value : 
 expression '+' expression {
   ast_node t = create_ast_node(OP_PLUS_N);
   t->left_child = $1;
@@ -145,8 +145,8 @@ expression '+' expression {
   t->left_child = $1;
   t->left_child->right_sibling = $3;
   $$ = t; }
-| expression NEQ_T expression {
-  ast_node t = create_ast_node(OP_NEQ_N);
+| expression NE_T expression {
+  ast_node t = create_ast_node(OP_NE_N);
   t->left_child = $1;
   t->left_child->right_sibling = $3;
   $$ = t; } 
@@ -163,7 +163,7 @@ expression '+' expression {
 | '!' expression {
   ast_node t = create_ast_node(OP_NOT_N);
   t->left_child = $1;
-  t->left_child->right_sibling = $3;
+  t->left_child->right_sibling = $2;
   $$ = t; } 
 | '-' expression %prec UMINUS_T {
   ast_node t = create_ast_node(OP_NEG_N);
@@ -190,11 +190,10 @@ expression '+' expression {
 /*
  * RULE 29
  */
-call : ID_T {
+call : ID_T '(' args ')' {
 	ast_node t = create_ast_node(CALL_N);
-	t->value_string = strdup(savedIdText); 			// make sure not copying '('
-} '(' args ')' {
-	t->left_child = $4;
+	t->value_string = strdup(savedIdText);
+	t->left_child = $3;
 	$$ = t; }
 ;
 
