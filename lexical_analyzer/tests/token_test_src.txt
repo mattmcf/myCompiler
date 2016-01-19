@@ -30,6 +30,7 @@ multiline strings are bad"
 
 if
 else
+do
 while
 return
 for

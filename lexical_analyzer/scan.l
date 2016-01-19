@@ -102,6 +102,7 @@ int kwLookup(char *s) {
   static kw_token keywords[] = {
     {"if", IF_T},
     {"else", ELSE_T},
+    {"do", DO_T},
     {"while", WHILE_T},
     {"return", RETURN_T},
     {"for", FOR_T},
