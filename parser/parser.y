@@ -12,6 +12,7 @@
 #include <string.h>
 #include <stdio.h>
 #include "ast.h" 			// defines ast node types and functions
+// #include "toktypes.h"
 
 #define YYSTYPE ast_node 	// override default node type
 #define YYDEBUG 1 			// turn on debugging? 
@@ -34,10 +35,8 @@ int yyerror(char *s);
 
 %}
 
-// all tokens?
-// 'do' token?
-// %token ID_T, INT_T, STRING_T, TYPEINT_T, IF_T, ELSE_T, WHILE_T, RETURN_T, FOR_T, VOID_T, READ_T, PRINT_T, ADD_T, SUB_T, MULT_T, DIV_T, ASSIGN_T, LT_T, GT_T, LTE_T, GTE_T, EQ_T, NE_T, INCR_T, DECR_T, AND_T, OR_T, NOT_T,SEMIC_T, COMMA_T, OPAREN_T, CPAREN_T, OSQR_T, CSQR_T, OCRLY_T, CCRLY_T, PCENT_T, EOF_T, COMMENT_T, OTHER_T 	/* do ? */
-%token ID_T INT_T STRING_T TYPEINT_T IF_T ELSE_T WHILE_T RETURN_T FOR_T VOID_T READ_T PRINT_T ';' ',' '(' ')' '[' ']' '{' '}' DO_T EOF_T COMMENT_T OTHER_T 
+%token ID_T INT_T STRING_T TYPEINT_T IF_T ELSE_T DO_T WHILE_T RETURN_T FOR_T VOID_T READ_T PRINT_T '+' '-' '*' '/' '=' '<' '>' LTE_T GTE_T EQ_T NE_T INCR_T DECR_T AND_T OR_T '!' ';' ',' '(' ')' '[' ']' '{' '}' '%' COMMENT_T OTHER_T 
+// %token ID_T INT_T STRING_T TYPEINT_T IF_T ELSE_T WHILE_T RETURN_T FOR_T VOID_T READ_T PRINT_T ';' ',' '(' ')' '[' ']' '{' '}' DO_T EOF_T COMMENT_T OTHER_T 
 
 /* from flex&bison book: how to resolve if/then/else */
 %nonassoc LOWER_THAN_ELSE

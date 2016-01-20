@@ -12,7 +12,8 @@
  
 %{
 #include <string.h>
-#include "toktypes.h"
+#include "parser.tab.h"
+//#include "toktypes.h"
 int kwLookup(char *); 
 
 #define MAXTOKENLENGTH 201
@@ -98,7 +99,7 @@ bad_id ({digit})({digit}|{letter}|_)*
 "="           return '=';
 "!"           return '!';
 
-<<EOF>>       return EOF_T;
+<<EOF>>       return 0;
 .             return OTHER_T;
 
 %%

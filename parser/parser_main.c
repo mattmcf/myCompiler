@@ -19,7 +19,7 @@ int parseError = 0; 	// global flag
 int main() {
   int noRoot = 0;		/* 0 means we will have a root */
 
-/*   yydebug = 1; */
+  yydebug = 1;
   noRoot = yyparse();
 
   if (parseError)
