@@ -17,15 +17,34 @@
    to you to start with.  You may add or remove node types as you
    wish. */
 typedef enum { ROOT_N,
-         DECLARATION_LIST_N,
 
          VAR_N,
          ARG_LIST_N,
          ARGS_N, 
          EXPRESSION_N,
-         INT_LITERAL_N,
-         ID_N,
          CALL_N,
+         PRINT_N,
+         READ_N,
+         RETURN_N,
+         FOR_HEADER_N,
+         FOR_STMT_N,
+         DO_WHILE_N,
+         WHILE_N,
+         EXPRESSION_STMT_N,
+         STMT_LIST_N,
+         LOCAL_DECLARATIONS_N,
+         COMPOUND_STMT_N,
+         FORMAL_PARAM_N,
+         FORMAL_PARAM_ARR_N,
+         FORMAL_LIST_N,
+         FORMAL_PARAMS_N,
+         FUNC_TYPE_SPEC_N,
+         FUNC_DECLARATION_N,
+         VAR_DECL_N,
+         VAR_DECLARATION_LIST_N,
+         VAR_TYPE_SPECIFIER_N,
+         VAR_DECLARATION_N,
+         DECLARATION_LIST_N,
 
 	       SEQ_N,
 
@@ -36,7 +55,8 @@ typedef enum { ROOT_N,
 
 
 
-	       IF_STMT_N, IF_ELSE_STMT_N} ast_node_type;
+	       IF_STMT_N, IF_ELSE_STMT_N,
+         TYPEINT_N, VOID_N, ID_N, INT_LITERAL_N, STRING_N } ast_node_type;
 
 
 
@@ -53,15 +73,34 @@ typedef struct {
 
 static val_name_pair token_table[] = {
   { ROOT_N, "ROOT" },
-  { DECLARATION_LIST_N, "DECLARATION LIST"},
 
   { VAR_N, "VARIABLE"},
   { ARG_LIST_N, "ARGUMENT LIST"},
   { ARGS_N, "ARGUMENTS"},
   { EXPRESSION_N, "EXPRESSION"},
-  { INT_LITERAL_N, "INT_LITERAL"},
-  { ID_N, "IDENTIFIER"},
   { CALL_N, "CALL"},
+  { PRINT_N, "PRINT"},
+  { READ_N, "READ"},
+  { RETURN_N, "RETURN"},
+  { FOR_HEADER_N, "FOR HEADER"},
+  { FOR_STMT_N, "FOR STATEMENT"},
+  { DO_WHILE_N, "DO WHILE"},
+  { WHILE_N, "WHILE"},
+  { EXPRESSION_STMT_N, "EXPRESSION STATEMENT"},
+  { STMT_LIST_N, "STATEMENT LIST"},
+  { LOCAL_DECLARATIONS_N, "LOCAL DECLARATIONS"},
+  { COMPOUND_STMT_N, "COMPOUND STATEMENT"},
+  { FORMAL_PARAM_N, "FORMAL PARAMETER"},
+  { FORMAL_PARAM_ARR_N, "FORMAL PARAMETER ARRAY"},
+  { FORMAL_LIST_N, "FORMAL LIST"},
+  { FORMAL_PARAMS_N, "FORMAL PARAMS"},
+  { FUNC_TYPE_SPEC_N, "FUNCTION TYPE SPECIFIER"},
+  { FUNC_DECLARATION_N, "FUNCTION DECLARATION"},
+  { VAR_DECL_N, "VARIABLE DECLARATION"},
+  { VAR_DECLARATION_LIST_N, "VARIABLE DECLARATION LIST"},
+  { VAR_TYPE_SPECIFIER_N, "VARIABLE SPECIFIER"},
+  { VAR_DECLARATION_N, "VARIABLE DECLARATION LINE"},
+  { DECLARATION_LIST_N, "DECLARATION LIST"},
 
   { SEQ_N, "SEQ" },
 
@@ -86,6 +125,11 @@ static val_name_pair token_table[] = {
 
   { IF_STMT_N, "IF_STMT" },
   { IF_ELSE_STMT_N, "IF_ELSE_STMT" },
+  { TYPEINT_N, "INT"},
+  { VOID_N, "VOID"},
+  { ID_N, "IDENTIFIER"},
+  { INT_LITERAL_N, "INT_LITERAL"},
+  { STRING_N, "STRING"},
   { 0, NULL }
 };
 
