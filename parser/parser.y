@@ -93,10 +93,27 @@ declaration : var_declaration 	{ $$ = $1; }
 /*
  * RULE 4
  */
-var_declaration : var_type_specifier var_declaration_list ';' {
+var_declaration : type_specifier var_declaration_list ';' {
 	ast_node t = create_ast_node(VAR_DECLARATION_N);
 	t->left_child = $1;
 	t->left_child->right_sibling = $2; 
+	$$ = t; }
+;
+
+/*
+ * RULE 5 & 9 REPLACEMENT
+ *
+ * Leftchild will be either VOID_N or TYPEINT_N
+ */
+type_specifier : TYPEINT_T {
+	ast_node t = create_ast_node(TYPE_SPEC_N);
+	ast_node int_n = create_ast_node(TYPEINT_N);
+	t->left_child = int_n;
+	$$ = t; }
+| VOID_T {	
+	ast_node t = create_ast_node(TYPE_SPEC_N);
+	ast_node void_n = create_ast_node(VOID_N);
+	t->left_child = void_n;
 	$$ = t; }
 ;
 
@@ -105,12 +122,12 @@ var_declaration : var_type_specifier var_declaration_list ';' {
  * 
  * left child is of node specifier node type -- here only TYPEINT_N
  */
-var_type_specifier : TYPEINT_T {
-	ast_node t = create_ast_node(VAR_TYPE_SPECIFIER_N);
-	ast_node typeint_n = create_ast_node(TYPEINT_N);
-	t->left_child = typeint_n;
-	$$ = t; }
-;
+// var_type_specifier : TYPEINT_T {
+// 	ast_node t = create_ast_node(VAR_TYPE_SPECIFIER_N);
+// 	ast_node typeint_n = create_ast_node(TYPEINT_N);
+// 	t->left_child = typeint_n;
+// 	$$ = t; }
+// ;
 
 /*
  * RULE 6
@@ -164,7 +181,7 @@ var_decl : ID_T {
 /*
  * RULE 8
  */
-func_declaration : func_type_specifier ID_T '(' formal_params ')' compound_stmt {
+func_declaration : type_specifier ID_T '(' formal_params ')' compound_stmt {
 	ast_node t = create_ast_node(FUNC_DECLARATION_N);
 	ast_node id_n = create_ast_node(ID_N);
 	id_n->value_string = strdup(savedIdText); 				// gets ID?
@@ -180,17 +197,17 @@ func_declaration : func_type_specifier ID_T '(' formal_params ')' compound_stmt 
  *
  * left child will be either TYPEINT_N or VOID_N depending on specifier
  */
-func_type_specifier : TYPEINT_T {
-	ast_node t = create_ast_node(FUNC_TYPE_SPEC_N);
-	ast_node int_n = create_ast_node(TYPEINT_N);
-	t->left_child = int_n;
-	$$ = t; }
-| VOID_T {	
-	ast_node t = create_ast_node(FUNC_TYPE_SPEC_N);
-	ast_node void_n = create_ast_node(VOID_N);
-	t->left_child = void_n;
-	$$ = t; }
-;
+// func_type_specifier : TYPEINT_T {
+// 	ast_node t = create_ast_node(FUNC_TYPE_SPEC_N);
+// 	ast_node int_n = create_ast_node(TYPEINT_N);
+// 	t->left_child = int_n;
+// 	$$ = t; }
+// | VOID_T {	
+// 	ast_node t = create_ast_node(FUNC_TYPE_SPEC_N);
+// 	ast_node void_n = create_ast_node(VOID_N);
+// 	t->left_child = void_n;
+// 	$$ = t; }
+// ;
 
 /*
  * RULE 10
@@ -236,14 +253,14 @@ formal_list : formal_list ',' formal_param {
  * I think this is used for declaration of a parameter for a function
  * Need to differentiate with array and single parameters -> two different N types
  */
-formal_param : var_type_specifier ID_T {
+formal_param : type_specifier ID_T {
 	ast_node t = create_ast_node(FORMAL_PARAM_N);			// save ID string in ID_N at right_sibling
 	ast_node id_n = create_ast_node(ID_N);
 	id_n->value_string = strdup(savedIdText);
 	t->left_child = $1;
 	t->left_child->right_sibling = id_n;
 	$$ = t; }
-| var_type_specifier ID_T '[' ']' {
+| type_specifier ID_T '[' ']' {
 	ast_node t = create_ast_node(FORMAL_PARAM_ARR_N);		// save ID string in ID_N at right_sibling
 	ast_node id_n = create_ast_node(ID_N);
 	id_n->value_string = strdup(savedIdText);
@@ -294,7 +311,10 @@ stmt_list : stmt_list stmt {
  * No "STMT_N" to reduce to. Each production has it's own node type already.
  */
 stmt : 
-expression_stmt { $$ = $1; }
+expression_stmt { 
+	ast_node t = create_ast_node(STMT_N);
+	t->left_child = $1;
+	$$ = t; }
 | compound_stmt { $$ = $1; }
 | if_stmt 		{ $$ = $1; }
 | while_stmt 	{ $$ = $1; }
@@ -308,13 +328,13 @@ expression_stmt { $$ = $1; }
 /*
  * RULE 17
  *
- * If no expression statement, then no children
+ * If no expression before semicolon, then no children
  */
 expression_stmt : expression ';' {
 	ast_node t = create_ast_node(EXPRESSION_STMT_N);
 	t->left_child = $1;
 	$$ = t; }
-| /* empty */ {
+| /* empty */ ';' {
 	ast_node t = create_ast_node(EXPRESSION_STMT_N);
 	$$ = t; }
 ;
@@ -431,6 +451,9 @@ print_stmt : PRINT_T expression ';' {
 
 /* 
  * RULE 26
+ *
+ * if left-child has a right sibling, then VAR_N must be assigned the
+ * 	evaluated right sibling expression.
  */
 expression : var '=' expression {
 	ast_node t = create_ast_node(EXPRESSION_N);
