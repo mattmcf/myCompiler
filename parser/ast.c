@@ -37,7 +37,12 @@ void print_ast(ast_node root, int depth) {
   for (i = 0; i < depth; i++)
     printf("  ");
 
-  /* Print the node type. */
+  if (root == NULL) {
+    printf("NULL NODE\n");
+    return;
+  }
+
+/* Print the node type. */
   printf("%s ", NODE_NAME(root->node_type));
 
   /* Print attributes specific to node types. */
@@ -50,11 +55,16 @@ void print_ast(ast_node root, int depth) {
     printf("%d", root->value_int);
     break;
 
+  case STRING_N:
+    printf("%s", root->value_string);
+    break;
+
   default:
     break;
   }
 
   printf("\n");
+  
 
   /* Recurse on each child of the subtree root, with a depth one
      greater than the root's depth. */

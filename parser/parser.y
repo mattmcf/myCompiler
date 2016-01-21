@@ -12,7 +12,7 @@
 #include <string.h>
 #include <stdio.h>
 #include "ast.h" 			// defines ast node types and functions
-// #include "toktypes.h"
+#include <assert.h>
 
 #define YYSTYPE ast_node 	// override default node type
 #define YYDEBUG 1 			// turn on debugging? 
@@ -36,19 +36,18 @@ int yyerror(char *s);
 %}
 
 %token ID_T INT_T STRING_T TYPEINT_T IF_T ELSE_T DO_T WHILE_T RETURN_T FOR_T VOID_T READ_T PRINT_T '+' '-' '*' '/' '=' '<' '>' LTE_T GTE_T EQ_T NE_T INCR_T DECR_T AND_T OR_T '!' ';' ',' '(' ')' '[' ']' '{' '}' '%' COMMENT_T OTHER_T 
-// %token ID_T INT_T STRING_T TYPEINT_T IF_T ELSE_T WHILE_T RETURN_T FOR_T VOID_T READ_T PRINT_T ';' ',' '(' ')' '[' ']' '{' '}' DO_T EOF_T COMMENT_T OTHER_T 
 
 /* from flex&bison book: how to resolve if/then/else */
 %nonassoc LOWER_THAN_ELSE
 %nonassoc ELSE_T
 
 /* Lowest Precedence */
-%right '=' 				/* right? */
+%right '=' 			
 %left OR_T
 %left AND_T
 %left EQ_T NE_T
 %left '<' '>' GTE_T LTE_T
-%left '+' '-'				/* how to tell minus_t from uranary t? */
+%left '+' '-'				
 %left '*' '/' '%'
 %left '!' INCR_T DECR_T UMINUS_T
 /* Highest Precedence */
@@ -67,23 +66,26 @@ program : declaration_list {
 /*
  * RULE 2
  *
- * while > 1 declaration in list, left child is DECLARATION_LIST_N
- * 		with right sibling as a VAR_DECLARATION_N or FUNC_DECLARATION_N
- * For last element of list, left child is either VAR_DECLARATION_N or FUNC_DECLARATION_N
+ * A declaration list is composed of a DECLARATION_N with right_siblings of DECLARATION_N nodes
  */
 declaration_list : declaration_list declaration {
-	ast_node t = create_ast_node(DECLARATION_LIST_N);
-	t->left_child = $1;
-	t->left_child->right_sibling = $2;
-	$$ = t; }
-| declaration { $$ = $1; }
+	ast_node t = $1;
+	if (t != NULL) {
+		while (t->right_sibling != NULL)
+			t = t->right_sibling;
+		t->right_sibling = $2;
+		$$ = $1;
+	} 
+	else
+		$$ = $2;
+	}
+| /* empty */ { $$ = NULL; }
 ;
 
 /*
  * RULE 3
  *
  * Node will be either VAR_DECLARATION_N or FUNC_DECLARATION_N
- * Can omit? nodes will be either VAR_DECLARATION_N or FUNC_DECLARATION_N
  */
 declaration : var_declaration 	{ $$ = $1; }
 | func_declaration 				{ $$ = $1; }
@@ -91,6 +93,9 @@ declaration : var_declaration 	{ $$ = $1; }
 
 /*
  * RULE 4
+ * 
+ * left most child is type,
+ * right siblings of left child are VAR_DECL_N nodes
  */
 var_declaration : type_specifier var_declaration_list ';' {
 	ast_node t = create_ast_node(VAR_DECLARATION_N);
@@ -131,19 +136,20 @@ type_specifier : TYPEINT_T {
 /*
  * RULE 6
  *
- * While still declarations in list (>1), left child is VAR_DECLARATION_LIST_N
- * 		and right child is var_declaration
- * If last declaration in list, left child is var_declaration.
+ * var_list_declaration is just a VAR_DECLAR_N with VAR_DECLAR_N right siblings
  */
 var_declaration_list : var_declaration_list ',' var_decl {
-	ast_node t = create_ast_node(VAR_DECLARATION_LIST_N);
-	t->left_child = $1;
-	t->left_child->right_sibling = $3;
-	$$ = t; }
-| var_decl {
-	ast_node t = create_ast_node(VAR_DECLARATION_LIST_N);
-	t->left_child = $1;
-	$$ = t; }
+	ast_node t = $1;
+	if (t != NULL) {
+		while (t->right_sibling != NULL)
+			t = t->right_sibling;
+		t->right_sibling = $3;
+		$$ = $1;
+	}
+	else 
+		$$ = $3;
+	}
+| var_decl { $$ = $1; }											// must have at least one element in list
 ;
 
 /*
@@ -171,7 +177,7 @@ var_decl : ID_T {
 	ast_node id_n = create_ast_node(ID_N);
 	ast_node int_n = create_ast_node(INT_LITERAL_N);
 	id_n->value_string = strdup(savedIdText);
-	id_n->value_int = atoi(savedLiteralText);
+	int_n->value_int = atoi(savedLiteralText);
  	t->left_child = id_n;
 	t->left_child->right_sibling = int_n;
 	$$ = t; }
@@ -180,14 +186,17 @@ var_decl : ID_T {
 /*
  * RULE 8
  */
-func_declaration : type_specifier ID_T '(' formal_params ')' compound_stmt {
-	ast_node t = create_ast_node(FUNC_DECLARATION_N);
+func_declaration : type_specifier ID_T {
+	/* embedded action to save function identifer */
 	ast_node id_n = create_ast_node(ID_N);
-	id_n->value_string = strdup(savedIdText); 				// gets ID?
+	id_n->value_string = strdup(savedIdText); 
+	$2 = id_n;
+} '(' formal_params ')' compound_stmt {
+	ast_node t = create_ast_node(FUNC_DECLARATION_N);
 	t->left_child = $1;
-	t->left_child->right_sibling = id_n;
-	t->left_child->right_sibling->right_sibling = $4;
-	t->left_child->right_sibling->right_sibling->right_sibling = $6;
+	t->left_child->right_sibling = $2;
+	t->left_child->right_sibling->right_sibling = $5;
+	t->left_child->right_sibling->right_sibling->right_sibling = $7;
 	$$ = t; }
 ;
 
@@ -226,24 +235,26 @@ formal_params : formal_list {
 	$$ = t; }
 | /* empty */ {
 	ast_node t = create_ast_node(FORMAL_PARAMS_N);
-	$$ = t;
-}
+	$$ = t; }
+;
 
 /*
  * RULE 11
  *
- * When the formal list has exhausted all of the parameters,
- * the left child is a formal param node. 
+ * left child and all right siblings are each a FORMAL_PARAM_N
  */
 formal_list : formal_list ',' formal_param {
-	ast_node t = create_ast_node(FORMAL_LIST_N);
-	t->left_child = $1;
-	t->left_child->right_sibling = $3;
-	$$ = t; }
-| formal_param {
-	ast_node t = create_ast_node(FORMAL_LIST_N);
-	t->left_child = $1;
-	$$ = t; }
+	ast_node t = $1;
+	if (t != NULL) {
+		while (t->right_sibling)
+			t = t->right_sibling;
+		t->right_sibling = $3;
+		$$ = $1;
+	}
+	else 
+		$$ = $3;
+	}
+| formal_param { $$ = $1; }									// must have 1 parameter in formal_list 
 ;
 
 /* 
@@ -280,28 +291,68 @@ compound_stmt : '{' local_declarations stmt_list '}' {
 
 /*
  * RULE 14
+ *
+ * LOCAL_DECLARATION_N has a TYPE_SPEC_N as left child and then VAR_DELC_N as right siblings
+ * no children means no local variables are declared
  */
 local_declarations : local_declarations var_declaration {
-	ast_node t = create_ast_node(LOCAL_DECLARATIONS_N);
-	t->left_child = $1;
-	t->left_child->right_sibling = $2;
-	$$ = t; }
+	ast_node t = $1;
+
+	if (t == NULL) {
+		t = create_ast_node(LOCAL_DECLARATIONS_N);
+		$1 = t;
+	}
+
+	if (t->left_child != NULL) {
+		t = t->left_child;
+		while (t->right_sibling != NULL)
+			t = t->right_sibling;
+		t->right_sibling = $2;
+	}
+	else 
+		t->left_child = $2;
+	
+	}
 | /* empty */ {
-	ast_node t = create_ast_node(LOCAL_DECLARATIONS_N);
-	$$ = t; }
+	if ($$ == NULL)
+		$$ = create_ast_node(LOCAL_DECLARATIONS_N);
+
+	}
 ;	
 
 /*
  * RULE 15
+ *
+ * see rule 26 for types of available statement children
+ * each statemnt is left child -> right siblings (x0, x1, x2 ...)
+ * no left child if STMT_LIST_N is empty
  */
 stmt_list : stmt_list stmt {
-	ast_node t = create_ast_node(STMT_LIST_N);
-	t->left_child = $1;
-	t->left_child->right_sibling = $2;
-	$$ = t; }
+	ast_node t = $1;
+
+	if (t == NULL) {
+		t = create_ast_node(STMT_LIST_N);
+		$1 = t;
+	}
+
+	if (t->left_child != NULL) {
+		t = t->left_child;
+		while (t->right_sibling)
+			t = t->right_sibling;
+		t->right_sibling = $2;
+		//$$ = $1;
+	}
+	else
+		t->left_child = $2;
+
+	}
 | /* empty */ {
-	ast_node t = create_ast_node(STMT_LIST_N);
-	$$ = t; }
+	if ($$ == NULL) {
+		ast_node t = create_ast_node(STMT_LIST_N);
+		$$ = t;	
+	}
+
+	}
 ;
 
 /*
@@ -310,10 +361,7 @@ stmt_list : stmt_list stmt {
  * No "STMT_N" to reduce to. Each production has it's own node type already.
  */
 stmt : 
-expression_stmt { 
-	ast_node t = create_ast_node(STMT_N);
-	t->left_child = $1;
-	$$ = t; }
+expression_stmt { $$ = $1; }
 | compound_stmt { $$ = $1; }
 | if_stmt 		{ $$ = $1; }
 | while_stmt 	{ $$ = $1; }
@@ -440,11 +488,14 @@ print_stmt : PRINT_T expression ';' {
 	ast_node t = create_ast_node(PRINT_N);
 	t->left_child = $2;
 	$$ = t; } 
-| PRINT_T STRING_T ';' {
-	ast_node t = create_ast_node(PRINT_N);
+| PRINT_T STRING_T {
+	/* embedded action to grab string text */
 	ast_node str_n = create_ast_node(STRING_N);
 	str_n->value_string = strdup(yytext);			// correctly getting STRING?
-	t->left_child = str_n; 							// save string in STRING_N -- getting string here?
+	$2 = str_n;
+} ';' {
+	ast_node t = create_ast_node(PRINT_N);
+	t->left_child = $2; 							// save string in STRING_N -- getting string here?
 	$$ = t; }
 ;
 
@@ -578,8 +629,8 @@ expression '+' expression {
 | call { $$ = $1; } 								// note, set expr = call here
 | '(' expression ')' { $$ = $2; }
 | INT_T {
-  ast_node t = create_ast_node(INT_LITERAL_N);		// r-value is an INT_LITERAL_N here
-  t->value_int = atoi(savedLiteralText); 			// check if works?
+  ast_node t = create_ast_node(INT_LITERAL_N);	
+  t->value_int = atoi(savedLiteralText); 			
   $$ = t; } 
 | '(' error ')' { $$ = NULL; }
 ;
@@ -590,33 +641,43 @@ expression '+' expression {
  * left_child is ID_N with ID string saved in value string
  * left_child->right_sibling is ARGS_N
  */
-call : ID_T '(' args ')' {
-	ast_node t = create_ast_node(CALL_N);
+call : ID_T {
+	/* embedded action to save function call ID string */
 	ast_node id_n = create_ast_node(ID_N);
 	id_n->value_string = strdup(savedIdText);
-	t->left_child = id_n;
-	t->left_child->right_sibling = $3;
+	$1 = id_n;
+} '(' args ')' {
+	ast_node t = create_ast_node(CALL_N);
+	t->left_child = $1;
+	t->left_child->right_sibling = $4;
 	$$ = t; }
 ;
 
 /*
  * RULE 30
+ *
+ * if ARGS is null, then no arguments
+ * if ARGS is not null, then it is a ARGS_LIST_N
  */
-args : arg_list {
-	ast_node t = create_ast_node(ARGS_N);
-	t->left_child = $1;
-	$$ = t; }
-| /* empty */ { $$ = NULL; }
+args : arg_list { $$ = $1; }
+| /* empty */ 	{ $$ = NULL; }
 ;
 
 /* 
  * RULE 31
+ *
+ * Each child and sibling under the ARG_LIST_N is an expression.
  */
 arg_list : arg_list ',' expression { 
-	ast_node t = create_ast_node(ARG_LIST_N); 
-	t->left_child = $1;
-	t->left_child->right_sibling = $3; 
-	$$ = t; }
+	ast_node t = $1;
+	if (t->left_child) {
+		t = t->left_child;
+		while (t->right_sibling)
+			t = t->right_sibling;
+		t->right_sibling = $3;
+		$$ = $1;
+	}
+	} 
 | expression { 
 	ast_node t = create_ast_node(ARG_LIST_N); 
 	t->left_child = $1;
