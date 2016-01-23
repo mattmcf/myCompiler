@@ -281,12 +281,47 @@ formal_param : type_specifier ID_T {
 
 /*
  * RULE 13
+ *
+ * Sorry, this is weird. So compound statements need to handle some weird cases:
+ * 1) There ARE local declarations AND statements -> L.C. is local_declaration list (right sibs)
+ * 		Right sib of L
+ * 2) There A
  */
 compound_stmt : '{' local_declarations stmt_list '}' {
 	ast_node t = create_ast_node(COMPOUND_STMT_N);
-	t->left_child = $2;
-	t->left_child->right_sibling = $3;
-	$$ = t; }
+	ast_node d = $2;
+	ast_node l = $3;
+
+	if (d != NULL && l != NULL) {
+		t->left_child = d;
+		t->left_child->right_sibling = l;
+		$$ = t;
+	} else if (d == NULL && l != NULL) {
+		t->left_child = l;
+		$$ = t;
+	} else if (d != NULL && l == NULL) {
+		t->left_child = d;
+		$$ = t;
+	} else {
+		$$ = NULL;
+	}
+
+	
+	// if (d == NULL) {
+	// 	d = create_ast_node(LOCAL_DECLARATION_N);
+	// 	$2 = d;
+	// }
+	// t->left_child = $2;
+
+	
+	// if (l == NULL) {
+	// 	create_ast_node(STMT_LIST_N);
+	// 	$3 = l;
+	// }
+	// t->left_child->right_sibling = $3;
+
+	// $$ = t; 
+	}
 ;
 
 /*
@@ -298,26 +333,37 @@ compound_stmt : '{' local_declarations stmt_list '}' {
 local_declarations : local_declarations var_declaration {
 	ast_node t = $1;
 
-	if (t == NULL) {
-		t = create_ast_node(LOCAL_DECLARATIONS_N);
-		$1 = t;
-	}
-
-	if (t->left_child != NULL) {
-		t = t->left_child;
+	if (t != NULL) {
 		while (t->right_sibling != NULL)
 			t = t->right_sibling;
 		t->right_sibling = $2;
-	}
-	else 
-		t->left_child = $2;
+		$$ = $2;
+	} 
+	else
+		$$ = $2;
+
+
+	// if (t == NULL) {
+	// 	t = create_ast_node(LOCAL_DECLARATIONS_N);
+	// 	$1 = t;
+	// }
+
+	// if (t->left_child != NULL) {
+	// 	t = t->left_child;
+	// 	while (t->right_sibling != NULL)
+	// 		t = t->right_sibling;
+	// 	t->right_sibling = $2;
+	// }
+	// else 
+	// 	t->left_child = $2;
+
 	
 	}
-| /* empty */ {
-	if ($$ == NULL)
-		$$ = create_ast_node(LOCAL_DECLARATIONS_N);
+| /* empty */ { $$ = NULL; }
+	// if ($$ == NULL)
+	// 	$$ = create_ast_node(LOCAL_DECLARATIONS_N);
 
-	}
+	// }
 ;	
 
 /*
@@ -330,29 +376,38 @@ local_declarations : local_declarations var_declaration {
 stmt_list : stmt_list stmt {
 	ast_node t = $1;
 
-	if (t == NULL) {
-		t = create_ast_node(STMT_LIST_N);
-		$1 = t;
-	}
-
-	if (t->left_child != NULL) {
-		t = t->left_child;
-		while (t->right_sibling)
+	if (t != NULL) {
+		while (t->right_sibling != NULL)
 			t = t->right_sibling;
 		t->right_sibling = $2;
-		//$$ = $1;
-	}
-	else
-		t->left_child = $2;
+		$$ = $1;
+	} else
+		$$ = $2;
+
+	// if (t == NULL) {
+	// 	t = create_ast_node(STMT_LIST_N);
+	// 	$1 = t;
+	// }
+
+	// if (t->left_child != NULL) {
+	// 	t = t->left_child;
+	// 	while (t->right_sibling)
+	// 		t = t->right_sibling;
+	// 	t->right_sibling = $2;
+	// 	//$$ = $1;
+	// }
+	// else
+	// 	t->left_child = $2;
 
 	}
-| /* empty */ {
-	if ($$ == NULL) {
-		ast_node t = create_ast_node(STMT_LIST_N);
-		$$ = t;	
-	}
+| /* empty */ { $$ = NULL; }
 
-	}
+	// if ($$ == NULL) {
+	// 	ast_node t = create_ast_node(STMT_LIST_N);
+	// 	$$ = t;	
+	// }
+
+	//}
 ;
 
 /*
