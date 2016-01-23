@@ -35,7 +35,8 @@ tree_main.o : tree_main.c
 
 clean :
 	rm -f parser lex.yy.o parser.tab.o parser_main.o ast.o \
-	parser.tab.h parser.tab.c lex.yy.c *~ parser.output
+	parser.tab.h parser.tab.c lex.yy.c *~ parser.output \
+	&& rm -rf results
 
 depend :
 	makedepend -- $(CFLAGS) -- parser_main.c

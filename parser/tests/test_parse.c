@@ -5,6 +5,8 @@ int main(void) {
 	int a, b = 10;
 	int ans;
 	int i;
+	int z;
+	int g;
 
 	a = 25;
 
@@ -42,6 +44,13 @@ int main(void) {
 		print "a : ";
 		read a;
 	}
+
+	for (z = 0; z < 10; z = z + 1) {
+    for (g = 0; g < 10; g = g + 1) {
+      print z;
+      print g;
+    }
+  }
 
 	return 0;
 }
