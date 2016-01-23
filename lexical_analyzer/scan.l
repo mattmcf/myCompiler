@@ -21,7 +21,7 @@ space [ \t]
 letter [A-Za-z]
 digit [0-9]
 id ({letter}|_)({letter}|{digit}|_)*
-integer [+|-]?{digit}+
+integer {digit}+
 bad_id ({digit})({digit}|{letter}|_)*
 
 %x string MULTICOMMENT SINGLECOMMENT

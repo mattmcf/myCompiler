@@ -8,16 +8,16 @@ TYPEINT ID [ ]
 ID
 
 INT
+- INT
++ INT
+- INT
 INT
-INT
-INT
-INT
-INT
++ INT
 
-- INT
-- INT
-+ INT
-+ INT
+- + INT
+- + INT
++ - INT
++ - INT
 
 OTHER
 OTHER
@@ -47,5 +47,5 @@ AND OR ! NOTEQUAL ! =
 TYPEINT ID , ID ;
 ID = ID [ INT ] ;
 ID = - INT ;
-ID = INT ;
+ID = - INT ;
 ID = { INT , STRING , INT , - INT , INT }
