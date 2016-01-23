@@ -15,7 +15,7 @@
 #include <assert.h>
 
 #define YYSTYPE ast_node 	// override default node type
-#define YYDEBUG 1 			// turn on debugging? 
+// #define YYDEBUG 1 			// turn on debugging? 
 
 /* from .l file */
 extern int yylex();
