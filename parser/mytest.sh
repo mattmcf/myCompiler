@@ -36,7 +36,7 @@ if [ "$?" -ne "0" ]
 fi  
 
 SRC_FILE2=/tests/test_parse.c
-ANS_FIILE2=/tests/test_parse.key
+ANS_FILE2=/tests/test_parse.key
 
 ./parser < tests/test_parse.c > results/test_parse.out
 
@@ -45,6 +45,23 @@ echo "Parser test with source file: $SRC_FILE2 and answer key: $ANS_FILE2"
 echo "Diffing answer key and output file..."
 
 diff --unchanged-line-format="" --new-line-format=":%dn: %L" tests/test_parse.key results/test_parse.out
+
+if [ "$?" -ne "0" ]
+  then
+  echo "Test Failed."
+  exit 1
+fi 
+
+SRC_FILE3=/tests/list_decl.c
+ANS_FILE3=/tests/list_decl.key
+
+./parser < tests/list_decl.c > results/list_decl.out
+
+echo " "
+echo "Parser test with source file: $SRC_FILE3 and answer key: $ANS_FILE3"
+echo "Diffing answer key and output file..."
+
+diff --unchanged-line-format="" --new-line-format=":%dn: %L" tests/list_decl.key results/list_decl.out
 
 if [ "$?" -ne "0" ]
   then

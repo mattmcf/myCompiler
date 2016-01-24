@@ -35,6 +35,8 @@ int yyerror(char *s);
 
 %}
 
+%error-verbose
+
 %token ID_T INT_T STRING_T TYPEINT_T IF_T ELSE_T DO_T WHILE_T RETURN_T FOR_T VOID_T READ_T PRINT_T '+' '-' '*' '/' '=' '<' '>' LTE_T GTE_T EQ_T NE_T INCR_T DECR_T AND_T OR_T '!' ';' ',' '(' ')' '[' ']' '{' '}' '%' COMMENT_T OTHER_T 
 
 /* from flex&bison book: how to resolve if/then/else */
@@ -460,6 +462,9 @@ expression_stmt : expression ';' {
 | /* empty */ ';' {
 	ast_node t = create_ast_node(EXPRESSION_STMT_N);
 	$$ = t; }
+| error ';' {
+  $$ = NULL; 
+}
 ;
 
 /* 
