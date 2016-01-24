@@ -23,4 +23,4 @@ Sample C program that includes various syntantic structures that would appear in
 Sample C program includes some edge cases for our syntax tree structure using variable list declaration nodes.
 
 #### test_err.c
-Sample C program that includes the following syntax errors: consecutive operators, an operator followed by parentheses and dangling else.
+Sample C program that includes the following syntax errors: consecutive operators, an operator followed by parentheses and dangling else. It also includes such errors within different types of statements such as for, while and do-while loops as well as return, print and read statements.
