@@ -185,6 +185,10 @@ var_decl : ID_T {
 
 /*
  * RULE 8
+ *
+ * More order weirdness! So each func_declaration MUST have a type and an identifier
+ * but it might not have a compound statement. If it does have statements, then the rightmost child will 
+ * be compound_stmt
  */
 func_declaration : type_specifier ID_T {
 	/* embedded action to save function identifer */
@@ -193,10 +197,22 @@ func_declaration : type_specifier ID_T {
 	$2 = id_n;
 } '(' formal_params ')' compound_stmt {
 	ast_node t = create_ast_node(FUNC_DECLARATION_N);
+	ast_node child;
+
 	t->left_child = $1;
 	t->left_child->right_sibling = $2;
 	t->left_child->right_sibling->right_sibling = $5;
 	t->left_child->right_sibling->right_sibling->right_sibling = $7;
+
+	/* handling NULL formal_params list */
+	// child = t->left_child->right_sibling;
+	// if ($5 != NULL) {
+	// 	child->right_sibling = $5;
+	// 	child = child->right_sibling
+	// }
+	// if ($7 != NULL)	
+	// 	t->left_child->right_sibling->right_sibling->right_sibling = $7;
+	
 	$$ = t; }
 ;
 
@@ -222,7 +238,7 @@ func_declaration : type_specifier ID_T {
  *
  * Formal parameters: if list, left child is FORMAL_LIST_N
  * 					  if void, left child is VOID_N
- * 					  if unspecified, left child is NULL:
+ * 					  if unspecified, left child is a VOID_N
  */
 formal_params : formal_list {
 	ast_node t = create_ast_node(FORMAL_PARAMS_N);
@@ -233,9 +249,12 @@ formal_params : formal_list {
 	ast_node void_node = create_ast_node(VOID_N);
 	t->left_child = void_node; 
 	$$ = t; }
-| /* empty */ {
+| /* empty */ {  // $$ = NULL; 		// can't just return null because above productions depend on this right sibling
 	ast_node t = create_ast_node(FORMAL_PARAMS_N);
-	$$ = t; }
+	ast_node void_node = create_ast_node(VOID_N);
+	t->left_child = void_node; 
+	$$ = t;  
+	}
 ;
 
 /*
@@ -282,10 +301,12 @@ formal_param : type_specifier ID_T {
 /*
  * RULE 13
  *
- * Sorry, this is weird. So compound statements need to handle some weird cases:
- * 1) There ARE local declarations AND statements -> L.C. is local_declaration list (right sibs)
+ * Sorry, this is weird! So compound statements need to handle some weird cases:
+ * 1) There ARE local declarations AND there ARE statements -> L.C. is local_declaration list (right sibs)
  * 		Right sib of L
- * 2) There A
+ * 2) There ARE NO local declaration AND ARE statements -> L.C. is a statement list
+ * 3) There ARE local declarations AND AREN'T statements -> L.C. is a local declaration list
+ * 4) There AREN'T local declarations AND AREN'T statements -> THIS COMPOUND_STATEMENT_N IS NULL
  */
 compound_stmt : '{' local_declarations stmt_list '}' {
 	ast_node t = create_ast_node(COMPOUND_STMT_N);
@@ -337,7 +358,7 @@ local_declarations : local_declarations var_declaration {
 		while (t->right_sibling != NULL)
 			t = t->right_sibling;
 		t->right_sibling = $2;
-		$$ = $2;
+		$$ = $1;
 	} 
 	else
 		$$ = $2;
@@ -732,6 +753,7 @@ arg_list : arg_list ',' expression {
 		t->right_sibling = $3;
 		$$ = $1;
 	}
+
 	} 
 | expression { 
 	ast_node t = create_ast_node(ARG_LIST_N); 
