@@ -2,6 +2,21 @@
 ## Yondon Fu and Matt McFarland - Delights (16W)
 
 ## General Overview
+The structure for our parser is as follows:
+
+*`scan.l` is our scanner file. It has been updated since submitting the lexer assignment.
+*`toktypes.h` is our header file defining the types of tokens for the lexer. It has been updated since submitting the lexer assignment.
+*`ast.c` contains functions for creating and printing AST nodes
+*`ast.h` is our header file defining AST nodes and their possible types
+*`parser.y` is the bison file for our parser
+*`parser_main.c` is our driver program that runs our parser to build an abstract syntax tree
+*`mytest.sh` is a bash script file that automates parser creation and testing by generating output files in the results directory and diffing them with the expected output key files in the tests directory.
+
+Instructions for running tests:
+
+`cd parser`
+
+`./mytest.sh`
 
 ## Implementation Specifics
 
