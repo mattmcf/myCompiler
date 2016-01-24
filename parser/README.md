@@ -18,6 +18,16 @@ Instructions for running tests:
 
 `./mytest.sh`
 
+Instructions for running tests for error reporting:
+
+`cd parser`
+
+`make clean && make`
+
+`./parser < tests/test_err.c`
+
+Output will include syntax error reporting by bison as well as any additional output from our parser whether it be an attempt at generating a parse tree or a message alerting the user that the parser has aborted due to too many errors.
+
 ## Implementation Specifics
 
 ### Error Handling
