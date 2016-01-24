@@ -7,11 +7,11 @@
 The structure for our parser is as follows:
 
 * `scan.l` is our scanner file. It has been updated since submitting the lexer assignment.
-* `toktypes.h` is our header file defining the types of tokens for the lexer. It has been updated since submitting the lexer assignment.
+* `toktypes.h` is our header file defining the types of tokens for the lexer. It has been updated since submitting the lexer assignment. (Note: This token file is useless since all the tokens are declared in the `parser.y`. `toktypes.h` is just used for pretty printing of token names.)
 * `ast.c` contains functions for creating and printing AST nodes
 * `ast.h` is our header file defining AST nodes and their possible types
 * `parser.y` is the bison file for our parser
-* `parser_main.c` is our driver program that runs our parser to build an abstract syntax tree
+* `parser_main.c` is our driver program that runs our parser to build and then print the abstract syntax tree
 * `mytest.sh` is a bash script file that automates parser creation and testing by generating output files in the results directory and diffing them with the expected output key files in the tests directory.
 
 Instructions for running tests:
@@ -37,24 +37,24 @@ We used the Abstract Syntax Tree skeleton model that was provided in the sample 
 
 In general, the relationship between children node order and production rule is as such:
 
-Where t is the current node...
-First Component: t -> left child
-Second Component: t -> left child -> right sibling
-Third Component: t -> left child -> right sibling -> right sibling
-... and so on.
+* Where t is the current node...
+* First Component: t -> left child
+* Second Component: t -> left child -> right sibling
+* Third Component: t -> left child -> right sibling -> right sibling
+* ... and so on.
 
-So we tried to follow an overarching design principle that structural nodes without children should be NULL. Where this organizational system falls apart is if one of the subcomponent nodes is NULL. When you try to access the right sibling of a NULL node, bad things happen. For example:
+So we tried to follow an overarching design principle that structural nodes without children should be NULL. This organizational system falls apart when one of the subcomponent nodes is NULL. If you try to access the right sibling of a NULL node to string on the next component node, bad things happen. For example:
 
-`{
-	int i = 10;
-}`
+````{ 
+	int i = 10; 
+}```
 
 and 
 
-`int i;
-{
-	i = 10;
-}`
+```int i;
+{ 
+	i = 10; 
+}```
 
 In the first case, the production for compound statement sees that the there are no statements in the stmt_list, and so the right sibling of the local_declaration list is NULL. No problems there.
 
