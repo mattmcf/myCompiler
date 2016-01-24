@@ -496,6 +496,9 @@ while_stmt : WHILE_T '(' expression ')' stmt {
 	t->left_child = $3;
 	t->left_child->right_sibling = $5;
 	$$ = t; }
+| WHILE_T '(' error ')' stmt {
+  $$ = NULL;
+}
 ;
 
 /*
@@ -506,6 +509,9 @@ do_while_stmt : DO_T stmt WHILE_T '(' expression ')' ';' {
 	t->left_child = $2;
 	t->left_child->right_sibling = $5;
 	$$ = t; }
+| DO_T stmt WHILE_T '(' error ')' ';' {
+  $$ = NULL;
+}
 ;
 
 /*
@@ -518,6 +524,9 @@ for_stmt : FOR_T '(' for_header_expr ';' for_header_expr ';' for_header_expr ')'
 	t->left_child->right_sibling->right_sibling = $7;
 	t->left_child->right_sibling->right_sibling->right_sibling = $9;
 	$$ = t; }
+| FOR_T '(' error ')' {
+  $$ = NULL;
+}
 ;
 
 /*
@@ -547,6 +556,9 @@ return_stmt : RETURN_T ';' {
 	ast_node t = create_ast_node(RETURN_N);
 	t->left_child = $2;
 	$$ = t; }
+| RETURN_T error ';' {
+  $$ = NULL;
+}
 ;
 
 /*
@@ -555,7 +567,9 @@ return_stmt : RETURN_T ';' {
 read_stmt : READ_T var ';' {
 	ast_node t = create_ast_node(READ_N);
 	t->left_child = $2;
-	$$ = t;
+	$$ = t; }
+| READ_T error ';' {
+  $$ = NULL;
 }
 
 /*
@@ -577,6 +591,9 @@ print_stmt : PRINT_T expression ';' {
 	ast_node t = create_ast_node(PRINT_N);
 	t->left_child = $2; 							// save string in STRING_N -- getting string here?
 	$$ = t; }
+| PRINT_T error ';' {
+  $$ = NULL;
+}
 ;
 
 /* 
