@@ -5,6 +5,9 @@
  * AUTHOR: SWS -> Thank you!
  * STUDENTS: Yondon Fu and Matt McFarland - Delights (CS 57 - 16W)
  * 
+ * Note: 	LC == "Left Child"
+ * 			RS == "Right Sibling"
+ * 
  */ 
 
 %{
@@ -15,9 +18,9 @@
 #include <assert.h>
 
 #define YYSTYPE ast_node 	// override default node type
-//#define YYDEBUG 1 		// turn on debugging
+#define YYDEBUG 1 			// turn on debugging
 
-#define MAX_ERRORS 3		// will stop parsing after this many syntax errors
+#define MAX_ERRORS 6		// will stop parsing after this many syntax errors
 
 /* from .l file */
 extern int yylex();
@@ -32,12 +35,13 @@ extern int parseError;
 
 /* in this .y file */
 int yyerror(char *s);
-int errors;
+int errors; 				// global error count
 
 %}
 
 %error-verbose
 
+/* don't change this token identifier order */
 %token ID_T INT_T STRING_T TYPEINT_T IF_T ELSE_T DO_T WHILE_T RETURN_T FOR_T VOID_T READ_T PRINT_T '+' '-' '*' '/' '=' '<' '>' LTE_T GTE_T EQ_T NE_T INCR_T DECR_T AND_T OR_T '!' ';' ',' '(' ')' '[' ']' '{' '}' '%' COMMENT_T OTHER_T 
 
 /* from flex&bison book: how to resolve if/then/else */
@@ -59,6 +63,8 @@ int errors;
 
 /*
  * RULE 1
+ *
+ * LC of program is list of DECLARATION_N in RS's
  */
 program : declaration_list {
 	ast_node t = create_ast_node(ROOT_N);
@@ -69,7 +75,7 @@ program : declaration_list {
 /*
  * RULE 2
  *
- * A declaration list is composed of a DECLARATION_N with right_siblings of DECLARATION_N nodes
+ * A declaration list is composed of a DECLARATION_N with RS of DECLARATION_N nodes in a list
  */
 declaration_list : declaration_list declaration {
 	ast_node t = $1;
@@ -97,8 +103,7 @@ declaration : var_declaration 	{ $$ = $1; }
 /*
  * RULE 4
  * 
- * left most child is type,
- * right siblings of left child are VAR_DECL_N nodes
+ * LC is TYPE_SPEC_N, RSs of LC are VAR_DECL_N nodes
  */
 var_declaration : type_specifier var_declaration_list ';' {
 	ast_node t = create_ast_node(VAR_DECLARATION_N);
@@ -108,9 +113,9 @@ var_declaration : type_specifier var_declaration_list ';' {
 ;
 
 /*
- * RULE 5 & 9 REPLACEMENT
+ * RULE 5 & 9 REPLACEMENT (void and int recognizers)
  *
- * Leftchild will be either VOID_N or TYPEINT_N
+ * LC will be either VOID_N or TYPEINT_N
  */
 type_specifier : TYPEINT_T {
 	ast_node t = create_ast_node(TYPE_SPEC_N);
@@ -125,21 +130,9 @@ type_specifier : TYPEINT_T {
 ;
 
 /*
- * RULE 5
- * 
- * left child is of node specifier node type -- here only TYPEINT_N
- */
-// var_type_specifier : TYPEINT_T {
-// 	ast_node t = create_ast_node(VAR_TYPE_SPECIFIER_N);
-// 	ast_node typeint_n = create_ast_node(TYPEINT_N);
-// 	t->left_child = typeint_n;
-// 	$$ = t; }
-// ;
-
-/*
  * RULE 6
  *
- * var_list_declaration is just a VAR_DECLAR_N with VAR_DECLAR_N right siblings
+ * var_list_declaration is just a VAR_DECLAR_N with VAR_DECLAR_N on RS
  */
 var_declaration_list : var_declaration_list ',' var_decl {
 	ast_node t = $1;
@@ -206,35 +199,8 @@ func_declaration : type_specifier ID_T {
 	t->left_child->right_sibling = $2;
 	t->left_child->right_sibling->right_sibling = $5;
 	t->left_child->right_sibling->right_sibling->right_sibling = $7;
-
-	/* handling NULL formal_params list */
-	// child = t->left_child->right_sibling;
-	// if ($5 != NULL) {
-	// 	child->right_sibling = $5;
-	// 	child = child->right_sibling
-	// }
-	// if ($7 != NULL)	
-	// 	t->left_child->right_sibling->right_sibling->right_sibling = $7;
-	
 	$$ = t; }
 ;
-
-/*
- * RULE 9
- *
- * left child will be either TYPEINT_N or VOID_N depending on specifier
- */
-// func_type_specifier : TYPEINT_T {
-// 	ast_node t = create_ast_node(FUNC_TYPE_SPEC_N);
-// 	ast_node int_n = create_ast_node(TYPEINT_N);
-// 	t->left_child = int_n;
-// 	$$ = t; }
-// | VOID_T {	
-// 	ast_node t = create_ast_node(FUNC_TYPE_SPEC_N);
-// 	ast_node void_n = create_ast_node(VOID_N);
-// 	t->left_child = void_n;
-// 	$$ = t; }
-// ;
 
 /*
  * RULE 10
@@ -252,7 +218,7 @@ formal_params : formal_list {
 	ast_node void_node = create_ast_node(VOID_N);
 	t->left_child = void_node; 
 	$$ = t; }
-| /* empty */ {  // $$ = NULL; 								// can't just return null because above productions depend on this right sibling
+| /* empty */ {   											// can't just return null because above productions depend on this right sibling
 	ast_node t = create_ast_node(FORMAL_PARAMS_N);
 	ast_node void_node = create_ast_node(VOID_N);
 	t->left_child = void_node; 
@@ -310,6 +276,8 @@ formal_param : type_specifier ID_T {
  * 2) There ARE NO local declaration AND ARE statements -> L.C. is a statement list
  * 3) There ARE local declarations AND AREN'T statements -> L.C. is a local declaration list
  * 4) There AREN'T local declarations AND AREN'T statements -> THIS COMPOUND_STATEMENT_N IS NULL
+ *
+ * FOR THE FUTURE -> THIS MIGHT CHANGE DEPENDING ON HOW WE DECIDE TO HANDLE THE PARSE TREE
  */
 compound_stmt : '{' local_declarations stmt_list '}' {
 	ast_node t = create_ast_node(COMPOUND_STMT_N);
@@ -326,25 +294,10 @@ compound_stmt : '{' local_declarations stmt_list '}' {
 	} else if (d != NULL && l == NULL) {
 		t->left_child = d;
 		$$ = t;
-	} else {
-		$$ = NULL;
+	} else { 
+		$$ = NULL; 
 	}
 
-	
-	// if (d == NULL) {
-	// 	d = create_ast_node(LOCAL_DECLARATION_N);
-	// 	$2 = d;
-	// }
-	// t->left_child = $2;
-
-	
-	// if (l == NULL) {
-	// 	create_ast_node(STMT_LIST_N);
-	// 	$3 = l;
-	// }
-	// t->left_child->right_sibling = $3;
-
-	// $$ = t; 
 	}
 ;
 
@@ -356,7 +309,6 @@ compound_stmt : '{' local_declarations stmt_list '}' {
  */
 local_declarations : local_declarations var_declaration {
 	ast_node t = $1;
-
 	if (t != NULL) {
 		while (t->right_sibling != NULL)
 			t = t->right_sibling;
@@ -366,28 +318,8 @@ local_declarations : local_declarations var_declaration {
 	else
 		$$ = $2;
 
-
-	// if (t == NULL) {
-	// 	t = create_ast_node(LOCAL_DECLARATIONS_N);
-	// 	$1 = t;
-	// }
-
-	// if (t->left_child != NULL) {
-	// 	t = t->left_child;
-	// 	while (t->right_sibling != NULL)
-	// 		t = t->right_sibling;
-	// 	t->right_sibling = $2;
-	// }
-	// else 
-	// 	t->left_child = $2;
-
-	
 	}
 | /* empty */ { $$ = NULL; }
-	// if ($$ == NULL)
-	// 	$$ = create_ast_node(LOCAL_DECLARATIONS_N);
-
-	// }
 ;	
 
 /*
@@ -395,11 +327,10 @@ local_declarations : local_declarations var_declaration {
  *
  * see rule 26 for types of available statement children
  * each statemnt is left child -> right siblings (x0, x1, x2 ...)
- * no left child if STMT_LIST_N is empty
+ * no left child if STMT_LIST_N is NULL
  */
 stmt_list : stmt_list stmt {
 	ast_node t = $1;
-
 	if (t != NULL) {
 		while (t->right_sibling != NULL)
 			t = t->right_sibling;
@@ -408,30 +339,8 @@ stmt_list : stmt_list stmt {
 	} else
 		$$ = $2;
 
-	// if (t == NULL) {
-	// 	t = create_ast_node(STMT_LIST_N);
-	// 	$1 = t;
-	// }
-
-	// if (t->left_child != NULL) {
-	// 	t = t->left_child;
-	// 	while (t->right_sibling)
-	// 		t = t->right_sibling;
-	// 	t->right_sibling = $2;
-	// 	//$$ = $1;
-	// }
-	// else
-	// 	t->left_child = $2;
-
 	}
 | /* empty */ { $$ = NULL; }
-
-	// if ($$ == NULL) {
-	// 	ast_node t = create_ast_node(STMT_LIST_N);
-	// 	$$ = t;	
-	// }
-
-	//}
 ;
 
 /*
@@ -496,9 +405,7 @@ while_stmt : WHILE_T '(' expression ')' stmt {
 	t->left_child = $3;
 	t->left_child->right_sibling = $5;
 	$$ = t; }
-| WHILE_T '(' error ')' stmt {
-  $$ = NULL;
-}
+| WHILE_T '(' error ')' stmt { $$ = NULL; }
 ;
 
 /*
@@ -509,9 +416,7 @@ do_while_stmt : DO_T stmt WHILE_T '(' expression ')' ';' {
 	t->left_child = $2;
 	t->left_child->right_sibling = $5;
 	$$ = t; }
-| DO_T stmt WHILE_T '(' error ')' ';' {
-  $$ = NULL;
-}
+| DO_T stmt WHILE_T '(' error ')' ';' { $$ = NULL; }
 ;
 
 /*
@@ -524,9 +429,7 @@ for_stmt : FOR_T '(' for_header_expr ';' for_header_expr ';' for_header_expr ')'
 	t->left_child->right_sibling->right_sibling = $7;
 	t->left_child->right_sibling->right_sibling->right_sibling = $9;
 	$$ = t; }
-| FOR_T '(' error ')' {
-  $$ = NULL;
-}
+| FOR_T '(' error ')' error { $$ = NULL;}
 ;
 
 /*
@@ -556,9 +459,7 @@ return_stmt : RETURN_T ';' {
 	ast_node t = create_ast_node(RETURN_N);
 	t->left_child = $2;
 	$$ = t; }
-| RETURN_T error ';' {
-  $$ = NULL;
-}
+| RETURN_T error ';' { $$ = NULL; }
 ;
 
 /*
@@ -568,9 +469,8 @@ read_stmt : READ_T var ';' {
 	ast_node t = create_ast_node(READ_N);
 	t->left_child = $2;
 	$$ = t; }
-| READ_T error ';' {
-  $$ = NULL;
-}
+| READ_T error ';' { $$ = NULL; }
+;
 
 /*
  * RULE 25
@@ -585,15 +485,13 @@ print_stmt : PRINT_T expression ';' {
 | PRINT_T STRING_T {
 	/* embedded action to grab string text */
 	ast_node str_n = create_ast_node(STRING_N);
-	str_n->value_string = strdup(yytext);			// correctly getting STRING?
+	str_n->value_string = strdup(yytext);
 	$2 = str_n;
 } ';' {
 	ast_node t = create_ast_node(PRINT_N);
-	t->left_child = $2; 							// save string in STRING_N -- getting string here?
+	t->left_child = $2; 						
 	$$ = t; }
-| PRINT_T error ';' {
-  $$ = NULL;
-}
+| PRINT_T error ';' { $$ = NULL; }
 ;
 
 /* 
@@ -780,6 +678,7 @@ arg_list : arg_list ',' expression {
 	ast_node t = create_ast_node(ARG_LIST_N); 
 	t->left_child = $1;
 	$$ = t;  }
+| error { $$ = NULL; }
 ;
 
 %%

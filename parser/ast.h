@@ -16,11 +16,10 @@
 /* You should fill in the various AST node types.  The following are given
    to you to start with.  You may add or remove node types as you
    wish. */
-typedef enum { ROOT_N,
-
+typedef enum { 
+         ROOT_N,
          VAR_N,
          ARG_LIST_N,
-         ARGS_N, 
          EXPRESSION_N,
          CALL_N,
          PRINT_N,
@@ -31,33 +30,22 @@ typedef enum { ROOT_N,
          DO_WHILE_N,
          WHILE_N,
          EXPRESSION_STMT_N,
-         STMT_N,
-         STMT_LIST_N,
-         LOCAL_DECLARATIONS_N,
          COMPOUND_STMT_N,
          FORMAL_PARAM_N,
          FORMAL_PARAM_ARR_N,
-         FORMAL_LIST_N,
          FORMAL_PARAMS_N,
-         //FUNC_TYPE_SPEC_N,
          FUNC_DECLARATION_N,
          VAR_DECL_N,
-         VAR_DECLARATION_LIST_N,
-         //VAR_TYPE_SPECIFIER_N,
          TYPE_SPEC_N,
          VAR_DECLARATION_N,
-         DECLARATION_LIST_N,
-
-	       SEQ_N,
 
 	       OP_ASSIGN_N, OP_PLUS_N, OP_MINUS_N, OP_NEG_N, OP_TIMES_N, OP_DIVIDE_N,
 	       OP_MOD_N, OP_LT_N, OP_LTE_N, OP_GT_N, OP_GTE_N, 
          OP_EQ_N, OP_NE_N, OP_AND_N, OP_OR_N, OP_NOT_N,
          OP_INC_N, OP_DECR_N,
 
-
-
 	       IF_STMT_N, IF_ELSE_STMT_N,
+
          TYPEINT_N, VOID_N, ID_N, INT_LITERAL_N, STRING_N } ast_node_type;
 
 
@@ -78,7 +66,6 @@ static val_name_pair token_table[] = {
 
   { VAR_N, "VARIABLE"},
   { ARG_LIST_N, "ARGUMENT LIST"},
-  { ARGS_N, "ARGUMENTS"},
   { EXPRESSION_N, "EXPRESSION"},
   { CALL_N, "CALL"},
   { PRINT_N, "PRINT"},
@@ -89,24 +76,14 @@ static val_name_pair token_table[] = {
   { DO_WHILE_N, "DO WHILE"},
   { WHILE_N, "WHILE"},
   { EXPRESSION_STMT_N, "EXPRESSION STATEMENT"},
-  { STMT_N, "STATEMENT"},
-  { STMT_LIST_N, "STATEMENT LIST"},
-  { LOCAL_DECLARATIONS_N, "LOCAL DECLARATIONS"},
   { COMPOUND_STMT_N, "COMPOUND STATEMENT"},
   { FORMAL_PARAM_N, "FORMAL PARAMETER"},
   { FORMAL_PARAM_ARR_N, "FORMAL PARAMETER ARRAY"},
-  { FORMAL_LIST_N, "FORMAL LIST"},
   { FORMAL_PARAMS_N, "FORMAL PARAMS"},
-  //{ FUNC_TYPE_SPEC_N, "FUNCTION TYPE SPECIFIER"},
   { FUNC_DECLARATION_N, "FUNCTION DECLARATION"},
   { VAR_DECL_N, "VARIABLE DECLARATION"},
-  { VAR_DECLARATION_LIST_N, "VARIABLE DECLARATION LIST"},
-  //{ VAR_TYPE_SPECIFIER_N, "VARIABLE SPECIFIER"},
   { TYPE_SPEC_N, "TYPE SPECIFIER"},
   { VAR_DECLARATION_N, "VARIABLE DECLARATION LINE"},
-  { DECLARATION_LIST_N, "DECLARATION LIST"},
-
-  { SEQ_N, "SEQ" },
 
   { OP_ASSIGN_N, "=" },
   { OP_PLUS_N, "+" },
@@ -129,6 +106,7 @@ static val_name_pair token_table[] = {
 
   { IF_STMT_N, "IF_STMT" },
   { IF_ELSE_STMT_N, "IF_ELSE_STMT" },
+
   { TYPEINT_N, "INT"},
   { VOID_N, "VOID"},
   { ID_N, "IDENTIFIER"},
@@ -152,7 +130,7 @@ struct ast_node_struct {
 
   // as most one of these would be nonzero
   char *value_string;		/* for ID */
-  int value_int;		/* for INT_LITERAL */
+  int value_int;		    /* for INT_LITERAL */
   
 };
 
