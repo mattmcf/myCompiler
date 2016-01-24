@@ -45,7 +45,7 @@ In general, the relationship between children node order and production rule is 
 
 So we tried to follow an overarching design principle that structural nodes without children should be NULL. This organizational system falls apart when one of the subcomponent nodes is NULL. If you try to access the right sibling of a NULL node to string on the next component node, bad things happen. For example:
 
-````{ 
+```{ 
 	int i = 10; 
 }```
 
@@ -66,6 +66,8 @@ Note: When the parser encounters `{}`, it will see an empty declaration list and
 
 #### On node structure:
 For some nodes with different meanings / computational consequences, the structure of the node's children define which operational variant that node is. For example, varable declarations such as `int a` and `int arr[]` should be handled differently (as in given different nodes) because these two declarations imply computational differences in execution. These details are documented in the parser.y file above each rule production. 
+
+Example: Rule 7 for variable declarations where the number and type of children define what kind of variable / assignment operation occurs.
 
 ### Error Handling
 We used Bison's special error token within certain productions to catch syntax errors and report them along with the line number that they occur on.
