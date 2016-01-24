@@ -6,7 +6,9 @@
 ## Implementation Specifics
 
 ### Error Handling
-We used Bison's special error token within certain productions to 
+We used Bison's special error token within certain productions to catch syntax errors and report them along with the line number that they occur on.
+
+Our parser reports syntax errors and continues parsing until it either finishes parsing or the number of errors exceeds a max error variable that we set in parser.y. If the parser finishes parsing, the parser will output the syntax error reports along with the parsed tree structure. However, if there are syntax errors reported, there are no guarantees as to the validity of the parse tree output. If the number of errors exceeds the max error value, the parser will abort and inform the user of the syntax errors found up until the point of abortion. 
 
 ### Testing Files
 All test files live in the tests directory
