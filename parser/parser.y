@@ -15,7 +15,9 @@
 #include <assert.h>
 
 #define YYSTYPE ast_node 	// override default node type
-// #define YYDEBUG 1 			// turn on debugging? 
+//#define YYDEBUG 1 		// turn on debugging
+
+#define MAX_ERRORS 3		// will stop parsing after this many syntax errors
 
 /* from .l file */
 extern int yylex();
@@ -24,14 +26,13 @@ extern int yylineno;
 extern char savedIdText[];
 extern char savedLiteralText[];
 
-
 /* from .c main file */
 extern ast_node root;
 extern int parseError;
-// extern int lineNumber;
 
 /* in this .y file */
 int yyerror(char *s);
+int errors;
 
 %}
 
@@ -251,7 +252,7 @@ formal_params : formal_list {
 	ast_node void_node = create_ast_node(VOID_N);
 	t->left_child = void_node; 
 	$$ = t; }
-| /* empty */ {  // $$ = NULL; 		// can't just return null because above productions depend on this right sibling
+| /* empty */ {  // $$ = NULL; 								// can't just return null because above productions depend on this right sibling
 	ast_node t = create_ast_node(FORMAL_PARAMS_N);
 	ast_node void_node = create_ast_node(VOID_N);
 	t->left_child = void_node; 
@@ -462,9 +463,7 @@ expression_stmt : expression ';' {
 | /* empty */ ';' {
 	ast_node t = create_ast_node(EXPRESSION_STMT_N);
 	$$ = t; }
-| error ';' {
-  $$ = NULL; 
-}
+| error ';' { $$ = NULL; }
 ;
 
 /* 
@@ -771,6 +770,12 @@ arg_list : arg_list ',' expression {
 int yyerror(char *s) {
 	parseError = 1;
 	fprintf(stderr, "%s at line %d\n", s, yylineno);
+
+	if (++errors == MAX_ERRORS) {
+		fprintf(stderr,"Too many syntax errors have occurred. Aborting parse attempt.\n");
+		exit(1);
+	}	
+
 	return 0;
 }
 
