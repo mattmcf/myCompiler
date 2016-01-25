@@ -25,8 +25,15 @@ int main() {
   if (parseError)
     fprintf(stderr, "WARNING: There were parse errors.\nParse tree may be ill-formed.\n");
 
-  if (!noRoot)
-    /* create sym table here */
+  if (!noRoot) {
+  	print_ast(root,0);
+  	
+    /* create sym table here? */
+
+    // just plug in things we declare -- DON'T NEED TO CHECK (for now)	
+    // declaring two id's is an error -- that we should catch
+  }
+
 
   return 0;
 }

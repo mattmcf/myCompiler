@@ -24,10 +24,12 @@
 
 /* Create an empty symhashtable and return a pointer to it.  The
    parameter entries gives the initial size of the table. */
-symhashtable_t *create_symhashtable(int entries, symtab_type type) {
+// symhashtable_t *create_symhashtable(int entries, symtab_type type)
+symhashtable_t *create_symhashtable(int entries)    // modified function call
+{
   symhashtable_t *hashtable = malloc(sizeof(symhashtable_t));
   assert(hashtable);
-  hashtable->type = type;
+  // hashtable->type = type;  -- don't use
   hashtable->size = entries;
   hashtable->table = calloc(entries, sizeof(symnode_t));
 
