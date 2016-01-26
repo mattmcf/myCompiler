@@ -30,6 +30,16 @@ int main() {
   	
     /* create sym table here? */
 
+    /* Always insert at the innermost scope within symbol table
+     * If we encounter a {, we call enter_scope, which will create
+     * a new hash table for the innermost scope. All following insert
+     * calls will insert into the hash table representing the innermost scope.
+     * When we encounter a }, we call leave_scope, which will move us up
+     * one level in the symbol table such that we are looking at a scope that is
+     * one level up.
+     */
+
+
     // just plug in things we declare -- DON'T NEED TO CHECK (for now)	
     // declaring two id's is an error -- that we should catch
   }

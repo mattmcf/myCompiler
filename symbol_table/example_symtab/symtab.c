@@ -16,7 +16,18 @@
  * Functions for symnodes.
  */
 
+void set_node_name(symnode_t *node, char *name) {
+  node->name = name;
+}
 
+int name_is_equal(symnode_t *node, char *name) {
+  // 1 is true and 0 is false, but is this the convention in C?
+  if (strcmp(node->name, name) == 0) {
+    return 1;
+  } else {
+    return 0;
+  }
+}
 
 /*
  * Functions for symhashtables.
@@ -98,7 +109,7 @@ symnode_t *insert_into_symhashtable(symhashtable_t *hashtable, char *name) {
   /* error check if node already existed! */
 
   if (node == NULL) {
-    node = create_symnode(name,hashtable);
+    node = create_symnode(name, hashtable);
     node->next = hashtable->table[slot];
     hashtable->table[slot] = node;
   }
@@ -120,7 +131,7 @@ symboltable_t  *create_symboltable() {
   symboltable_t *symtab = malloc(sizeof(symboltable_t));
   assert(symtab);
 
-  symhashtable_t *hashtable=create_symhashtable(HASHSIZE, GLOBALS_S);
+  symhashtable_t *hashtable = create_symhashtable(HASHSIZE);
   hashtable->level = 0;
   hashtable->name = "0";
 
@@ -177,4 +188,100 @@ symnode_t *lookup_in_symboltable(symboltable_t  *symtab, char *name) {
   }
 
   return node;
+}
+
+/*
+  Functions for entering and leaving scope
+*/
+
+/* 
+ * When entering scope, a new symbol table is created at the innermost scope
+*/
+// void enter_scope(symboltable_t *symtab, int type, ast_node node)
+void enter_scope(symboltable_t *symtab, ast_node node) {
+  assert(symtab);
+
+  // Check if current leaf has any children
+  if (symtab->leaf->child != NULL) {
+    // Child becomes new leaf
+    symtab->leaf->child = create_symhashtable(HASHSIZE);
+    symtab->leaf->child->level = symtab->leaf->level + 1;
+    symtab->leaf->child->sibno = 0;
+    symtab->leaf->child->parent = symtab->leaf;
+    symtab->leaf = symtab->leaf->child
+
+    // Add contents of ast node?
+  } else {
+    symhashtable_t *hashtable;
+
+    // Find last right sib of current leaf
+    for (hashtable = symtab->leaf->child;
+      hashtable->rightsib != NULL; hashtable = hashtable->rightsib);
+
+    hashtable->rightsib = create_symhashtable(HASHSIZE);
+    hashtable->rightsib->level = symtab->leaf->level + 1;
+    hashtable->rightsib->sibno = hashtable->sibno + 1;
+    // Do we need to set the parent here?
+
+    // Add contents of ast node?
+  }
+}
+
+/*
+ * When leaving scope, go up one scope level in the symbol table
+ */
+void leave_scope(symboltable_t *symtab) {
+  assert(symtab);
+
+  symtab->leaf = symtab->leaf->parent;
+}
+
+/*
+ * Print contents of symbol table
+ */
+void print_symtab(symboltable_t *symtab) {
+  print_symhash(symtab->root);
+}
+
+void print_symhash(symhashtable_t *hashtable) {
+  // Print spacing
+  for (int i = 0; i < hashtable->level; i++) {
+    printf("  ");
+  }
+
+  // Print hash table contents
+  for (int i = 0; i < hashtable->size; i++) {
+    symnode_t *node;
+
+    for (node = hashtable->table[i]; node != NULL; node = node->next) {
+      printf("%s", node->name);
+
+      switch (node->declaration_specifier) {
+        case VAR_SYM:
+          printf("%s", node->symbol->t);
+          break;
+
+        case FUNC_SYM:
+          printf("%d", node->symbol->return_type);
+          printf("%d", node->symbol->arg_count);
+          for (int j = 0; j < node->symbol->arg_count; j++) {
+            printf("%d", node->symbol->arg_types[j]);
+          }
+
+          break;
+
+        default:
+          break;
+      }
+    }
+  }
+
+  printf("\n");
+
+  // Recurse on each child
+  symhashtable_t *table;
+  for (table = hashtable->child; table != NULL; table = table->rightsib) {
+    print_symhash(table);
+  }
+
 }
