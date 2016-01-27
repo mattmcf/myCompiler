@@ -16,7 +16,7 @@
  * returns pointer to stack if successful,
  * returns NULL on failure
  */
-ast_stack * InitASTstack(int size) {
+ast_stack * InitASTStack(int size) {
 
 	if (size <= 0) {
 		fprintf(stderr,"ast_stack error: cannot make ast_stack of less than size 1\n");
@@ -102,7 +102,7 @@ ast_node ASTPush(ast_node add, ast_stack * stk) {
 /*
  * DestroyASTstack() : frees an ast_stack
  */
-void DestroyASTstack(ast_stack * stk) {
+void DestroyASTStack(ast_stack * stk) {
 
 	if (stk) {
 		if (stk->stack != NULL)

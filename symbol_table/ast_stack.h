@@ -23,7 +23,7 @@ typedef struct ast_stack {
  * returns pointer to stack if successful,
  * returns NULL on failure
  */
-ast_stack * InitASTstack(int size);
+ast_stack * InitASTStack(int size);
 
 /*
  * Pop() : pops top ast_node pointer off of stack
@@ -47,7 +47,7 @@ ast_node ASTPush(ast_node add, ast_stack * stk);
  * DestroyASTstack() : frees an ast_stack
  *
  */
-void DestroyASTstack(ast_stack * stk);
+void DestroyASTStack(ast_stack * stk);
 
 #endif	// AST_STACK_H
 

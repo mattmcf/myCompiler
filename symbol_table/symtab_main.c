@@ -39,6 +39,25 @@ int main() {
      * one level up.
      */
 
+    Potential Psuedocode
+
+    // if node is null:
+    //   return // Base Case
+
+    // if node is scope start node:
+    //   enter_scope(symboltable, node)
+    // elif length of symboltable.leaf.scopeStack == 0:
+    //   leave_scope(symboltable)
+    // else:
+    //   insert node into symboltable.leaf
+    //   ASTPush(symboltable.leaf.scopeStack, node)
+
+    // astnode = root.left_child
+    // for right sibling of astnode:
+    //   recurse
+    //   ASTPop(symboltable.leaf.scopeStack) // Floating back up, pop node off
+
+
      
 
 

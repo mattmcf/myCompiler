@@ -9,6 +9,8 @@
 #ifndef SYMTAB_H_
 #define SYMTAB_H_
 
+#include "ast_stack.h"
+
 /*
  * ----- TYPE ENUMERATIONS -----
  */
@@ -84,7 +86,8 @@ typedef struct symhashtable {
   int level;			/* level of scope, 0 is outermost */
   int sibno;                    /* 0 is leftmost */
   struct symhashtable *parent, *child, *rightsib;
-  
+  struct ast_stack *scopeStack; /* Stack to keep track of traversed elements in scope */
+
 } symhashtable_t;
 
 

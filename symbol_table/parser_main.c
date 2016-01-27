@@ -22,7 +22,7 @@ int FillASTstack(ast_node root, ast_stack * stk);
 int main() {
   int noRoot = 0;		/* 0 means we will have a root */
 
-	ast_stack *s = InitASTstack(10);
+	ast_stack *s = InitASTStack(10);
 
   //yydebug = 1;
   noRoot = yyparse();
@@ -32,7 +32,7 @@ int main() {
 
   if (!noRoot) {
   	print_ast(root, 0);
-  	if (FillASTstack(root, s))
+  	if (FillASTStack(root, s))
 			printf("failed to fill stack\n");
   }
   
@@ -45,12 +45,12 @@ int main() {
   }
   	
 
-  DestroyASTstack(s);
+  DestroyASTStack(s);
 
   return 0;
 }
 
-int FillASTstack(ast_node root, ast_stack * stk) {
+int FillASTStack(ast_node root, ast_stack * stk) {
 
 	if (root == NULL || stk == NULL) {
 		fprintf(stderr,"null root / null stack\n");
@@ -62,7 +62,7 @@ int FillASTstack(ast_node root, ast_stack * stk) {
 	/* Recurse on each child of the subtree root */
   ast_node child;
   for (child = root->left_child; child != NULL; child = child->right_sibling) {
-  	FillASTstack(child, stk);
+  	FillASTStack(child, stk);
   	//printf("filling stack with %s\n", NODE_NAME(child->node_type));
   }
   

@@ -9,6 +9,8 @@
 
 
 #include "symtab.h"
+#include "ast.h"
+#include "ast_stack.h"
 
 #define NOHASHSLOT -1
 
@@ -46,6 +48,8 @@ symhashtable_t *create_symhashtable(int entries)    // modified function call
 
   assert(hashtable->table);
 
+  // Initialize stack associated with this hashtable and scope
+  hashtable->scopeStack = InitASTStack(10);
 
   /* anything else ? */
   
@@ -210,8 +214,9 @@ void enter_scope(symboltable_t *symtab, ast_node node) {
     symtab->leaf->child->parent = symtab->leaf;
     symtab->leaf = symtab->leaf->child
 
-    // Add contents of ast node?
   } else {
+    // Current leaf already has a child, new hash table
+    // should become sibling of that child
     symhashtable_t *hashtable;
 
     // Find last right sib of current leaf
@@ -221,19 +226,31 @@ void enter_scope(symboltable_t *symtab, ast_node node) {
     hashtable->rightsib = create_symhashtable(HASHSIZE);
     hashtable->rightsib->level = symtab->leaf->level + 1;
     hashtable->rightsib->sibno = hashtable->sibno + 1;
-    // Do we need to set the parent here?
-
-    // Add contents of ast node?
+    hashtable->rightsib->parent = symtab->leaf;
+    symtab->leaf = hashtable->rightsib;
   }
+
+  // Label new hash table with node type that begins the new scope
+  // i.e. COMPOUND, IF, WHILE, FOR, etc.
+  symtab->leaf->name = NODE_NAME(node->node_type);
+
+  // Push current AST node onto scopeStack as the first node
+  ASTPush(node, symtab->leaf->scopeStack);
 }
 
 /*
- * When leaving scope, go up one scope level in the symbol table
+ * When leaving scope, parent hash table becomes new leaf representing
+ * current innermost scope
  */
 void leave_scope(symboltable_t *symtab) {
   assert(symtab);
 
   symtab->leaf = symtab->leaf->parent;
+
+  // Destroy stack associated with this scope, don't need it 
+  // once done with traversal of scope
+  DestroyASTSTack(symtab->leaf->scopeStack);
+  symtab->leaf->scopeStack = NULL;
 }
 
 /*
