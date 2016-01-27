@@ -31,7 +31,7 @@ ast_stack * InitASTstack(int size) {
 
 	new_stk->size = size;
 	new_stk->top = 0;
-	new_stk->stack = (ast_node *)calloc(size, sizeof(ast_node *));
+	new_stk->stack = (ast_node *)calloc(size, sizeof(ast_node));
 	if (new_stk->stack == NULL) {
 		fprintf(stderr,"ast_stack error: memory failure\n");
 		return NULL;
@@ -87,8 +87,8 @@ ast_node ASTPush(ast_node add, ast_stack * stk) {
 	/* reallocate stack array if full */
 	if (stk->top == stk->size) {
 		printf("increasing size of stack from %d to %d\n",stk->size, stk->size *2);
-		stk->size *= 2;
-		stk->stack = realloc(stk->stack,stk->size); 				/* 	WEIRDNESS! */
+		stk->size = stk->size * 2;
+		stk->stack = realloc(stk->stack, sizeof(ast_node) * stk->size); 				/* 	WEIRDNESS! */
 		if (stk->stack == NULL) {
 			fprintf(stderr, "ast_stack error: memory failure\n");
 			return NULL;

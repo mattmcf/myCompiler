@@ -60,7 +60,7 @@ int FillASTstack(ast_node root, ast_stack * stk) {
 	printf("pushed %s\n", NODE_NAME(ASTPush(root,stk)->node_type));
 
 	/* Recurse on each child of the subtree root */
-  ast_node child, pushed;
+  ast_node child;
   for (child = root->left_child; child != NULL; child = child->right_sibling) {
   	FillASTstack(child, stk);
   	//printf("filling stack with %s\n", NODE_NAME(child->node_type));
