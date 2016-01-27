@@ -13,6 +13,8 @@
 #ifndef AST_H_
 #define AST_H_
 
+#include <stdlib.h>
+
 /* You should fill in the various AST node types.  The following are given
    to you to start with.  You may add or remove node types as you
    wish. */
