@@ -37,14 +37,12 @@ int main() {
   }
   
   printf("stack has %d things on it right now...\n",s->top-2);
-
-  ast_node popped = ASTPop(s);  
-  while (popped != NULL) {
+ 
+  ast_node popped;
+  while ( (popped = ASTPop(s)) != NULL) {
   	printf("popped! %s \n", NODE_NAME(popped->node_type));
-  	popped = ASTPop(s);
   }
   	
-
   DestroyASTStack(s);
 
   return 0;

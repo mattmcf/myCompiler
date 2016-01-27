@@ -13,6 +13,7 @@
 #include "ast_stack.h"
 
 #define NOHASHSLOT -1
+#define INIT_STK_SIZE 10
 
 /*
  * Functions for symnodes.
@@ -49,7 +50,7 @@ symhashtable_t *create_symhashtable(int entries)    // modified function call
   assert(hashtable->table);
 
   // Initialize stack associated with this hashtable and scope
-  hashtable->scopeStack = InitASTStack(10);
+  hashtable->scopeStack = InitASTStack(INIT_STK_SIZE);
 
   /* anything else ? */
   

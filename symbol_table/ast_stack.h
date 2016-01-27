@@ -1,6 +1,6 @@
 /*
  * FILE: stack.h
- * DESC: stack for holding ast_node object references
+ * DESC: stack for holding ast_node pointers
  *
  * AUTHORS: Yondon Fu and Matt McFarland - Delights (CS57 - 16W)
  */

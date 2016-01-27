@@ -57,6 +57,12 @@ int main() {
     //   recurse
     //   ASTPop(symboltable.leaf.scopeStack) // Floating back up, pop node off
 
+    // could we do this in the following? -- or does that not work with recursive call?
+    // how to implement a "get next node" function? 
+    ast_node cur;
+    while ( cur = get_next_node() != NULL ) {
+      handle_node(cur, symtab);
+    }
 
      
 
@@ -67,4 +73,76 @@ int main() {
 
 
   return 0;
+}
+
+/*
+ * handle_ast_node(ast_node n, symboltable_t)
+ */
+int handle_ast_node(ast_node n, symboltable_t symtab) {
+
+  assert(n);
+  assert(symtab);
+
+  /* get node type */
+  switch(n->node_type) {
+    case VAR_N;
+      // don't need to handle?
+      break;
+
+    case FOR_HEADER_N:
+      // add declared variables to new scope declared for FOR_STMT_N
+      break;
+
+    case FOR_STMT_N:
+      // new scope
+      // add all children to new scope
+      break;
+
+    case DO_WHILE_N:
+      // new scope
+      // add all children to new scope
+      break;
+
+    case WHILE_N:
+      // new scope
+      // add all children to new scope
+      break;
+
+    case COMPOUND_STMT_N:
+      // new scope
+      // add all children to new scope
+      break;
+
+    case FORMAL_PARAM_N:
+    case FORMAL_PARAM_ARR_N:
+    case FUNC_DECLARATION_N:
+      // add function declaration symbol to leaf (global)
+      // new scope
+      // add arguments (formal params) to new scope
+      break;
+
+    case VAR_DECLARATION_N:
+      // for each VAR_DECL_N child, add to current scope
+      //    TYPE is left most child
+      break;
+
+    case VAR_DECL_N:
+      // add to current scope -- handled in VAR_DECLARATION_N?
+      break;
+
+    case IF_STMT_N:   // confused about this one
+      // new scope ?
+      break;
+
+    case IF_ELSE_STMT_N:
+      // new scope ?
+      break;
+
+    default:
+      /* don't care */
+      break;
+  }
+
+  // done?
+  return 0?
 }
