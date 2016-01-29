@@ -57,8 +57,6 @@ symhashtable_t *create_symhashtable(int entries)    // modified function call
   return hashtable;
 }
 
-
-
 /* Peter Weinberger's hash function, from Aho, Sethi, & Ullman
    p. 436. */
 static int hashPJW(char *s, int size) {
@@ -73,9 +71,6 @@ static int hashPJW(char *s, int size) {
 
   return h % size;
 }
-
-
-
 
 /* Look up an entry in a symhashtable, returning either a pointer to
    the symnode for the entry or NULL.  slot is where to look; if slot
@@ -96,11 +91,6 @@ symnode_t *lookup_symhashtable(symhashtable_t *hashtable, char *name,
 
   return node;
 }
-
-
-
-
-
 
 /* Insert a new entry into a symhashtable, but only if it is not
    already present. */
@@ -145,13 +135,6 @@ symboltable_t  *create_symboltable() {
   return symtab;
 }
 
-
-
-
-
-
-
-
 /* Insert an entry into the innermost scope of symbol table.  First
    make sure it's not already in that scope.  Return a pointer to the
    entry. */
@@ -169,13 +152,8 @@ symnode_t *insert_into_symboltable(symboltable_t *symtab, char *name) {
     return node;
   } else {
     return NULL;
-  }
-   
+  }  
 }
-
-
-
-
 
 /* Lookup an entry in a symbol table.  If found return a pointer to it.
    Otherwise, return NULL */

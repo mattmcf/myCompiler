@@ -11,6 +11,9 @@
 
 #include "ast_stack.h"
 
+#define SYMTAB_H_IS_ARRAY   1
+#define SYMTAB_H_ISNT_ARRAY 0
+
 /*
  * ----- TYPE ENUMERATIONS -----
  */
@@ -20,10 +23,11 @@
  */
 typedef enum {
   INT_TS,
-  INT_ARR_TS,
+  // INT_ARR_TS,
   VOID_TS,
   FUNC_TS,
-} type_specifier;
+  NULL_TS,
+} type_specifier_t;
 
 /*
  * declaration_specifier is for symbol.sym_type
@@ -31,7 +35,7 @@ typedef enum {
 typedef enum {
   VAR_SYM,
   FUNC_SUM
-} declaration_specifier;
+} declaration_specifier_t;
 
 
 /*
@@ -41,7 +45,7 @@ typedef enum {
 typedef struct var_symbol {
   type_specifier t;
 
-  // int is_array -> implementing with INT_ARR_TS
+  int is_array;
   // what else?
 } var_symbol;
 

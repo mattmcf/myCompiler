@@ -183,8 +183,7 @@ var_decl : ID_T {
  * RULE 8
  *
  * More order weirdness! So each func_declaration MUST have a type and an identifier
- * but it might not have a compound statement. If it does have statements, then the rightmost child will 
- * be compound_stmt
+ * but it might not have a compound statement. If it doesn't, then the compound statement will be empty
  */
 func_declaration : type_specifier ID_T {
 	/* embedded action to save function identifer */
@@ -275,7 +274,7 @@ formal_param : type_specifier ID_T {
  * 		Right sib of L
  * 2) There ARE NO local declaration AND ARE statements -> L.C. is a statement list
  * 3) There ARE local declarations AND AREN'T statements -> L.C. is a local declaration list
- * 4) There AREN'T local declarations AND AREN'T statements -> THIS COMPOUND_STATEMENT_N IS NULL
+ * 4) There AREN'T local declarations AND AREN'T statements -> this node has no children <- bad decision
  *
  * FOR THE FUTURE -> THIS MIGHT CHANGE DEPENDING ON HOW WE DECIDE TO HANDLE THE PARSE TREE
  */
@@ -287,16 +286,19 @@ compound_stmt : '{' local_declarations stmt_list '}' {
 	if (d != NULL && l != NULL) {
 		t->left_child = d;
 		t->left_child->right_sibling = l;
-		$$ = t;
+		// $$ = t;
 	} else if (d == NULL && l != NULL) {
 		t->left_child = l;
-		$$ = t;
+		// $$ = t;
 	} else if (d != NULL && l == NULL) {
 		t->left_child = d;
-		$$ = t;
+		// $$ = t;
 	} else { 
-		$$ = NULL; 
+		// $$ = t; 
+		;
 	}
+
+	$$ = t;
 
 	}
 ;
@@ -394,7 +396,8 @@ if_stmt : IF_T '(' expression ')' stmt   %prec LOWER_THAN_ELSE {
   $$ = t; }
 | IF_T '(' error ')' stmt %prec LOWER_THAN_ELSE
 	{ $$ = NULL; }
-| IF_T '(' error ')' stmt ELSE_T stmt { $$ = NULL; }
+| IF_T '(' error ')' stmt ELSE_T stmt 
+	{ $$ = NULL; }
 ;	
 
 /*
@@ -413,6 +416,7 @@ while_stmt : WHILE_T '(' expression ')' stmt {
  */
 do_while_stmt : DO_T stmt WHILE_T '(' expression ')' ';' {
 	ast_node t = create_ast_node(DO_WHILE_N);
+	assert($2);
 	t->left_child = $2;
 	t->left_child->right_sibling = $5;
 	$$ = t; }
@@ -634,7 +638,7 @@ expression '+' expression {
  * RULE 29
  *
  * left_child is ID_N with ID string saved in value string
- * left_child->right_sibling is ARGS_N
+ * left_child->right_sibling is NULL if no arguements are given
  */
 call : ID_T {
 	/* embedded action to save function call ID string */

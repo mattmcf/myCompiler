@@ -48,7 +48,8 @@ typedef enum {
 
 	       IF_STMT_N, IF_ELSE_STMT_N,
 
-         TYPEINT_N, VOID_N, ID_N, INT_LITERAL_N, STRING_N } ast_node_type;
+         TYPEINT_N, VOID_N, 
+         ID_N, INT_LITERAL_N, STRING_N } ast_node_type;
 
 
 
