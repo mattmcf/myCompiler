@@ -22,12 +22,23 @@
  * type_specifier is for symbol.type
  */
 typedef enum {
-  INT_TS,
-  // INT_ARR_TS,
-  VOID_TS,
+  INT_TS,       // int literals
+  VOID_TS,      // void returns
+
   FUNC_TS,
   NULL_TS,
 } type_specifier_t;
+
+/*
+ * modifies a datatype to include
+ * auxillary information like is pointer,
+ * array or single data type
+ */
+typedef enum {
+  SINGLE_DT;
+  ARRAY_DT;
+  // POINTER_DT; // same thing as is array?
+} modifier_t;
 
 /*
  * declaration_specifier is for symbol.sym_type
@@ -37,22 +48,24 @@ typedef enum {
   FUNC_SUM
 } declaration_specifier_t;
 
-
 /*
  * ----- STRUCTS -----
  */
 
-typedef struct var_symbol {
-  type_specifier t;
+typedef struct variable {
+  char * name;
+  type_specifier_t type;
+  datatype_t modifier;
+} variable;
 
-  int is_array;
-  // what else?
+typedef struct var_symbol {
+  variable v;
 } var_symbol;
 
 typedef struct func_symbol {
   type_specifier return_type;
   int arg_count;
-  type_specifier *arg_types;     // array to handle dynamically
+  variable * arg_arr;     // array to handle dynamically sized argument parameters
 
   // what else?
 } func_symbol;
@@ -72,6 +85,17 @@ typedef struct symnode {
   symbol s;       // union of func_symbol and var_symbol
 
 } symnode_t;
+
+/* makes a variable of type and with modifier */
+variable init_variable(char * name, type_specifier_t type, modifier_t mod)
+
+/* 
+ * get_type() : returns enumerated type_specifier (definied in symtab.h)
+ * for an ast_node n input
+ * 
+ * returns NULL_TS is node isn't of recognized type
+ */
+type_specifier_t get_datatype(ast_node n);
 
 /* Set the name in this node. */
 void set_node_name(symnode_t *node, char *name);
@@ -116,7 +140,7 @@ symnode_t *insert_into_symboltable(symboltable_t *symtab, char *name);
 symnode_t *lookup_in_symboltable(symboltable_t *symtab, char *name);
 
 /* Enter a new scope. */
-void enter_scope(symboltable_t *symtab, int type, ast_node node);
+void enter_scope(symboltable_t *symtab, ast_node node);
 
 /* Leave a scope. */
 void leave_scope(symboltable_t *symtab);

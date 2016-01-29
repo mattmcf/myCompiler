@@ -16,6 +16,47 @@
 #define INIT_STK_SIZE 10
 
 /*
+ * Functions for argument structs
+ */
+
+variable init_variable(char * name, type_specifier_t type, modifier_t mod) {
+
+  variable new_var;
+  new_var->name = name;     // note, name needs to be saved somewhere else
+  new_var->type = type;
+  new_var->modifier = mod;
+
+  return new_var;
+}
+
+/* 
+ * returns enumerated type_specifier (definied in symtab.h)
+ * for an ast_node n input
+ */
+type_specifier_t get_datatype(ast_node n) {
+
+  assert(n);
+
+  type_specifier t;
+  switch (n->node_type) {
+
+    case TYPEINT_N:
+      t = INT_TS;
+      break;
+
+    case VOID_N:
+      t = VOID_TS;
+      break;
+
+    default:
+      t = NULL_TS;  // not a valid type
+      break;
+  }
+
+  return t;
+}
+
+/*
  * Functions for symnodes.
  */
   

@@ -9,6 +9,7 @@
 
 #include <stdio.h>
 #include "ast.h"
+#include "symtab.h"
 
 ast_node root = NULL;
 
@@ -18,21 +19,22 @@ int parseError = 0; 	// global flag
 
 /*
  * is_array is 1 if variable is array
+ *
+ * usually referencing a static variable on stack. copy into memory.
+ *
+ * returns 0 if symbol was successfully added
+ * returns 1 if this symbol was already delclared
  */
-int add_var_symbol(char * id, type_specifier_t type, int is_array, symboltable_t * symtab);
+int add_var_symbol(variable * var, symboltable_t * symtab);
 
  /*
   * free arg_types array once done with function call
+  *
+  * returns 0 if symbol was successfully added
+  * returns 1 if this symbol was already delclared
   */
 int add_func_symbol(char * id, type_specifier_t return_type, int arg_count, type_specifier * arg_types, symboltable_t * symtab);
 
-/* 
- * get_type() : returns enumerated type_specifier (definied in symtab.h)
- * for an ast_node n input
- * 
- * returns NULL_TS is node isn't of recognized type
- */
-type_specifier get_datatype(ast_node n);
 
 int main() {
   int noRoot = 0;		/* 0 means we will have a root */
@@ -47,15 +49,233 @@ int main() {
   if (!noRoot) {
   	print_ast(root,0);
   	
-    /* create sym table here? */
-
+    /* create empty symboltable */
     symtab = create_symboltable();
     if (!symtab){
       fprintf(stderr, "couldn't create symboltable\n");
       return 1;
     }
 
+    /* fill it up */
     traverse_ast_tree(root, symtab);
+  }
+
+  return 0;
+}
+
+void traverse_ast_tree(ast_node root, symboltable_t * symtab) {
+
+  assert(symtab);
+
+  if (root == NULL)
+    return;
+
+  ASTPush(symboltable.leaf.scopeStack, root)
+
+  /* handle root */
+  switch(root->node_type) {
+  case FDL:
+    // handle function node declaration and skip to first child of function compound statement
+    for (ast_node child = handle_func_decl_node(root,symtab); child != NULL; 
+          child = child->right_sibling) {
+      traverse_ast_tree(child, symtab);
+    }
+      
+    break;
+
+  case VDL:
+    handle_var_decl_line_node(root,symtab);
+    // don't traverse these children
+    // can return now because parent call will move onto sibling
+    break;
+
+  case CS:
+    ast_node child = root->left_child;
+
+    if (child != NULL)
+      enter_scope(symtab, child);
+
+    for ( /* child already initialized */ ; child != NULL; child = child->right_sibling)
+      traverse_ast_tree(child, symtab);
+
+    break;
+
+  default
+    for (ast_node child = root->left_child; child != NULL; child = child->right_sibling)
+      traverse_ast_tree(child, symtab);
+    break;  
+  }
+
+  ASTPop(symboltable.leaf.scopeStack)
+
+  if stack size == 0
+    exit scope 
+
+  return;
+
+  // // -------
+  /* old pseudo code */
+
+  // /* Recurse on each child of the subtree root, with a depth one
+  //    greater than the root's depth. */
+
+  // // use this for loop
+  // ast_node child;
+  // for (child = root->left_child; child != NULL; child = child->right_sibling)
+  //   print_ast(child, depth + 1);
+
+  // // -------
+
+  //   // if node is scope start node:
+  //   //   enter_scope(symboltable, node)
+  //   // elif length of symboltable.leaf.scopeStack == 0:
+  //   //   leave_scope(symboltable)
+  //   // else:
+  //   //   insert node into symboltable.leaf
+
+
+
+  // // astnode = root.left_child
+  // // for right sibling of astnode:
+  // //   recurse
+  // //   ASTPop(symboltable.leaf.scopeStack) // Floating back up, pop node off
+}
+
+
+/*
+ * handle_func_decl_node(ast_node * fdl, symboltable_t * t);
+ */
+ast_node handle_func_decl_node(ast_node fdl, symboltable_t * symtab) {
+
+  asesrt(fdl);
+  assert(symtab);
+
+  /* get return type */
+  type_specifier_t return_type = get_datatype(fld->left_child->left_child);
+  if (return_type == NULL_TS) {
+    fprintf(stderr, "seeing NULL_TS return type, something wrong\n");
+    return NULL;
+  }
+
+  /* get id specifier */
+  char * id = fdl->left_child->right_sibling->value_string;     // should strdup this for the symbol table?
+
+  /* count arguments */
+  ast_node arg = fdl->left_child->right_sibling->right_sibling;
+  assert(arg->left_child);
+  arg = arg->left_child;
+
+  int arg_count = 0;
+  variable * arg_arr = NULL;
+
+  /* collect all arguement parameters */
+  if (arg->node_type != VOID_N) {
+
+    int arg_arr_size = 5;     /* magic number */
+    arg_arr = (variable *)calloc(arg_arr_size, sizeof(variable));
+    assert(arg_arr);
+    
+    type_specifier_t type;
+    modifier_t mod;
+    char * name;
+
+    while (arg != NULL) {
+
+      /* make a variable for each argument */
+      type = get_datatype(arg->left_child);
+      if (arg->node_type == FORMAL_PARAM_N)
+        mod = SINGLE_DT;
+      else if (arg->node_type == FORMAL_PARAM_ARR_N)
+        mod = ARRAY_DT;
+      else {
+        fprintf(stderr,"what kind of argument node is this???");
+        exit(1);
+      }
+
+      name = arg->left_child->right_sibling->value_string;
+
+      arg_arr[arg_count] = init_variable(name, type, mod);  // static variable struct on stack 
+      arg_count++;
+
+      /* resize type array */
+      if (arg_count == arg_arr_size) {
+        arg_arr_size *= 2;
+        arg_arr = realloc(arg_arr, sizeof(variable) * arg_arr_size);
+        assert(arg_arr);
+      }
+
+      /* move to next argument */
+      arg = arg->right_sibling;
+    }
+  }
+
+  /* add function symbol to current (global) scope */
+  add_func_symbol(id, return_type, arg_count, arg_arr, symtab);
+
+  /* get CS node */
+  ast_node compound_stmt = fdl->left_child->right_sibling->right_sibling->right_sibling;
+  ast_node next_node = NULL;
+
+  if (compound_stmt->left_child != NULL) {
+
+    /* enter new scope -- skipping CS node */
+    enter_scope(symtab, compound_stmt->left_child);
+
+    /* add function parameters to this new scope symbol table */
+    for (int i = 0; i < arg_count; i++) {
+      add_var_symbol(&arg_arr[i], symtab); 
+    }
+
+    /* return next node to start traverse on */
+    next_node = compound_stmt->left_child;
+  } 
+
+  if (arg_arr != NULL)
+    free(arg_arr);
+
+  return next_node;
+
+}
+
+
+void handle_var_decl_line_node(ast_node vdl, symboltable * symtab) {
+
+  assert(symtab);
+  assert(symtab);
+
+  type_specifier_t this_type = get_datatype(vdl->left_child->left_child);
+
+  ast_node child = vdl->left_child->right_sibling;
+  variable new_var;
+
+  while (child != NULL) {
+
+    new_var->name = child->left_child->value_string;
+    new_var->type = this_type;
+
+    if (child->left_child->right_sibling == NULL)
+      new_var->modifier = SINGLE_DT;
+    else if (child->left_child->right_sibling->node_type == INT_LITERAL_N)
+      new_var->modifier = ARRAY_DT;
+    else
+      new_var->modifier = SINGLE_DT;
+
+    if (add_var_symbol(&new_var, symtab)) {
+      fprintf(stderr, "Variable %s already declared\n",new_var->name); 
+      exit(1);
+    }
+
+    child = child->right_sibling;
+  }
+
+  return;
+}
+
+// /*
+//  * #########
+//  * OLD STUFF and psuedo code 
+//  * #########
+
 
 
 
@@ -89,10 +309,10 @@ int main() {
 
     // could we do this in the following? -- or does that not work with recursive call?
     // how to implement a "get next node" function? 
-    ast_node cur;
-    while ( cur = get_next_node() != NULL ) {
-      handle_node(cur, symtab);
-    }
+    // ast_node cur;
+    // while ( cur = get_next_node() != NULL ) {
+    //   handle_node(cur, symtab);
+    // }
 
     // // FDL Psuedocode
     // if node_type == FDL:
@@ -140,261 +360,97 @@ int main() {
      
 
 
-    // just plug in things we declare -- DON'T NEED TO CHECK (for now)	
+    // just plug in things we declare -- DON'T NEED TO CHECK (for now)  
     // declaring two id's is an error -- that we should catch
-  }
 
+//  */
+// /*
+//  * handle_ast_node(ast_node n, symboltable_t)
+//  */
+// int handle_ast_node(ast_node n, symboltable_t symtab) {
 
-  return 0;
-}
+//   assert(n);
+//   assert(symtab);
 
-void traverse_ast_tree(ast_node root, symboltable_t * symtab) {
+//   /* get node type */
+//   switch(n->node_type) {
+//     case VAR_N;   // HOLD OFF, NECESSARY?
+//       // check if n->left_child->value_string is declared variable symbol
+//       // n->left_child->right_sibling will be NULL if simple variable
+//       // n->left_child->right_sibling will be not null if an array variable
+//       break;
 
-  assert(symtab);
+//     case FOR_STMT_N: // HOLD OFF, NECESSARY?
+//       // first 3 children are FOR_HEADER_NODES, each will exist, but could be empty
+//       // if (has_fourth_child && fourth_child == COMPOUND_STMT_N)
+//       //    enter new scope for attached compound statment / expression statement
+//       //    note: you can't declare a new variable in a 1-liner EXPRESSION_STMT following a for statement
+//       break;
 
-  if (root == NULL)
-    return;
+//     case DO_WHILE_N: // HOLD OFF, NECESSARY?
+//       // do_while must have a compound statement node as the left_child
+//       // but it could be empty and not have any children.
+//       // if (n->left_child->leftchild != NULL)
+//       //    new scope
+//       //    dive into compound statement...
+//       break;
 
-  ASTPush(symboltable.leaf.scopeStack, root)
+//     case WHILE_N: // HOLD OFF, NECESSARY?
+//       // if (n->left_child->right_sibling == compound statement)
+//       //    new scope
+//       //    dive into compound statement
+//       break;
 
-  /* handle root */
-  switch(root->node_type) {
-  case FDL:
-    add Function declaration to current scope
-    enter new scope
-    add all parameters to new scope
-    go to CS->
-    for all children of CS
-      traverse_ast_tree child
-    break;
+//     case IF_STMT_N:  // HOLD OFF, NECESSARY?
+//       // new scope ?
+//       break;
 
-  case VDL:
-    for each child, add child symbol to current scope
-    for each right sibling of VDL
-      traverse sibling
-    break;
+//     case IF_ELSE_STMT_N: // HOLD OFF, NECESSARY?
+//       // new scope ?
+//       break;
 
-  case CS
-    Enter new scope
-    for all children
-      traverse_ast_tree child
-    break;
+//     case COMPOUND_STMT_N:
+//       // new scope
+//       //    add children to new scope
+//       break;
 
-  default
-    for all children
-      traverse_ast_tree child 
-    break;  
-  }
+//     case FORMAL_PARAM_N:
+//     case FORMAL_PARAM_ARR_N:
+//     case FUNC_DECLARATION_N:
+//       // add function declaration symbol to leaf (global)
+//       // n->left_child->left_child is type_N
+//       // n->left_child->right_sibling is ID_N
+//       //
+//       // enter new scope
+//       // if (n->left_child->right_sibling->right_sibling != VOID_N), then it
+//       //    is a FORMAL_PARAM_N with children as FORMAL_PARAMETER / FORMAL_PARAMETER_ARR list of arguments
+//       //    add these arguments to the new scope
+//       // get (n->left_child->right_sibling->right_sibling->right_sibling)
+//       // if ^^^ is a compound statement with children, go to FIRST CHILD
+//       // and start add variables to new scope there.
+//       //
+//       // we need to skip the Compound statement because we've already
+//       // entered a new scope.
+//       break;
 
-  ASTPop(symboltable.leaf.scopeStack)
+//     case VAR_DECL_N:  
+//     case VAR_DECLARATION_N:
+//       // type_specifier t = get_type(n->left_child)
+//       // for each VAR_DECL_N child, add to current scope
+//       //    n->left_child is a type node
+//       //    ast_node c = n->left_child->right_sibling
+//       //    while (c != NULL)
+//       //      if(c->left_child->right_sibling != NULL && c->left_child->right_sibling == INT_LITERAL_N)
+//       //         add c as an array variable INT_TS
+//       //      else
+//       //          add c as a regular variable 
+//       break;
 
-  if stack size == 0
-    exit scope 
+//     default:
+//       /* These aren't the symbols you're looking for. */
+//       break;
+//   }
 
-  return
-
-  // -------
-
-  /* Recurse on each child of the subtree root, with a depth one
-     greater than the root's depth. */
-
-  // use this for loop
-  ast_node child;
-  for (child = root->left_child; child != NULL; child = child->right_sibling)
-    print_ast(child, depth + 1);
-
-  // -------
-
-    // if node is scope start node:
-    //   enter_scope(symboltable, node)
-    // elif length of symboltable.leaf.scopeStack == 0:
-    //   leave_scope(symboltable)
-    // else:
-    //   insert node into symboltable.leaf
-
-
-
-  // astnode = root.left_child
-  // for right sibling of astnode:
-  //   recurse
-  //   ASTPop(symboltable.leaf.scopeStack) // Floating back up, pop node off
-}
-
-/*
- * handle_ast_node(ast_node n, symboltable_t)
- */
-int handle_ast_node(ast_node n, symboltable_t symtab) {
-
-  assert(n);
-  assert(symtab);
-
-  /* get node type */
-  switch(n->node_type) {
-    case VAR_N;   // HOLD OFF, NECESSARY?
-      // check if n->left_child->value_string is declared variable symbol
-      // n->left_child->right_sibling will be NULL if simple variable
-      // n->left_child->right_sibling will be not null if an array variable
-      break;
-
-    case FOR_STMT_N: // HOLD OFF, NECESSARY?
-      // first 3 children are FOR_HEADER_NODES, each will exist, but could be empty
-      // if (has_fourth_child && fourth_child == COMPOUND_STMT_N)
-      //    enter new scope for attached compound statment / expression statement
-      //    note: you can't declare a new variable in a 1-liner EXPRESSION_STMT following a for statement
-      break;
-
-    case DO_WHILE_N: // HOLD OFF, NECESSARY?
-      // do_while must have a compound statement node as the left_child
-      // but it could be empty and not have any children.
-      // if (n->left_child->leftchild != NULL)
-      //    new scope
-      //    dive into compound statement...
-      break;
-
-    case WHILE_N: // HOLD OFF, NECESSARY?
-      // if (n->left_child->right_sibling == compound statement)
-      //    new scope
-      //    dive into compound statement
-      break;
-
-    case IF_STMT_N:  // HOLD OFF, NECESSARY?
-      // new scope ?
-      break;
-
-    case IF_ELSE_STMT_N: // HOLD OFF, NECESSARY?
-      // new scope ?
-      break;
-
-    case COMPOUND_STMT_N:
-      // new scope
-      //    add children to new scope
-      break;
-
-    case FORMAL_PARAM_N:
-    case FORMAL_PARAM_ARR_N:
-    case FUNC_DECLARATION_N:
-      // add function declaration symbol to leaf (global)
-      // n->left_child->left_child is type_N
-      // n->left_child->right_sibling is ID_N
-      //
-      // enter new scope
-      // if (n->left_child->right_sibling->right_sibling != VOID_N), then it
-      //    is a FORMAL_PARAM_N with children as FORMAL_PARAMETER / FORMAL_PARAMETER_ARR list of arguments
-      //    add these arguments to the new scope
-      // get (n->left_child->right_sibling->right_sibling->right_sibling)
-      // if ^^^ is a compound statement with children, go to FIRST CHILD
-      // and start add variables to new scope there.
-      //
-      // we need to skip the Compound statement because we've already
-      // entered a new scope.
-      break;
-
-    case VAR_DECL_N:  
-    case VAR_DECLARATION_N:
-      // type_specifier t = get_type(n->left_child)
-      // for each VAR_DECL_N child, add to current scope
-      //    n->left_child is a type node
-      //    ast_node c = n->left_child->right_sibling
-      //    while (c != NULL)
-      //      if(c->left_child->right_sibling != NULL && c->left_child->right_sibling == INT_LITERAL_N)
-      //         add c as an array variable INT_TS
-      //      else
-      //          add c as a regular variable 
-      break;
-
-    default:
-      /* These aren't the symbols you're looking for. */
-      break;
-  }
-
-  // done?
-  return 0?
-}
-
-
-/* 
- * returns enumerated type_specifier (definied in symtab.h)
- * for an ast_node n input
- */
-type_specifier get_datatype(ast_node n) {
-
-  assert(n);
-
-  type_specifier t;
-  switch (n->node_type) {
-    case TYPEINT_N:
-      t = INT_TS;
-      break;
-
-    case VOID_N:
-      t = VOID_TS;
-      break;
-
-    default:
-      t = NULL_TS;  // not a valid type
-      break;
-  }
-
-  return t;
-}
-
-/*
- * handle_func_decl_node(ast_node * fdl, symboltable_t * t);
- */
-int handle_func_decl_node(ast_node * fdl, symboltable_t * symtab) {
-
-  asesrt(fdl);
-  assert(symtab);
-
-  /* get return type */
-  type_specifier_t return_type = get_datatype(fld->left_child->left_child);
-  if (return_type == NULL_TS) {
-    fprintf(stderr, "seeing NULL_TS return type, something wrong\n");
-  }
-
-  /* get id specifier */
-  char * id = fdl->left_child->right_sibling->value_string;     // should strdup this for the symbol table?
-
-  /* count arguments */
-  ast_node arg = fdl->left_child->right_sibling->right_sibling;
-  assert(arg->left_child);
-  arg = arg->left_child;
-
-  if (arg->node_type != VOID_N) {
-
-    int arg_count = 0;
-    int arg_arr_size = 5;     /* magic number */
-    type_specifier_t * arg_type_arr = (type_specifier_t *)calloc(arg_arr_size, sizeof(type_specifier_t));
-    assert(arg_type_arr);
-    
-    /* needs work -- track arg type and is_array for each argument */
-    while (arg != NULL) {
-      arg_type_arr[arg_count] = get_datatype(arg);
-      arg_count++;
-
-      /* resize type array */
-      if (arg_count == arg_arr_size) {
-        arg_arr_size *= 2;
-        arg_type_arr = realloc(arg_type_arr, sizeof(type_specifier_t) * arg_arr_size);
-        assert(arg_type_arr);
-      }
-
-      arg = arg->right_sibling;
-    }
-
-  } else {
-
-  }
-
-
-}
-
-/*
- * is_array is 1 if variable is array
- */
-int add_var_symbol(char * id, type_specifier_t type, int is_array, symboltable_t * symtab);
-
- /*
-  * free arg_types array once done with function call
-  */
-int add_func_symbol(char * id, type_specifier_t return_type, int arg_count, type_specifier * arg_types, symboltable_t * symtab)
+//   // done?
+//   return 0?
+// }
