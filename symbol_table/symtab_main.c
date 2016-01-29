@@ -72,6 +72,49 @@ int main() {
       handle_node(cur, symtab);
     }
 
+    // // FDL Psuedocode
+    // if node_type == FDL:
+    //   n = insert_into_symtable(symtab, "FDL")
+    //   set_node_type(n, func)
+
+    //   set_type(n, n->left_child->left_child)
+    //   set_name(n, n->left_child->right_sib->value_string)
+
+    //   // Formal params
+    //   enter_scope()
+    //   formal_param_n = n->left_child->right_sib->right_sib
+
+    //   int count = 0
+    //   for (curr = n->left_child; curr->right_child != null; curr = curr->right_child):
+    //     count++
+    //     inserted = insert_node_into_symtable(symtab, "Param")
+    //     set_node_type(inserted, var)
+    //     set_type(inserted, curr->left_chid->left_child)
+    //     set_name(inserted, curr->left_child->right_sib->value_string)
+
+    //   // Compound statement
+    //   compound_n = formal_param_n->right_sib
+
+    //   // Check if left child is VDL
+    //   if compound_n->left_child == VDL:
+    //     vdl_n = compound_n->left_child
+
+    //     type_specifier type = vdl_n->left_child->left_child
+
+    //     for (curr = vdl_n->left_child->right_sib; curr->right_sib != NULL; curr = curr->right_sib):
+    //       inserted = insert_node_into_symtable(symtab, "VD")
+    //       set_node_type(inserted, var)
+    //       set_type(inserted, type)
+    //       set_name(inserted, curr->left->value_string)
+
+    //   leave_scope()
+
+    //   // See above that n still points to FDL node
+    //   // and count equals arg count
+    //   set_node_arg_count(n, count)
+
+      
+
      
 
 

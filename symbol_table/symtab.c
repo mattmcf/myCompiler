@@ -18,7 +18,7 @@
 /*
  * Functions for symnodes.
  */
-
+  
 void set_node_name(symnode_t *node, char *name) {
   node->name = name;
 }
