@@ -72,7 +72,6 @@ void traverse_ast_tree(ast_node root, symboltable_t * symtab) {
 
   ASTPush(symboltable.leaf.scopeStack, root)
 
-  /* handle root */
   switch(root->node_type) {
   case FDL:
     // handle function node declaration and skip to first child of function compound statement
@@ -100,16 +99,17 @@ void traverse_ast_tree(ast_node root, symboltable_t * symtab) {
 
     break;
 
-  default
+  default:
     for (ast_node child = root->left_child; child != NULL; child = child->right_sibling)
       traverse_ast_tree(child, symtab);
+
     break;  
   }
 
   ASTPop(symboltable.leaf.scopeStack)
 
-  if stack size == 0
-    exit scope 
+  if (ASTSize(symboltable.leaf.scopeStack)) == 0
+    leave_scope(symtab);
 
   return;
 
