@@ -11,6 +11,8 @@
 #include "ast.h"
 #include "symtab.h"
 
+#include <assert.h>     // should move functions to symtab.h
+
 ast_node root = NULL;
 
 extern int yyparse(); 	// bison's generated file?
@@ -33,8 +35,16 @@ int add_var_symbol(variable * var, symboltable_t * symtab);
   * returns 0 if symbol was successfully added
   * returns 1 if this symbol was already delclared
   */
-int add_func_symbol(char * id, type_specifier_t return_type, int arg_count, type_specifier * arg_types, symboltable_t * symtab);
+int add_func_symbol(char * id, type_specifier_t return_type, int arg_count, variable * arg_arr, symboltable_t * symtab);
 
+/* traversal function */
+void traverse_ast_tree(ast_node root, symboltable_t * symtab);
+
+/* handle function declaration nodes */
+ast_node handle_func_decl_node(ast_node fdl, symboltable_t * symtab);
+
+/* handle variable declaration line nodes */
+void handle_var_decl_line_node(ast_node vdl, symboltable_t * symtab);
 
 int main() {
   int noRoot = 0;		/* 0 means we will have a root */
@@ -63,6 +73,7 @@ int main() {
   return 0;
 }
 
+
 void traverse_ast_tree(ast_node root, symboltable_t * symtab) {
 
   assert(symtab);
@@ -70,10 +81,10 @@ void traverse_ast_tree(ast_node root, symboltable_t * symtab) {
   if (root == NULL)
     return;
 
-  ASTPush(symboltable.leaf.scopeStack, root)
+  ASTPush(root, symtab->leaf->scopeStack);
 
   switch(root->node_type) {
-  case FDL:
+  case FUNC_DECLARATION_N:
     // handle function node declaration and skip to first child of function compound statement
     for (ast_node child = handle_func_decl_node(root,symtab); child != NULL; 
           child = child->right_sibling) {
@@ -82,19 +93,17 @@ void traverse_ast_tree(ast_node root, symboltable_t * symtab) {
       
     break;
 
-  case VDL:
+  case VAR_DECLARATION_N:
     handle_var_decl_line_node(root,symtab);
     // don't traverse these children
     // can return now because parent call will move onto sibling
     break;
 
-  case CS:
-    ast_node child = root->left_child;
+  case COMPOUND_STMT_N:
+    if (root->left_child != NULL)
+      enter_scope(symtab, root->left_child);
 
-    if (child != NULL)
-      enter_scope(symtab, child);
-
-    for ( /* child already initialized */ ; child != NULL; child = child->right_sibling)
+    for (ast_node child = root->left_child; child != NULL; child = child->right_sibling)
       traverse_ast_tree(child, symtab);
 
     break;
@@ -106,9 +115,9 @@ void traverse_ast_tree(ast_node root, symboltable_t * symtab) {
     break;  
   }
 
-  ASTPop(symboltable.leaf.scopeStack)
+  ASTPop(symtab->leaf->scopeStack);
 
-  if (ASTSize(symboltable.leaf.scopeStack)) == 0
+  if (ASTSize(symtab->leaf->scopeStack) == 0)
     leave_scope(symtab);
 
   return;
@@ -147,11 +156,11 @@ void traverse_ast_tree(ast_node root, symboltable_t * symtab) {
  */
 ast_node handle_func_decl_node(ast_node fdl, symboltable_t * symtab) {
 
-  asesrt(fdl);
+  assert(fdl);
   assert(symtab);
 
   /* get return type */
-  type_specifier_t return_type = get_datatype(fld->left_child->left_child);
+  type_specifier_t return_type = get_datatype(fdl->left_child->left_child);
   if (return_type == NULL_TS) {
     fprintf(stderr, "seeing NULL_TS return type, something wrong\n");
     return NULL;
@@ -238,7 +247,7 @@ ast_node handle_func_decl_node(ast_node fdl, symboltable_t * symtab) {
 }
 
 
-void handle_var_decl_line_node(ast_node vdl, symboltable * symtab) {
+void handle_var_decl_line_node(ast_node vdl, symboltable_t * symtab) {
 
   assert(symtab);
   assert(symtab);
@@ -250,18 +259,18 @@ void handle_var_decl_line_node(ast_node vdl, symboltable * symtab) {
 
   while (child != NULL) {
 
-    new_var->name = child->left_child->value_string;
-    new_var->type = this_type;
+    new_var.name = child->left_child->value_string;
+    new_var.type = this_type;
 
     if (child->left_child->right_sibling == NULL)
-      new_var->modifier = SINGLE_DT;
+      new_var.modifier = SINGLE_DT;
     else if (child->left_child->right_sibling->node_type == INT_LITERAL_N)
-      new_var->modifier = ARRAY_DT;
+      new_var.modifier = ARRAY_DT;
     else
-      new_var->modifier = SINGLE_DT;
+      new_var.modifier = SINGLE_DT;
 
     if (add_var_symbol(&new_var, symtab)) {
-      fprintf(stderr, "Variable %s already declared\n",new_var->name); 
+      fprintf(stderr, "Variable %s already declared\n",new_var.name); 
       exit(1);
     }
 

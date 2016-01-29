@@ -26,7 +26,7 @@ typedef enum {
   VOID_TS,      // void returns
 
   FUNC_TS,
-  NULL_TS,
+  NULL_TS
 } type_specifier_t;
 
 /*
@@ -35,8 +35,8 @@ typedef enum {
  * array or single data type
  */
 typedef enum {
-  SINGLE_DT;
-  ARRAY_DT;
+  SINGLE_DT,
+  ARRAY_DT
   // POINTER_DT; // same thing as is array?
 } modifier_t;
 
@@ -55,7 +55,7 @@ typedef enum {
 typedef struct variable {
   char * name;
   type_specifier_t type;
-  datatype_t modifier;
+  modifier_t modifier;
 } variable;
 
 typedef struct var_symbol {
@@ -63,7 +63,7 @@ typedef struct var_symbol {
 } var_symbol;
 
 typedef struct func_symbol {
-  type_specifier return_type;
+  type_specifier_t return_type;
   int arg_count;
   variable * arg_arr;     // array to handle dynamically sized argument parameters
 
@@ -81,13 +81,16 @@ typedef struct symnode {
   struct symhashtable *parent;
 
   /* Other attributes go here. */
-  declaration_specifier sym_type;   // enum FUNC_SYM or VAR_SYM - says which union symbol is
+  declaration_specifier_t sym_type;   // enum FUNC_SYM or VAR_SYM - says which union symbol is
   symbol s;       // union of func_symbol and var_symbol
 
 } symnode_t;
 
-/* makes a variable of type and with modifier */
-variable init_variable(char * name, type_specifier_t type, modifier_t mod)
+/* 
+ * makes a variable of type and with modifier 
+ * returns variable on stack, should save elsewhere
+ */
+variable init_variable(char * name, type_specifier_t type, modifier_t mod);
 
 /* 
  * get_type() : returns enumerated type_specifier (definied in symtab.h)
