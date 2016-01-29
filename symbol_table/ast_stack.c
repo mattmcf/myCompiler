@@ -99,6 +99,19 @@ ast_node ASTPush(ast_node add, ast_stack * stk) {
 }
 
 /*
+ * Return size of stack
+ */
+int ASTSize(ast_stack * stk) {
+
+	if (!stk) {
+		fprintf(stderr,"ast_stack size error: null stack\n");
+		return -1;
+	}
+
+	return stk->top;
+}
+
+/*
  * DestroyASTstack() : frees an ast_stack
  */
 void DestroyASTStack(ast_stack * stk) {

@@ -16,9 +16,12 @@ int main(){
 
 	while (1)  {;}
 
-	// below invocation doesn't work
-	// do 
-	// while (1);
+	/*
+	 * do 
+	 * while (1)
+	 *
+	 * ^^ invalid C
+	 */
 
 	{}
 

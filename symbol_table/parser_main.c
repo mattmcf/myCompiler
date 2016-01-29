@@ -36,7 +36,7 @@ int main() {
 			printf("failed to fill stack\n");
   }
   
-  //printf("stack has %d things on it right now...\n",s->top);
+  //printf("stack has %d things on it right now...\n",ASTSize(s));
  
   ast_node popped;
   while ( (popped = ASTPop(s)) != NULL) {

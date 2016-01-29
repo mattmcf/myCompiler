@@ -44,6 +44,13 @@ ast_node ASTPop(ast_stack * stk);
 ast_node ASTPush(ast_node add, ast_stack * stk);
 
 /*
+ * ASTSize() : returns the number of elements on stack
+ *
+ * returns -1 on error
+ */
+int ASTSize(ast_stack * stk);
+
+/*
  * DestroyASTstack() : frees an ast_stack
  *
  */

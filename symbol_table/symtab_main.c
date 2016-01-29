@@ -16,6 +16,16 @@ extern int yyparse(); 	// bison's generated file?
 extern int yydebug; 	// defined in parser.y
 int parseError = 0; 	// global flag
 
+/*
+ * is_array is 1 if variable is array
+ */
+int add_var_symbol(char * id, type_specifier_t type, int is_array, symboltable_t * symtab);
+
+ /*
+  * free arg_types array once done with function call
+  */
+int add_func_symbol(char * id, type_specifier_t return_type, int arg_count, type_specifier * arg_types, symboltable_t * symtab);
+
 /* 
  * get_type() : returns enumerated type_specifier (definied in symtab.h)
  * for an ast_node n input
@@ -26,6 +36,7 @@ type_specifier get_datatype(ast_node n);
 
 int main() {
   int noRoot = 0;		/* 0 means we will have a root */
+  symboltable_t * symtab;
 
   //yydebug = 1;
   noRoot = yyparse();
@@ -37,6 +48,17 @@ int main() {
   	print_ast(root,0);
   	
     /* create sym table here? */
+
+    symtab = create_symboltable();
+    if (!symtab){
+      fprintf(stderr, "couldn't create symboltable\n");
+      return 1;
+    }
+
+    traverse_ast_tree(root, symtab);
+
+
+
 
     /* Always insert at the innermost scope within symbol table
      * If we encounter a {, we call enter_scope, which will create
@@ -90,40 +112,43 @@ void traverse_ast_tree(ast_node root, symboltable_t * symtab) {
   if (root == NULL)
     return;
 
-  // -------
+  ASTPush(symboltable.leaf.scopeStack, root)
 
-  // ASTPush(symboltable.leaf.scopeStack, root)
+  /* handle root */
+  switch(root->node_type) {
+  case FDL:
+    add Function declaration to current scope
+    enter new scope
+    add all parameters to new scope
+    go to CS->
+    for all children of CS
+      traverse_ast_tree child
+    break;
 
-  // handle root
-    // switch(root->node_type)
-    // case FDL
-      // add Function declaration to current scope
-      // enter new scope
-      // add all parameters to new scope
-      // go to CS->
-      // for all children of CS
-        // traverse_ast_tree child
-      
-    // case VDL
-      // for each child, add child symbol to current scope
-      // for each right sibling of VDL
-        // traverse sibling
+  case VDL:
+    for each child, add child symbol to current scope
+    for each right sibling of VDL
+      traverse sibling
+    break;
 
-    // case CS
-      // Enter new scope
-      // for all children
-        // traverse_ast_tree child
+  case CS
+    Enter new scope
+    for all children
+      traverse_ast_tree child
+    break;
 
-    // default
-      // for all children
-        // traverse_ast_tree child
+  default
+    for all children
+      traverse_ast_tree child 
+    break;  
+  }
 
-  // ASTPop(symboltable.leaf.scopeStack)
+  ASTPop(symboltable.leaf.scopeStack)
 
-  // if stack size == 0
-    // exit scope 
+  if stack size == 0
+    exit scope 
 
-  // return
+  return
 
   // -------
 
@@ -270,13 +295,63 @@ type_specifier get_datatype(ast_node n) {
   return t;
 }
 
+/*
+ * handle_func_decl_node(ast_node * fdl, symboltable_t * t);
+ */
+int handle_func_decl_node(ast_node * fdl, symboltable_t * symtab) {
+
+  asesrt(fdl);
+  assert(symtab);
+
+  /* get return type */
+  type_specifier_t return_type = get_datatype(fld->left_child->left_child);
+  if (return_type == NULL_TS) {
+    fprintf(stderr, "seeing NULL_TS return type, something wrong\n");
+  }
+
+  /* get id specifier */
+  char * id = fdl->left_child->right_sibling->value_string;     // should strdup this for the symbol table?
+
+  /* count arguments */
+  ast_node arg = fdl->left_child->right_sibling->right_sibling;
+  assert(arg->left_child);
+  arg = arg->left_child;
+
+  if (arg->node_type != VOID_N) {
+
+    int arg_count = 0;
+    int arg_arr_size = 5;     /* magic number */
+    type_specifier_t * arg_type_arr = (type_specifier_t *)calloc(arg_arr_size, sizeof(type_specifier_t));
+    assert(arg_type_arr);
+    
+    /* needs work -- track arg type and is_array for each argument */
+    while (arg != NULL) {
+      arg_type_arr[arg_count] = get_datatype(arg);
+      arg_count++;
+
+      /* resize type array */
+      if (arg_count == arg_arr_size) {
+        arg_arr_size *= 2;
+        arg_type_arr = realloc(arg_type_arr, sizeof(type_specifier_t) * arg_arr_size);
+        assert(arg_type_arr);
+      }
+
+      arg = arg->right_sibling;
+    }
+
+  } else {
+
+  }
+
+
+}
 
 /*
  * is_array is 1 if variable is array
  */
- add_var_symbol(char * id, type_specifier_t type, int is_array, symboltable_t * symtab);
+int add_var_symbol(char * id, type_specifier_t type, int is_array, symboltable_t * symtab);
 
  /*
   * free arg_types array once done with function call
   */
-add_func_symbol(char * id, type_specifier_t return_type, int arg_count, type_specifier * arg_types, symboltable_t * symtab)
+int add_func_symbol(char * id, type_specifier_t return_type, int arg_count, type_specifier * arg_types, symboltable_t * symtab)
