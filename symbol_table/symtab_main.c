@@ -159,17 +159,23 @@ ast_node handle_func_decl_node(ast_node fdl, symboltable_t * symtab) {
   assert(fdl);
   assert(symtab);
 
-  /* get return type */
+  // Insert symnode for function into leaf symhashtable
+  symnode_t *fdl_node = insert_into_symboltable(symtab, fdl->value_string);
+
+  // Set symnode as a func node
+  set_node_type(fdl_node, FUNC_SYM);
+
+  // Get return type
   type_specifier_t return_type = get_datatype(fdl->left_child->left_child);
   if (return_type == NULL_TS) {
     fprintf(stderr, "seeing NULL_TS return type, something wrong\n");
     return NULL;
   }
 
-  /* get id specifier */
-  char * id = fdl->left_child->right_sibling->value_string;     // should strdup this for the symbol table?
+  // Get id specifier
+  char *id = fdl->left_child->right_sibling->value_string;     // should strdup this for the symbol table?
 
-  /* count arguments */
+  // Count arguments
   ast_node arg = fdl->left_child->right_sibling->right_sibling;
   assert(arg->left_child);
   arg = arg->left_child;
@@ -177,7 +183,7 @@ ast_node handle_func_decl_node(ast_node fdl, symboltable_t * symtab) {
   int arg_count = 0;
   variable * arg_arr = NULL;
 
-  /* collect all arguement parameters */
+  /* collect all argument parameters */
   if (arg->node_type != VOID_N) {
 
     int arg_arr_size = 5;     /* magic number */
@@ -219,7 +225,10 @@ ast_node handle_func_decl_node(ast_node fdl, symboltable_t * symtab) {
   }
 
   /* add function symbol to current (global) scope */
-  add_func_symbol(id, return_type, arg_count, arg_arr, symtab);
+  // add_func_symbol(id, return_type, arg_count, arg_arr, symtab);
+
+  // Set fields for func node in current (global) scope
+  set_node_func(fdl_node, id, return_type, arg_count, arg_arr);
 
   /* get CS node */
   ast_node compound_stmt = fdl->left_child->right_sibling->right_sibling->right_sibling;
@@ -232,11 +241,21 @@ ast_node handle_func_decl_node(ast_node fdl, symboltable_t * symtab) {
 
     /* add function parameters to this new scope symbol table */
     for (int i = 0; i < arg_count; i++) {
-      add_var_symbol(&arg_arr[i], symtab); 
+      // Insert var node in leaf symhashtable
+      symnode *var_node = insert_into_symboltable(symtab, &arg_arr[i]->name);
+      set_node_type(var_node, VAR_SYM);
+
+      set_node_var(var_node, &arg_arr[i]);
+      // add_var_symbol(&arg_arr[i], symtab); 
     }
 
     /* return next node to start traverse on */
-    next_node = compound_stmt->left_child;
+    // next_node = compound_stmt->left_child;
+
+    // Handle VDL node if present
+    handle_var_decl_line_node(compound_stmt->left_child, symtab);
+
+    leave_scope(symtab);
   } 
 
   if (arg_arr != NULL)
@@ -255,29 +274,57 @@ void handle_var_decl_line_node(ast_node vdl, symboltable_t * symtab) {
   type_specifier_t this_type = get_datatype(vdl->left_child->left_child);
 
   ast_node child = vdl->left_child->right_sibling;
-  variable new_var;
 
   while (child != NULL) {
+    char *name = child->left_child->value_string;
+    modifier_t mod;
 
-    new_var.name = child->left_child->value_string;
-    new_var.type = this_type;
-
-    if (child->left_child->right_sibling == NULL)
-      new_var.modifier = SINGLE_DT;
-    else if (child->left_child->right_sibling->node_type == INT_LITERAL_N)
-      new_var.modifier = ARRAY_DT;
-    else
-      new_var.modifier = SINGLE_DT;
-
-    if (add_var_symbol(&new_var, symtab)) {
-      fprintf(stderr, "Variable %s already declared\n",new_var.name); 
-      exit(1);
+    if (child->left_child->right_sibling == NULL) {
+      mod = SINGLE_DT;
+    } else if (child->left_child->right_sibling->node_type == INT_LITERAL_N) {
+      mod = ARRAY_DT;
+    } else {
+      mod = SINGLE_DT;
     }
 
+    // Insert symnode for variable
+    symnode_t *var_node = insert_into_symboltable(symtab, name);
+    set_node_type(var_node, VAR_SYM);
+
+    // Initialize variable
+    variable new_var = init_variable(name, this_type, mod);
+
+    // Set variable field in symnode
+    set_node_var(var_node, new_var);
+
+    // Next variable
     child = child->right_sibling;
   }
 
-  return;
+  // type_specifier_t this_type = get_datatype(vdl->left_child->left_child);
+
+  // ast_node child = vdl->left_child->right_sibling;
+  // variable new_var;
+
+  // while (child != NULL) {
+
+  //   new_var.name = child->left_child->value_string;
+  //   new_var.type = this_type;
+
+  //   if (child->left_child->right_sibling == NULL)
+  //     new_var.modifier = SINGLE_DT;
+  //   else if (child->left_child->right_sibling->node_type == INT_LITERAL_N)
+  //     new_var.modifier = ARRAY_DT;
+  //   else
+  //     new_var.modifier = SINGLE_DT;
+
+  //   if (add_var_symbol(&new_var, symtab)) {
+  //     fprintf(stderr, "Variable %s already declared\n",new_var.name); 
+  //     exit(1);
+  //   }
+
+  //   child = child->right_sibling;
+  // }
 }
 
 // /*
