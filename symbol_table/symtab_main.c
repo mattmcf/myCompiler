@@ -46,7 +46,7 @@ ast_node handle_func_decl_node(ast_node fdl, symboltable_t * symtab);
 /* handle variable declaration line nodes */
 void handle_var_decl_line_node(ast_node vdl, symboltable_t * symtab);
 
-int main() {
+int main(void) {
   int noRoot = 0;		/* 0 means we will have a root */
   symboltable_t * symtab;
 
