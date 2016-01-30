@@ -59,9 +59,41 @@ type_specifier_t get_datatype(ast_node n) {
 /*
  * Functions for symnodes.
  */
+
+symnode_t create_symnode(symhashtable_t *hashtable, char *name) {
+  symnode_t *node = malloc(sizeof(symnode_t));
+  assert(node);
+  node->name = name;
+  node->parent = hashtable;
+}
   
 void set_node_name(symnode_t *node, char *name) {
   node->name = name;
+}
+
+void set_node_type(symnode_t *node, declaration_specifier_t sym_type) {
+  if (sym_type == VAR_SYM) {
+    node->symbol = malloc(sizeof(var_symbol));
+
+  } else {
+    node->symbol = malloc(sizeof(func_symbol));
+  }
+}
+
+void set_node_var_fields(symnode_t *node, char *name, type_specifier_t type, modifier_t modifier) {
+  assert(node);
+
+  node->symbol->variable->name = name;
+  node->symbol->variable->type = type;
+  node->symbol->variable->modifier = modifier;
+}
+
+void set_node_func_fields(symnode_t *node, type_specifier_t type, int arg_count, variable *arg_arr) {
+  assert(node);
+
+  node->symbol->return_type = type;
+  node->symbol->arg_count = arg_count;
+  node->symbol->arg_arr = arg_arr;
 }
 
 int name_is_equal(symnode_t *node, char *name) {
@@ -145,7 +177,7 @@ symnode_t *insert_into_symhashtable(symhashtable_t *hashtable, char *name) {
   /* error check if node already existed! */
 
   if (node == NULL) {
-    node = create_symnode(name, hashtable);
+    node = create_symnode(hashtable, name);
     node->next = hashtable->table[slot];
     hashtable->table[slot] = node;
   }

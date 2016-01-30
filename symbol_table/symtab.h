@@ -100,8 +100,20 @@ variable init_variable(char * name, type_specifier_t type, modifier_t mod);
  */
 type_specifier_t get_datatype(ast_node n);
 
-/* Set the name in this node. */
+/* Create an empty symnode */
+symnode_t create_symnode(symhashtable_t *hashtable, char *name);
+
+/* Set the nsame in this node. */
 void set_node_name(symnode_t *node, char *name);
+
+/* Set node type */
+void set_node_type(symnode_t *node, declaration_specifier_t sym_type);
+
+/* Set fields for variable node */
+void set_node_var(symnode_t *node, variable *var);
+
+/* Set fields for func node */
+void set_node_func(symnode_t *node, type_specifier_t type, int arg_count, variable *arg_arr);
 
 /* Does the identifier in this node equal name? */
 int name_is_equal(symnode_t *node, char *name);
