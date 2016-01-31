@@ -41,8 +41,41 @@ Instructions to make parser_print executable that builds ast tree and tests ast_
 
 If any errors occur during the construction of the symbol table, the program will report the duplicate symbol responsible for the error and exit. On success, the symbol table will be printed out.
 
+## Implementation Specifics
+
+Because our AST traversal function acts recursively, we can define the appropriate actions for symbols defined in terms of the node (root) being currently visited. (These actions can be seen in the `traverse_ast_node` function in symtab.c) We realized that there were only three ast nodes that we need to attend to in filling out the symbol table. They are enumerated below. In general, our algorithm looked like this: 
+
+```
+Push root onto current scope's stack
+
+Get root's ast node type
+
+Handle root for it's type (described below -- add symbols or enter new scope)
+
+For each child
+	traverse child
+
+Pop current scope stack
+If stack is empty and there are no sibling nodes
+	Exit scope
+
+Return
+```
+
+* Handling a function declaration node:
+
+This ended up being the most conceptually difficult symbol to add. We first went through the function nodes children to collect it's return type, symbol ID, and arguments (the arguments were stored in terms of a new structure called a 'variable' which contains an ID, a type and a datatype modifier [array or single instance]). The function symbol was added to the current scope. Then we entered a new scope manually and added each argument to the new scope's symbols. We then returned the first child in the function's compound statement block to begin a horizontal traversal. (We have to return the child of the compound statement node to avoid entering another new scope.) 
 
 
+* Handling a variable declaration line node:
 
-We built upon the skeleton code to implement the symbol table construction. We used a recursive `traverse_ast_tree` function which walks the AST parse tree created from the bison parser and add symbols in the appropriate scopes.
+This node was fairly simple to handle. We look for the type specifier in the left most child and then went through the children to add symbol IDs and modifiers (arrays or single instances). This handling function does not return any new ast node to continue traversal on because new scopes cannot exist under a variable declaration node.
+
+* Handling a compound statement node:
+
+This node triggers the entrance of a new scope.
+
+* Logic for exiting scope
+
+We built an AST stack to help the recursive tranversal function know when to exit scope. Each node in the current scope is pushed onto the stack, and once all nodes are popped and there are no further possible nodes to visit in the current scope, the scope should be exited. When there are no items on the top level stack and no further nodes to visit, the traversal is finished.
 
