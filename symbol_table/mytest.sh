@@ -35,6 +35,23 @@ if [ "$?" -ne "0" ]
   exit 1
 fi
 
+SRC_FILE2=/tests/tscope.c
+ANS_FILE2=/tests/tscope_ans.txt
+
+./symtab < tests/tscope.c > results/tscope.out
+
+echo " "
+echo "Symbol table test with source file: $SRC_FILE2 and answer key: $ANS_FILE2"
+echo "Diffing answer key and output file..."
+
+diff --unchanged-line-format="" --new-line-format=":%dn: %L" tests/tscope_ans.txt results/tscope.out
+
+if [ "$?" -ne "0" ]
+  then
+  echo "Test Failed."
+  exit 1
+fi
+
 echo " "
 echo "All tests suceeded!"
 echo "See the results directory for the symbol table test output files"
