@@ -4,6 +4,9 @@
  * You should extend the structs and functions as appropriate.
  *
  * extended and changed muchly by sean
+ *
+ * YONDON FU AND MATT MCFARLAND - DELIGHTS (CS57 16W)
+ * 
  */
 
 #ifndef SYMTAB_H_
@@ -24,10 +27,20 @@
 typedef enum {
   INT_TS,       // int literals
   VOID_TS,      // void returns
-
   FUNC_TS,
   NULL_TS
 } type_specifier_t;
+
+/* Table for type specifiers */
+static val_name_pair type_table[] = {
+  {INT_TS, "INT"},
+  {VOID_TS, "VOID"},
+  {FUNC_TS, "FUNC"},
+  {NULL_TS, "NULL"}
+};
+
+#define TYPE_INDEX(X) ( (X) - INT_TS )
+#define TYPE_NAME(X) ( type_table[ TYPE_INDEX((X)) ].name)
 
 /*
  * modifies a datatype to include
@@ -39,6 +52,14 @@ typedef enum {
   ARRAY_DT
   // POINTER_DT; // same thing as is array?
 } modifier_t;
+
+static val_name_pair modifier_table[] = {
+  {SINGLE_DT, "SINGLE"},
+  {ARRAY_DT, "ARRAY"} 
+};
+
+#define MODIFIER_INDEX(X) ( (X) - SINGLE_DT )
+#define MODIFIER_NAME(X) ( modifier_table[ MODIFIER_INDEX((X)) ].name)
 
 /*
  * declaration_specifier is for symbol.sym_type
@@ -156,7 +177,7 @@ symnode_t *insert_into_symboltable(symboltable_t *symtab, char *name);
 symnode_t *lookup_in_symboltable(symboltable_t *symtab, char *name);
 
 /* Enter a new scope. */
-void enter_scope(symboltable_t *symtab, ast_node node);
+void enter_scope(symboltable_t *symtab, ast_node node, char *name);
 
 /* Leave a scope. */
 void leave_scope(symboltable_t *symtab);

@@ -1,10 +1,12 @@
 /*
- * tree_main.c
+ * parser_main.c
  *
- * Driver program for a parser that builds an abstract syntax tree.
+ * builds and prints a parse tree
  *
  * Written by THC for CS 57; massaged by SWS.  Modify this file as appropriate.
  *
+ * YONDON FU AND MATT MCFARLAND - DELIGHTS (CS57 16W)
+ * 
  */
 
 #include <stdio.h>
