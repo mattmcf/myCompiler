@@ -150,7 +150,7 @@ static int hashPJW(char *s, int size) {
    == NOHASHSLOT, then apply the hash function to figure it out. */
 symnode_t *lookup_symhashtable(symhashtable_t *hashtable, char *name,
 				   int slot) {
-  symnode_t *node;
+  symnode_t *node = NULL;       // return NULL if not found
 
   assert(hashtable);
 
