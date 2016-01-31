@@ -1,0 +1,23 @@
+GLOBAL
+	NAME: A, symboltype: VARIABLE, vartype: INT, SINGLE
+	NAME: B, symboltype: VARIABLE, INT, SINGLE
+	NAME: C, symboltype: VARIABLE, INT, SINGLE
+	NAME: D, symboltype: VARIABLE, INT, SINGLE
+	NAME: E, symboltype: VARIABLE, INT, SINGLE
+	NAME: F, symboltype: VARIABLE, INT, SINGLE	
+	NAME: arr, symboltype: VARIABLE, INT, ARR
+	NAME: myfunc1, FUNCTION, INT, 3 arguments: INT (SINGLE), INT (SINGLE), INT (ARRAY)
+		NAME: arg1, VARIABLE, INT, SINGLE
+		NAME: arg2, VARAIBLE, INT, SINGLE
+		NAME: arg3, VARIABLE, INT, ARR
+		NAME: local_var1, VARIABLE, INT, SINGLE
+		NAME: local_var2, VARIABLE, INT, ARR
+	NAME: main, FUNCTION, INT, 0 arguments:
+		NAME: main_var, VARIABLE, INT, SINGLE
+		new scope: COMPOUND_STATEMENT_N
+			NAME: inner_var1, VARIABLE, INT, SINGLE
+			NAME: inner_var2, VARIABLE, INT, SINGLE
+			NAME: inner_var3, VARIABLE, INT, SINGLE
+			inner_varr, VARIABLE, INT, ARR
+		new scope; FOR_STATEMENT_N
+			for_var, VARIABLE, INT, SINGLE

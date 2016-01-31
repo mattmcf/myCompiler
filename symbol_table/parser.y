@@ -269,33 +269,29 @@ formal_param : type_specifier ID_T {
 /*
  * RULE 13
  *
- * Sorry, this is weird! So compound statements need to handle some weird cases:
- * 1) There ARE local declarations AND there ARE statements -> L.C. is local_declaration list (right sibs)
- * 		Right sib of L
- * 2) There ARE NO local declaration AND ARE statements -> L.C. is a statement list
- * 3) There ARE local declarations AND AREN'T statements -> L.C. is a local declaration list
- * 4) There AREN'T local declarations AND AREN'T statements -> this node has no children <- bad decision
- *
- * FOR THE FUTURE -> THIS MIGHT CHANGE DEPENDING ON HOW WE DECIDE TO HANDLE THE PARSE TREE
+ * Simplify this node: there is a long string of children (left_child->right_siblings chain)
+ * that concanenate the statement list to end of the local declaration list. If there are no statements,
+ * then the children will only include declarations. Vice versa is true for null local declarations 
+ * and statements. If this compound block is totally empty, then it's a compound statement node without any children.
  */
 compound_stmt : '{' local_declarations stmt_list '}' {
 	ast_node t = create_ast_node(COMPOUND_STMT_N);
 	ast_node d = $2;
-	ast_node l = $3;
+	ast_node l;
 
-	if (d != NULL && l != NULL) {
+	if (d != NULL) {
 		t->left_child = d;
-		t->left_child->right_sibling = l;
-		// $$ = t;
-	} else if (d == NULL && l != NULL) {
-		t->left_child = l;
-		// $$ = t;
-	} else if (d != NULL && l == NULL) {
-		t->left_child = d;
-		// $$ = t;
-	} else { 
-		// $$ = t; 
-		;
+
+		/* get to end of declaration list */
+		l = d;
+		while (l->right_sibling != NULL) {
+			l = l->right_sibling;
+		}
+
+		l->right_sibling = $3;
+
+	} else {
+		t->left_child = $3;
 	}
 
 	$$ = t;

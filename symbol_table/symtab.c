@@ -31,6 +31,8 @@ var_symbol init_variable(char * name, type_specifier_t type, modifier_t mod) {
   // variable * new_var = (variable *)calloc(1,sizeof(variable));
   // assert(new_var);
 
+  printf("initializing new variable: %s, %d, %d\n",name,type,mod);  // debug
+
   var_symbol new_var;
 
   new_var.name = name;     // note, name needs to be saved somewhere else
@@ -72,10 +74,16 @@ type_specifier_t get_datatype(ast_node n) {
  */
 
 symnode_t * create_symnode(symhashtable_t *hashtable, char *name) {
+  assert(hashtable);
+  assert(name);
+
   symnode_t * node = (symnode_t *)malloc(sizeof(symnode_t));
   assert(node);
   node->name = name;
   node->parent = hashtable;
+
+  printf("creating symnode with name %s\n",name);
+
   return node;
 }
   
@@ -84,12 +92,17 @@ void set_node_name(symnode_t *node, char *name) {
 }
 
 void set_node_type(symnode_t *node, declaration_specifier_t sym_type) {
+  assert(node);
+
   node->sym_type = sym_type;
   //node->s = (symbol *)malloc(sizeof(symbol));
 }
 
 void set_node_var(symnode_t *node, var_symbol *var) {
   assert(node);
+  assert(var);
+
+  printf("setting node %s to a variable node\n", node->name);
 
   /* node->symbol.variable.[attribute] */
   node->s.v.name = var->name;
@@ -101,6 +114,8 @@ void set_node_func(symnode_t *node, char * name, type_specifier_t type, int arg_
   assert(node);
   node->name = name;
 
+  printf("setting node %s to a function declaration node\n",node->name);
+
   /* symbol.function.[attribute] */
   node->s.f.return_type = type;
   node->s.f.arg_count = arg_count;
@@ -108,6 +123,7 @@ void set_node_func(symnode_t *node, char * name, type_specifier_t type, int arg_
 }
 
 int name_is_equal(symnode_t *node, char *name) {
+
   // 1 is true and 0 is false, but is this the convention in C?
   if (strcmp(node->name, name) == 0) {
     return 1;
@@ -125,16 +141,17 @@ int name_is_equal(symnode_t *node, char *name) {
 // symhashtable_t *create_symhashtable(int entries, symtab_type type)
 symhashtable_t *create_symhashtable(int entries)    // modified function call
 {
-  symhashtable_t *hashtable = malloc(sizeof(symhashtable_t));
+  symhashtable_t *hashtable = (symhashtable_t *)calloc(1,sizeof(symhashtable_t));
   assert(hashtable);
   // hashtable->type = type;  -- don't use
-  hashtable->size = entries;
-  hashtable->table = calloc(entries, sizeof(symnode_t));
 
+  hashtable->size = entries;
+  hashtable->table = (symnode_t **)calloc(entries, sizeof(symnode_t *));
   assert(hashtable->table);
 
   // Initialize stack associated with this hashtable and scope
   hashtable->scopeStack = InitASTStack(INIT_STK_SIZE);
+  assert(hashtable->scopeStack);
 
   /* anything else ? */
   
@@ -270,8 +287,11 @@ symnode_t *lookup_in_symboltable(symboltable_t  *symtab, char *name) {
 void enter_scope(symboltable_t *symtab, ast_node node) {
   assert(symtab);
 
+  printf("entering new scope with node %s\n", NODE_NAME(node->node_type));
+
   // Check if current leaf has any children
-  if (symtab->leaf->child != NULL) {
+  if (symtab->leaf->child == NULL) {
+
     // Child becomes new leaf
     symtab->leaf->child = create_symhashtable(HASHSIZE);
     symtab->leaf->child->level = symtab->leaf->level + 1;
@@ -280,6 +300,7 @@ void enter_scope(symboltable_t *symtab, ast_node node) {
     symtab->leaf = symtab->leaf->child;
 
   } else {
+
     // Current leaf already has a child, new hash table
     // should become sibling of that child
     symhashtable_t *hashtable;
@@ -310,12 +331,12 @@ void enter_scope(symboltable_t *symtab, ast_node node) {
 void leave_scope(symboltable_t *symtab) {
   assert(symtab);
 
-  symtab->leaf = symtab->leaf->parent;
-
   // Destroy stack associated with this scope, don't need it 
   // once done with traversal of scope
   DestroyASTStack(symtab->leaf->scopeStack);
   symtab->leaf->scopeStack = NULL;
+
+  symtab->leaf = symtab->leaf->parent;
 }
 
 void print_symhash(symhashtable_t *hashtable) {
