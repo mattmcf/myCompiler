@@ -484,8 +484,6 @@ symnode_t *lookup_in_symboltable(symboltable_t  *symtab, char *name) {
 void enter_scope(symboltable_t *symtab, ast_node node, char *name) {
   assert(symtab);
 
-  printf("entering new scope with node %s and name %s\n", NODE_NAME(node->node_type), name);
-
   // Check if current leaf has any children
   if (symtab->leaf->child == NULL) {
     // Child becomes new leaf
@@ -538,7 +536,7 @@ void print_symhash(symhashtable_t *hashtable) {
   }
 
   // Print hash table name
-  printf("SCOPE: %s\n", hashtable->name);
+  printf("SCOPE: %d-%d %s\n", hashtable->level, hashtable->sibno, hashtable->name);
 
   // Print hash table contents
   for (int i = 0; i < hashtable->size; i++) {

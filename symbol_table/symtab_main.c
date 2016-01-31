@@ -40,7 +40,7 @@ int main(void) {
     /* fill it up */
     traverse_ast_tree(root, symtab);
 
-    printf("******PRETTY PRINTING SYMBOLTABLE******\n");
+    printf("****** PRETTY PRINTING SYMBOLTABLE ******\n");
 
     // Done filling the symtab
     print_symtab(symtab);
@@ -48,5 +48,4 @@ int main(void) {
 
   return 0;
 }
-
 
