@@ -110,7 +110,7 @@ void traverse_ast_tree(ast_node root, symboltable_t * symtab) {
 
   ASTPop(symtab->leaf->scopeStack);
 
-  if (ASTSize(symtab->leaf->scopeStack) == 0) {
+  if (ASTSize(symtab->leaf->scopeStack) == 0) 
     leave_scope(symtab);
 
   return;

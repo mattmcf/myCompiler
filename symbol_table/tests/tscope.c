@@ -2,7 +2,7 @@ int a;
 int b = 10;
 int c, d, e, f;
 int arr[100];
-int myfunc1;
+// int myfunc1;
 
 int myfunc1(int arg1, int arg2, int arg3[]){
 	int local_var1, local_var2;

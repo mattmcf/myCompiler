@@ -357,7 +357,7 @@ void print_symhash(symhashtable_t *hashtable) {
   }
 
   // Print hash table name
-  printf("SCOPE: %s\n", hashtable->name);
+  printf("SCOPE: %d-%d %s\n", hashtable->level, hashtable->sibno, hashtable->name);
 
   // Print hash table contents
   for (int i = 0; i < hashtable->size; i++) {
