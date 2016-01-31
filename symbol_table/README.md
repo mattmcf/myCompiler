@@ -6,7 +6,7 @@
 The file structure our our symbol table generator is as follows:
 
 * `scan.l` is our Flex scanner file. It is unchanged from the parser segment of the assignment.
-* `parser.y` is our bison file. We had to slightly correct it's behavior for compound statement reductions since the parser assignment submission.
+* `parser.y` is our bison file. We had to slightly correct its behavior for compound statement reductions since the parser assignment submission.
 * `parser_main.c` is an ast tree creation and printing execution source file. It builds a parse tree and was useful for testing the ast_stack functionality.
 * `ast.c` and `ast.h` contain the AST node naming conventions and functions used in the parser.
 * `ast_stack.h` declares structures and functions for interacting with a stack devoted to carrying `ast_node` data types.
