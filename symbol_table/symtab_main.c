@@ -110,7 +110,7 @@ void traverse_ast_tree(ast_node root, symboltable_t * symtab) {
 
   ASTPop(symtab->leaf->scopeStack);
 
-  if (ASTSize(symtab->leaf->scopeStack) == 0) {
+  if (ASTSize(symtab->leaf->scopeStack) == 0)
     leave_scope(symtab);
 
   return;
@@ -239,7 +239,7 @@ ast_node handle_func_decl_node(ast_node fdl, symboltable_t * symtab) {
     /* return next node to start traverse on */
     next_node = compound_stmt->left_child;
   } 
-  
+
   return next_node;
 }
 

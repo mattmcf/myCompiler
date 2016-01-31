@@ -2,7 +2,7 @@ int a;
 int b = 10;
 int c, d, e, f;
 int arr[100];
-int myfunc1;
+// int myfunc1;
 
 int myfunc1(int arg1, int arg2, int arg3[]){
 	int local_var1, local_var2;
@@ -11,7 +11,7 @@ int myfunc1(int arg1, int arg2, int arg3[]){
 	return 0;
 }
 
-int emptyfunc(int emptyarg) {}
+int emptyfunc(int emptyarg) {;}
 
 int main(void) {
 	int main_var;
@@ -39,5 +39,6 @@ int main(void) {
 		int for_var;
 		print for_var;
 	}
+
 	return 0;
 }
