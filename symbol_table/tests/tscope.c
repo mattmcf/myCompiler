@@ -18,7 +18,7 @@ int emptyfunc(int emptyarg, int emptyarr[]) {
 
 int main(void) {
 	int main_var;
-	int main_var;
+	// int main_var;
 	int truuuuuuu;
 	int major_key, to_success;
 

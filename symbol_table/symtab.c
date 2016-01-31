@@ -20,6 +20,8 @@
 #define NOHASHSLOT -1
 #define INIT_STK_SIZE 10
 
+static const int HASHSIZE = 211;
+
 /*
  * traverses an AST parse tree and completes symbol
  */
@@ -374,7 +376,7 @@ static int hashPJW(char *s, int size) {
    == NOHASHSLOT, then apply the hash function to figure it out. */
 symnode_t *lookup_symhashtable(symhashtable_t *hashtable, char *name,
 				   int slot) {
-  symnode_t *node = NULL;       // return NULL if not found
+  symnode_t *node;       // return NULL if not found
 
   assert(hashtable);
 
@@ -396,7 +398,7 @@ symnode_t *insert_into_symhashtable(symhashtable_t *hashtable, char *name) {
   assert(hashtable);
 
   int slot = hashPJW(name, hashtable->size);
-  symnode_t *node = lookup_symhashtable(hashtable, name, slot);
+  symnode_t *node = lookup_symhashtable(hashtable, name, NOHASHSLOT);
 
   /* error check if node already existed! */
 
@@ -404,9 +406,6 @@ symnode_t *insert_into_symhashtable(symhashtable_t *hashtable, char *name) {
     node = create_symnode(hashtable, name);
     node->next = hashtable->table[slot];
     hashtable->table[slot] = node;
-    hashtable->size++;
-  } else {
-    node = NULL;
   }
 
   return node;
@@ -417,7 +416,7 @@ symnode_t *insert_into_symhashtable(symhashtable_t *hashtable, char *name) {
  * Functions for symboltables.
  */
 
-static const int HASHSIZE = 211;
+
 
 /* Create an empty symbol table. */
 symboltable_t  *create_symboltable() {
