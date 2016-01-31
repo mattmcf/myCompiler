@@ -6,8 +6,7 @@
  *
  * You should extend the functions as appropriate.
  *
- *
- * YONDON FU AND MATT MCFARLAND - DELIGHTS (CS57 16W)
+ * Students: Yondon Fu and Matt McFarland - Delights (CS57 16W)
  */
 
 
@@ -22,6 +21,212 @@
 #define INIT_STK_SIZE 10
 
 /*
+ * traverses an AST parse tree and completes symbol
+ */
+void traverse_ast_tree(ast_node root, symboltable_t * symtab) {
+
+  assert(symtab);
+
+  if (root == NULL)
+    return;
+
+  printf("pushing %s onto stack\n", NODE_NAME(root->node_type));
+  ASTPush(root, symtab->leaf->scopeStack);
+
+  switch(root->node_type) {
+  case FUNC_DECLARATION_N:
+    // handle function node declaration and skip to first child of function compound statement
+    for (ast_node child = handle_func_decl_node(root,symtab); child != NULL; 
+          child = child->right_sibling) {
+      traverse_ast_tree(child, symtab);
+    }
+      
+    break;
+
+  case VAR_DECLARATION_N:
+    handle_var_decl_line_node(root,symtab);
+    // don't traverse these children
+    // can return now because parent call will move onto sibling
+    break;
+
+  case COMPOUND_STMT_N:
+    if (root->left_child != NULL)
+      enter_scope(symtab, root, "BLOCK");
+
+    for (ast_node child = root->left_child; child != NULL; child = child->right_sibling)
+      traverse_ast_tree(child, symtab);
+
+    break;
+
+  default:
+    for (ast_node child = root->left_child; child != NULL; child = child->right_sibling)
+      traverse_ast_tree(child, symtab);
+
+    break;  
+  }
+
+  ast_node popped = ASTPop(symtab->leaf->scopeStack);
+
+  if (ASTSize(symtab->leaf->scopeStack) == 0 && root->right_sibling == NULL)
+    leave_scope(symtab);
+  
+  return;
+}
+
+
+/*
+ * Handles adding function declarations to symbol table. changes scope and add 
+ * new parameters to new scope. Returns next sibling in compound statement to tranverse.
+ */
+ast_node handle_func_decl_node(ast_node fdl, symboltable_t * symtab) {
+
+  assert(fdl);
+  assert(symtab);
+
+  // Insert symnode for function into leaf symhashtable
+  symnode_t *fdl_node = insert_into_symboltable(symtab, fdl->left_child->right_sibling->value_string);
+
+  if (fdl_node == NULL) {
+    /* duplicate symbol in scope */
+    fprintf(stderr, "error: duplicate symbol \'%s\' found. Please fix before continuing.\n", fdl->left_child->right_sibling->value_string);
+    exit(1);
+  }
+
+  // Set symnode as a func node
+  set_node_type(fdl_node, FUNC_SYM);
+
+  // Get return type
+  type_specifier_t return_type = get_datatype(fdl->left_child->left_child);
+
+  // Get id specifier
+  char *id = fdl->left_child->right_sibling->value_string;     // should strdup this for the symbol table?
+  
+  // Count arguments
+  ast_node arg = fdl->left_child->right_sibling->right_sibling;
+  arg = arg->left_child;
+
+  int arg_count = 0;
+  var_symbol * arg_arr = NULL;
+
+  /* collect all argument parameters */
+  if (arg->node_type != VOID_N) {
+
+    int arg_arr_size = 5;     /* magic number */
+    arg_arr = (var_symbol *)calloc(arg_arr_size, sizeof(var_symbol));
+    assert(arg_arr);
+   
+    type_specifier_t type;
+    modifier_t mod;
+    char * name;
+
+    while (arg != NULL) {
+
+      /* make a variable for each argument */
+      type = get_datatype(arg->left_child->left_child);
+      if (arg->node_type == FORMAL_PARAM_N)
+        mod = SINGLE_DT;
+      else 
+        mod = ARRAY_DT;
+
+      name = arg->left_child->right_sibling->value_string;
+
+      arg_arr[arg_count] = init_variable(name, type, mod);  // static variable struct on stack 
+      arg_count++;
+
+      /* resize type array */
+      if (arg_count == arg_arr_size) {
+        arg_arr_size *= 2;
+        arg_arr = realloc(arg_arr, sizeof(var_symbol) * arg_arr_size);
+        assert(arg_arr);
+      }
+
+      /* move to next argument */
+      arg = arg->right_sibling;
+    }
+  }
+
+  /* add function symbol to current (global) scope */
+
+  // Set fields for func node in current (global) scope
+  set_node_func(fdl_node, id, return_type, arg_count, arg_arr);
+
+  /* get CS node */
+  ast_node compound_stmt = fdl->left_child->right_sibling->right_sibling->right_sibling;
+  ast_node next_node = NULL;
+
+  if (compound_stmt->left_child != NULL) {
+
+    /* enter new scope -- skipping CS node */
+    enter_scope(symtab, compound_stmt->left_child, fdl_node->name);
+    //enter_scope(symtab, fdl, fdl_node->name);
+
+    /* add function parameters to this new scope symbol table */
+    for (int i = 0; i < arg_count; i++) {
+      // Insert var node in leaf symhashtable
+      symnode_t *var_node = insert_into_symboltable(symtab, (&arg_arr[i])->name);
+
+      if (var_node == NULL) {
+        fprintf(stderr, "error: duplicate variable symbol \'%s\' found. Please fix before continuing.\n", (&arg_arr[i])->name);
+        exit(1);
+      }
+
+      set_node_type(var_node, VAR_SYM);
+      set_node_var(var_node, &arg_arr[i]);
+    }
+
+    /* return next node to start traverse on */
+    next_node = compound_stmt->left_child;
+  } 
+
+  return next_node;
+}
+
+/*
+ * adds variable declarations to current scope 
+ */
+void handle_var_decl_line_node(ast_node vdl, symboltable_t * symtab) {
+
+  assert(symtab);
+  assert(symtab);
+
+  type_specifier_t this_type = get_datatype(vdl->left_child->left_child);
+
+  ast_node child = vdl->left_child->right_sibling;
+
+  while (child != NULL) {
+    char *name = child->left_child->value_string;
+    modifier_t mod;
+
+    if (child->left_child->right_sibling == NULL) {
+      mod = SINGLE_DT;
+    } else if (child->left_child->right_sibling->node_type == INT_LITERAL_N) {
+      mod = ARRAY_DT;
+    } else {
+      mod = SINGLE_DT;
+    }
+
+    // Insert symnode for variable
+    symnode_t *var_node = insert_into_symboltable(symtab, name);
+
+    if (var_node == NULL) {
+      fprintf(stderr, "error: duplicate variable symbol \'%s\' found. Please fix before continuing.\n", name);
+      exit(1);
+    }    
+
+    set_node_type(var_node, VAR_SYM);
+
+    // Initialize variable
+    var_symbol new_var = init_variable(name, this_type, mod);
+
+    // Set variable field in symnode
+    set_node_var(var_node, &new_var);
+
+    // Next variable
+    child = child->right_sibling;
+  }
+}
+
+/*
  * Functions for argument structs
  */
 
@@ -30,11 +235,6 @@
  * Note: need to copy returned struct into dynamically allocated memory
  */
 var_symbol init_variable(char * name, type_specifier_t type, modifier_t mod) {
-
-  // variable * new_var = (variable *)calloc(1,sizeof(variable));
-  // assert(new_var);
-
-  printf("initializing new variable: %s, %d, %d\n",name,type,mod);  // debug
 
   var_symbol new_var;
 
@@ -85,8 +285,6 @@ symnode_t * create_symnode(symhashtable_t *hashtable, char *name) {
   node->name = name;
   node->parent = hashtable;
 
-  printf("creating symnode with name %s\n",name);
-
   return node;
 }
   
@@ -105,8 +303,6 @@ void set_node_var(symnode_t *node, var_symbol *var) {
   assert(node);
   assert(var);
 
-  printf("setting node %s to a variable node\n", node->name);
-
   /* node->symbol.variable.[attribute] */
   node->s.v.name = var->name;
   node->s.v.type = var->type;
@@ -117,18 +313,11 @@ void set_node_func(symnode_t *node, char * name, type_specifier_t type, int arg_
   assert(node);
   node->name = name;
 
-  printf("setting node %s to a function declaration node\n",node->name);
-
   /* symbol.function.[attribute] */
   node->s.f.return_type = type;
   node->s.f.arg_count = arg_count;
   node->s.f.arg_arr = arg_arr;
 
-  for (int i = 0; i < arg_count; i++) {
-    printf("Param name: %s\n", node->s.f.arg_arr[i].name);
-    printf("Param type: %s\n", TYPE_NAME(node->s.f.arg_arr[i].type));
-    printf("Param modifier: %s\n", MODIFIER_NAME(node->s.f.arg_arr[i].modifier));
-  }
 }
 
 int name_is_equal(symnode_t *node, char *name) {
@@ -225,8 +414,6 @@ symnode_t *insert_into_symhashtable(symhashtable_t *hashtable, char *name) {
 }
 
 
-
-
 /*
  * Functions for symboltables.
  */
@@ -240,12 +427,10 @@ symboltable_t  *create_symboltable() {
 
   symhashtable_t *hashtable = create_symhashtable(HASHSIZE);
   hashtable->level = 0;
-  hashtable->name = "GLOBAL";
+  hashtable->name = strdup("GLOBAL");
 
   symtab->root = hashtable;
   symtab->leaf = hashtable;
-
-  printf("Entering scope: GLOBAL\n");
 
   return symtab;
 }
@@ -299,7 +484,7 @@ symnode_t *lookup_in_symboltable(symboltable_t  *symtab, char *name) {
 void enter_scope(symboltable_t *symtab, ast_node node, char *name) {
   assert(symtab);
 
-  printf("entering new scope with node %s\n", NODE_NAME(node->node_type));
+  printf("entering new scope with node %s and name %s\n", NODE_NAME(node->node_type), name);
 
   // Check if current leaf has any children
   if (symtab->leaf->child == NULL) {
@@ -327,13 +512,9 @@ void enter_scope(symboltable_t *symtab, ast_node node, char *name) {
     symtab->leaf = hashtable->rightsib;
   }
 
-  printf("Entering scope: %s\n", name);
-
   // Label new hash table with node type that begins the new scope
   // i.e. COMPOUND, IF, WHILE, FOR, etc.
   symtab->leaf->name = name;
-  // Push current AST node onto scopeStack as the first node
-  ASTPush(node, symtab->leaf->scopeStack);
 }
 
 /*

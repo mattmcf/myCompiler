@@ -5,7 +5,7 @@
  *
  * extended and changed muchly by sean
  *
- * YONDON FU AND MATT MCFARLAND - DELIGHTS (CS57 16W)
+ * Students: Yondon Fu and Matt McFarland - Delights (CS57 16W)
  * 
  */
 
@@ -127,6 +127,15 @@ typedef struct {
   symhashtable_t *root, *leaf;
     
 } symboltable_t;
+
+/* traversal function */
+void traverse_ast_tree(ast_node root, symboltable_t * symtab);
+
+/* handle function declaration nodes */
+ast_node handle_func_decl_node(ast_node fdl, symboltable_t * symtab);
+
+/* handle variable declaration line nodes */
+void handle_var_decl_line_node(ast_node vdl, symboltable_t * symtab);
 
 /* 
  * makes a variable of type and with modifier 

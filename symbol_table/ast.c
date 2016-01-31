@@ -2,6 +2,8 @@
  *
  * Written by THC for CS 57; massaged by SWS
  *
+ * Students: Yondon Fu and Matt McFarland - Delights (CS57 16W)
+ *
  * Relies on an enum and a struct for
  * various node types that appear in ast.h.  You should modify the
  * enum and struct as appropriate.

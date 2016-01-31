@@ -5,7 +5,7 @@
  *
  * Written by THC for CS 57; massaged by SWS.  Modify this file as appropriate.
  *
- * YONDON FU AND MATT MCFARLAND - DELIGHTS (CS57 16W)
+ * Students: Yondon Fu and Matt McFarland - Delights (CS57 16W)
  * 
  */
 
