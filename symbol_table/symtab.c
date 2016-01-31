@@ -382,7 +382,7 @@ void print_symhash(symhashtable_t *hashtable) {
           printf("ARG_COUNT: %d, ", node->s.f.arg_count);
           printf("ARGS: ");
           for (int j = 0; j < node->s.f.arg_count; j++) {
-            printf("[%s, %s, %s], ", node->s.f.arg_arr[j].name, TYPE_NAME(node->s.f.arg_arr[j].type), MODIFIER_NAME(node->s.f.arg_arr[j].modifier));
+            printf("[%s, %s, %s] ", node->s.f.arg_arr[j].name, TYPE_NAME(node->s.f.arg_arr[j].type), MODIFIER_NAME(node->s.f.arg_arr[j].modifier));
           }
 
           break;
