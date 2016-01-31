@@ -20,22 +20,22 @@ extern int yydebug; 	// defined in parser.y
 int parseError = 0; 	// global flag
 
 /*
- * is_array is 1 if variable is array
- *
- * usually referencing a static variable on stack. copy into memory.
- *
- * returns 0 if symbol was successfully added
- * returns 1 if this symbol was already delclared
- */
-int add_var_symbol(variable * var, symboltable_t * symtab);
+//  * is_array is 1 if variable is array
+//  *
+//  * usually referencing a static variable on stack. copy into memory.
+//  *
+//  * returns 0 if symbol was successfully added
+//  * returns 1 if this symbol was already delclared
+//  */
+// int add_var_symbol(variable * var, symboltable_t * symtab);
 
- /*
-  * free arg_types array once done with function call
-  *
-  * returns 0 if symbol was successfully added
-  * returns 1 if this symbol was already delclared
-  */
-int add_func_symbol(char * id, type_specifier_t return_type, int arg_count, variable * arg_arr, symboltable_t * symtab);
+ 
+//   * free arg_types array once done with function call
+//   *
+//   * returns 0 if symbol was successfully added
+//   * returns 1 if this symbol was already delclared
+  
+// int add_func_symbol(char * id, type_specifier_t return_type, int arg_count, variable * arg_arr, symboltable_t * symtab);
 
 /* traversal function */
 void traverse_ast_tree(ast_node root, symboltable_t * symtab);
@@ -162,6 +162,12 @@ ast_node handle_func_decl_node(ast_node fdl, symboltable_t * symtab) {
   // Insert symnode for function into leaf symhashtable
   symnode_t *fdl_node = insert_into_symboltable(symtab, fdl->value_string);
 
+  if (fdl_node == NULL) {
+    /* duplicate symbol in scope */
+    fprintf(stderr, "error: duplicate symbol \'%s\' found. Please fix before continuing.\n", fdl->value_string);
+    exit(1);
+  }
+
   // Set symnode as a func node
   set_node_type(fdl_node, FUNC_SYM);
 
@@ -181,13 +187,13 @@ ast_node handle_func_decl_node(ast_node fdl, symboltable_t * symtab) {
   arg = arg->left_child;
 
   int arg_count = 0;
-  variable * arg_arr = NULL;
+  var_symbol * arg_arr = NULL;
 
   /* collect all argument parameters */
   if (arg->node_type != VOID_N) {
 
     int arg_arr_size = 5;     /* magic number */
-    arg_arr = (variable *)calloc(arg_arr_size, sizeof(variable));
+    arg_arr = (var_symbol *)calloc(arg_arr_size, sizeof(var_symbol));
     assert(arg_arr);
     
     type_specifier_t type;
@@ -215,7 +221,7 @@ ast_node handle_func_decl_node(ast_node fdl, symboltable_t * symtab) {
       /* resize type array */
       if (arg_count == arg_arr_size) {
         arg_arr_size *= 2;
-        arg_arr = realloc(arg_arr, sizeof(variable) * arg_arr_size);
+        arg_arr = realloc(arg_arr, sizeof(var_symbol) * arg_arr_size);
         assert(arg_arr);
       }
 
@@ -225,7 +231,7 @@ ast_node handle_func_decl_node(ast_node fdl, symboltable_t * symtab) {
   }
 
   /* add function symbol to current (global) scope */
-  // add_func_symbol(id, return_type, arg_count, arg_arr, symtab);
+  //add_func_symbol(id, return_type, arg_count, arg_arr, symtab);
 
   // Set fields for func node in current (global) scope
   set_node_func(fdl_node, id, return_type, arg_count, arg_arr);
@@ -241,8 +247,15 @@ ast_node handle_func_decl_node(ast_node fdl, symboltable_t * symtab) {
 
     /* add function parameters to this new scope symbol table */
     for (int i = 0; i < arg_count; i++) {
+
       // Insert var node in leaf symhashtable
-      symnode *var_node = insert_into_symboltable(symtab, &arg_arr[i]->name);
+      symnode_t *var_node = insert_into_symboltable(symtab, (&arg_arr[i])->name);
+
+      if (var_node == NULL) {
+        fprintf(stderr, "error: duplicate variable symbol \'%s\' found. Please fix before continuing.\n", (&arg_arr[i])->name);
+        exit(1);
+      }
+
       set_node_type(var_node, VAR_SYM);
 
       set_node_var(var_node, &arg_arr[i]);
@@ -250,12 +263,11 @@ ast_node handle_func_decl_node(ast_node fdl, symboltable_t * symtab) {
     }
 
     /* return next node to start traverse on */
-    // next_node = compound_stmt->left_child;
+    next_node = compound_stmt->left_child;
 
     // Handle VDL node if present
-    handle_var_decl_line_node(compound_stmt->left_child, symtab);
-
-    leave_scope(symtab);
+    //handle_var_decl_line_node(compound_stmt->left_child, symtab);
+    //leave_scope(symtab);
   } 
 
   if (arg_arr != NULL)
@@ -289,13 +301,19 @@ void handle_var_decl_line_node(ast_node vdl, symboltable_t * symtab) {
 
     // Insert symnode for variable
     symnode_t *var_node = insert_into_symboltable(symtab, name);
+
+    if (var_node == NULL) {
+      fprintf(stderr, "error: duplicate variable symbol \'%s\' found. Please fix before continuing.\n", name);
+      exit(1);
+    }    
+
     set_node_type(var_node, VAR_SYM);
 
     // Initialize variable
-    variable new_var = init_variable(name, this_type, mod);
+    var_symbol new_var = init_variable(name, this_type, mod);
 
     // Set variable field in symnode
-    set_node_var(var_node, new_var);
+    set_node_var(var_node, &new_var);
 
     // Next variable
     child = child->right_sibling;

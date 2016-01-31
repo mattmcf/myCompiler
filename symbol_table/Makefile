@@ -10,11 +10,11 @@ FLEXFLAGS = -ll
 .cc.o:
 	$(CC) $(CFLAGS) -c $<
 
-symtab : lex.yy.o parser.tab.o ast.o symtab_main.o ast_stack.o
-	$(CC) -o $@ $(CFLAGS) lex.yy.o parser.tab.o ast.o symtab_main.o ast_stack.o $(FLEXFLAGS)
+symtab : lex.yy.o parser.tab.o ast.o symtab_main.o ast_stack.o symtab.o
+	$(CC) -o $@ $(CFLAGS) lex.yy.o parser.tab.o ast.o symtab_main.o ast_stack.o symtab.o $(FLEXFLAGS)
 
-parser_print : lex.yy.o parser.tab.o ast.o parser_main.o ast_stack.o
-	$(CC) -o $@ $(CFLAGS) lex.yy.o parser.tab.o ast.o parser_main.o ast_stack.o $(FLEXFLAGS)
+parser_print : lex.yy.o parser.tab.o ast.o parser_main.o ast_stack.o symtab.o
+	$(CC) -o $@ $(CFLAGS) lex.yy.o parser.tab.o ast.o parser_main.o ast_stack.o symtab.o $(FLEXFLAGS)
 
 ast_stack.o : ast_stack.c
 	$(CC) -c $(CFLAGS) $<
@@ -41,7 +41,7 @@ parser.tab.c : parser.y
 
 
 clean :
-	rm -f symtab parser_print ast_stack.o lex.yy.o parser.tab.o parser_main.o ast.o \
+	rm -f symtab parser_print symtab.o ast_stack.o lex.yy.o parser.tab.o parser_main.o ast.o \
 	parser.tab.h parser.tab.c lex.yy.c *~ parser.output \
 	&& rm -rf results
 

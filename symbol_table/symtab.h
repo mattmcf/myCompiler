@@ -45,27 +45,29 @@ typedef enum {
  */
 typedef enum {
   VAR_SYM,
-  FUNC_SUM
+  FUNC_SYM
 } declaration_specifier_t;
 
 /*
  * ----- STRUCTS -----
  */
 
-typedef struct variable {
+// typedef struct variable {
+//   char * name;
+//   type_specifier_t type;
+//   modifier_t modifier;
+// } variable;
+
+typedef struct var_symbol {
   char * name;
   type_specifier_t type;
   modifier_t modifier;
-} variable;
-
-typedef struct var_symbol {
-  variable v;
 } var_symbol;
 
 typedef struct func_symbol {
   type_specifier_t return_type;
   int arg_count;
-  variable * arg_arr;     // array to handle dynamically sized argument parameters
+  var_symbol * arg_arr;     // array to handle dynamically sized argument parameters
 
   // what else?
 } func_symbol;
@@ -86,11 +88,30 @@ typedef struct symnode {
 
 } symnode_t;
 
+/* Hash table for a given scope in a symbol table. */
+typedef struct symhashtable {
+  char *name;
+  // symtab_type  type;   -- don't use
+  int size;      /* size of hash table */
+  symnode_t **table;    /* hash table */
+  int level;      /* level of scope, 0 is outermost */
+  int sibno;                    /* 0 is leftmost */
+  struct symhashtable *parent, *child, *rightsib;
+  struct ast_stack *scopeStack; /* Stack to keep track of traversed elements in scope */
+
+} symhashtable_t;
+
+/* Symbol table for all levels of scope. */
+typedef struct {
+  symhashtable_t *root, *leaf;
+    
+} symboltable_t;
+
 /* 
  * makes a variable of type and with modifier 
  * returns variable on stack, should save elsewhere
  */
-variable init_variable(char * name, type_specifier_t type, modifier_t mod);
+var_symbol init_variable(char * name, type_specifier_t type, modifier_t mod);
 
 /* 
  * get_type() : returns enumerated type_specifier (definied in symtab.h)
@@ -101,7 +122,7 @@ variable init_variable(char * name, type_specifier_t type, modifier_t mod);
 type_specifier_t get_datatype(ast_node n);
 
 /* Create an empty symnode */
-symnode_t create_symnode(symhashtable_t *hashtable, char *name);
+symnode_t * create_symnode(symhashtable_t *hashtable, char *name);
 
 /* Set the nsame in this node. */
 void set_node_name(symnode_t *node, char *name);
@@ -110,36 +131,16 @@ void set_node_name(symnode_t *node, char *name);
 void set_node_type(symnode_t *node, declaration_specifier_t sym_type);
 
 /* Set fields for variable node */
-void set_node_var(symnode_t *node, variable *var);
+void set_node_var(symnode_t *node, var_symbol *var);
 
 /* Set fields for func node */
-void set_node_func(symnode_t *node, type_specifier_t type, int arg_count, variable *arg_arr);
+void set_node_func(symnode_t *node, char * name, type_specifier_t type, int arg_count, var_symbol *arg_arr);
 
 /* Does the identifier in this node equal name? */
 int name_is_equal(symnode_t *node, char *name);
 
 
-/* Hash table for a given scope in a symbol table. */
 
-typedef struct symhashtable {
-  char *name;
-  // symtab_type  type;   -- don't use
-  int size;			 /* size of hash table */
-  symnode_t **table;		/* hash table */
-  int level;			/* level of scope, 0 is outermost */
-  int sibno;                    /* 0 is leftmost */
-  struct symhashtable *parent, *child, *rightsib;
-  struct ast_stack *scopeStack; /* Stack to keep track of traversed elements in scope */
-
-} symhashtable_t;
-
-
-
-/* Symbol table for all levels of scope. */
-typedef struct {
-  symhashtable_t *root, *leaf;
-    
-} symboltable_t;
 
 /* Create an empty symbol table. */
 symboltable_t *create_symboltable();
@@ -162,5 +163,7 @@ void leave_scope(symboltable_t *symtab);
 
 /* print the table in a nice way */
 void print_symtab(symboltable_t *symtab);
+
+void print_symhash(symhashtable_t *symtab);
 
 #endif

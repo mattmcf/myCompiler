@@ -11,6 +11,9 @@
 #include "symtab.h"
 #include "ast.h"
 #include "ast_stack.h"
+#include <assert.h>
+#include <string.h>
+#include <stdio.h>
 
 #define NOHASHSLOT -1
 #define INIT_STK_SIZE 10
@@ -19,12 +22,20 @@
  * Functions for argument structs
  */
 
-variable init_variable(char * name, type_specifier_t type, modifier_t mod) {
+/*
+ * Inits a new varable struct and returns the structure on stack
+ * Note: need to copy returned struct into dynamically allocated memory
+ */
+var_symbol init_variable(char * name, type_specifier_t type, modifier_t mod) {
 
-  variable new_var;
-  new_var->name = name;     // note, name needs to be saved somewhere else
-  new_var->type = type;
-  new_var->modifier = mod;
+  // variable * new_var = (variable *)calloc(1,sizeof(variable));
+  // assert(new_var);
+
+  var_symbol new_var;
+
+  new_var.name = name;     // note, name needs to be saved somewhere else
+  new_var.type = type;
+  new_var.modifier = mod;
 
   return new_var;
 }
@@ -37,7 +48,7 @@ type_specifier_t get_datatype(ast_node n) {
 
   assert(n);
 
-  type_specifier t;
+  type_specifier_t t;
   switch (n->node_type) {
 
     case TYPEINT_N:
@@ -60,11 +71,12 @@ type_specifier_t get_datatype(ast_node n) {
  * Functions for symnodes.
  */
 
-symnode_t create_symnode(symhashtable_t *hashtable, char *name) {
-  symnode_t *node = malloc(sizeof(symnode_t));
+symnode_t * create_symnode(symhashtable_t *hashtable, char *name) {
+  symnode_t * node = (symnode_t *)malloc(sizeof(symnode_t));
   assert(node);
   node->name = name;
   node->parent = hashtable;
+  return node;
 }
   
 void set_node_name(symnode_t *node, char *name) {
@@ -72,28 +84,27 @@ void set_node_name(symnode_t *node, char *name) {
 }
 
 void set_node_type(symnode_t *node, declaration_specifier_t sym_type) {
-  if (sym_type == VAR_SYM) {
-    node->symbol = malloc(sizeof(var_symbol));
-
-  } else {
-    node->symbol = malloc(sizeof(func_symbol));
-  }
+  node->sym_type = sym_type;
+  //node->s = (symbol *)malloc(sizeof(symbol));
 }
 
-void set_node_var_fields(symnode_t *node, char *name, type_specifier_t type, modifier_t modifier) {
+void set_node_var(symnode_t *node, var_symbol *var) {
   assert(node);
 
-  node->symbol->variable->name = name;
-  node->symbol->variable->type = type;
-  node->symbol->variable->modifier = modifier;
+  /* node->symbol.variable.[attribute] */
+  node->s.v.name = var->name;
+  node->s.v.type = var->type;
+  node->s.v.modifier = var->modifier;
 }
 
-void set_node_func_fields(symnode_t *node, type_specifier_t type, int arg_count, variable *arg_arr) {
+void set_node_func(symnode_t *node, char * name, type_specifier_t type, int arg_count, var_symbol *arg_arr) {
   assert(node);
+  node->name = name;
 
-  node->symbol->return_type = type;
-  node->symbol->arg_count = arg_count;
-  node->symbol->arg_arr = arg_arr;
+  /* symbol.function.[attribute] */
+  node->s.f.return_type = type;
+  node->s.f.arg_count = arg_count;
+  node->s.f.arg_arr = arg_arr;
 }
 
 int name_is_equal(symnode_t *node, char *name) {
@@ -180,6 +191,8 @@ symnode_t *insert_into_symhashtable(symhashtable_t *hashtable, char *name) {
     node = create_symnode(hashtable, name);
     node->next = hashtable->table[slot];
     hashtable->table[slot] = node;
+  } else {
+    node = NULL;
   }
 
   return node;
@@ -264,7 +277,7 @@ void enter_scope(symboltable_t *symtab, ast_node node) {
     symtab->leaf->child->level = symtab->leaf->level + 1;
     symtab->leaf->child->sibno = 0;
     symtab->leaf->child->parent = symtab->leaf;
-    symtab->leaf = symtab->leaf->child
+    symtab->leaf = symtab->leaf->child;
 
   } else {
     // Current leaf already has a child, new hash table
@@ -301,15 +314,8 @@ void leave_scope(symboltable_t *symtab) {
 
   // Destroy stack associated with this scope, don't need it 
   // once done with traversal of scope
-  DestroyASTSTack(symtab->leaf->scopeStack);
+  DestroyASTStack(symtab->leaf->scopeStack);
   symtab->leaf->scopeStack = NULL;
-}
-
-/*
- * Print contents of symbol table
- */
-void print_symtab(symboltable_t *symtab) {
-  print_symhash(symtab->root);
 }
 
 void print_symhash(symhashtable_t *hashtable) {
@@ -323,18 +329,19 @@ void print_symhash(symhashtable_t *hashtable) {
     symnode_t *node;
 
     for (node = hashtable->table[i]; node != NULL; node = node->next) {
-      printf("%s", node->name);
+      printf("name: %s ", node->name);
 
-      switch (node->declaration_specifier) {
+      switch (node->sym_type) {
         case VAR_SYM:
-          printf("%s", node->symbol->t);
+          printf("%d", node->s.v.type);
           break;
 
         case FUNC_SYM:
-          printf("%d", node->symbol->return_type);
-          printf("%d", node->symbol->arg_count);
-          for (int j = 0; j < node->symbol->arg_count; j++) {
-            printf("%d", node->symbol->arg_types[j]);
+          printf("symbol type: %d, ", node->s.f.return_type);
+          printf("arg count: %d, ", node->s.f.arg_count);
+          printf("args: ");
+          for (int j = 0; j < node->s.f.arg_count; j++) {
+            printf("[%d, %s] ",i,node->s.f.arg_arr[j].name);
           }
 
           break;
@@ -342,6 +349,7 @@ void print_symhash(symhashtable_t *hashtable) {
         default:
           break;
       }
+      printf("\n");
     }
   }
 
@@ -354,3 +362,11 @@ void print_symhash(symhashtable_t *hashtable) {
   }
 
 }
+
+/*
+ * Print contents of symbol table
+ */
+void print_symtab(symboltable_t *symtab) {
+  print_symhash(symtab->root);
+}
+
