@@ -30,7 +30,6 @@ void traverse_ast_tree(ast_node root, symboltable_t * symtab) {
   if (root == NULL)
     return;
 
-  // printf("pushing %s onto stack\n", NODE_NAME(root->node_type));
   ASTPush(root, symtab->leaf->scopeStack);
 
   switch(root->node_type) {
