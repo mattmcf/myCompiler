@@ -406,7 +406,7 @@ symnode_t *insert_into_symhashtable(symhashtable_t *hashtable, char *name) {
     node = create_symnode(hashtable, name);
     node->next = hashtable->table[slot];
     hashtable->table[slot] = node;
-  }
+  } 
 
   return node;
 }

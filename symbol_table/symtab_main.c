@@ -28,7 +28,7 @@ int main(void) {
     fprintf(stderr, "WARNING: There were parse errors.\nParse tree may be ill-formed.\n");
 
   if (!noRoot) {
-  	//print_ast(root,0);
+  	// print_ast(root,0);
   	
     /* create empty symboltable */
     symtab = create_symboltable();
