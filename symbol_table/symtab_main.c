@@ -68,6 +68,11 @@ int main(void) {
 
     /* fill it up */
     traverse_ast_tree(root, symtab);
+
+    printf("******PRETTY PRINTING SYMBOLTABLE******\n");
+
+    // Done filling the symtab
+    print_symtab(symtab);
   }
 
   return 0;
@@ -80,6 +85,8 @@ void traverse_ast_tree(ast_node root, symboltable_t * symtab) {
 
   if (root == NULL)
     return;
+
+  // printf("Root: %s\n", NODE_NAME(root->node_type));
 
   ASTPush(root, symtab->leaf->scopeStack);
 
@@ -101,7 +108,7 @@ void traverse_ast_tree(ast_node root, symboltable_t * symtab) {
 
   case COMPOUND_STMT_N:
     if (root->left_child != NULL)
-      enter_scope(symtab, root->left_child);
+      enter_scope(symtab, root->left_child, "BLOCK");
 
     for (ast_node child = root->left_child; child != NULL; child = child->right_sibling)
       traverse_ast_tree(child, symtab);
@@ -117,8 +124,9 @@ void traverse_ast_tree(ast_node root, symboltable_t * symtab) {
 
   ASTPop(symtab->leaf->scopeStack);
 
-  if (ASTSize(symtab->leaf->scopeStack) == 0)
+  if (ASTSize(symtab->leaf->scopeStack) == 0) {
     leave_scope(symtab);
+  }
 
   return;
 
@@ -159,8 +167,11 @@ ast_node handle_func_decl_node(ast_node fdl, symboltable_t * symtab) {
   assert(fdl);
   assert(symtab);
 
+  // printf("Got to handle fdl\n");
+
+
   // Insert symnode for function into leaf symhashtable
-  symnode_t *fdl_node = insert_into_symboltable(symtab, fdl->value_string);
+  symnode_t *fdl_node = insert_into_symboltable(symtab, fdl->left_child->right_sibling->value_string);
 
   if (fdl_node == NULL) {
     /* duplicate symbol in scope */
@@ -180,7 +191,7 @@ ast_node handle_func_decl_node(ast_node fdl, symboltable_t * symtab) {
 
   // Get id specifier
   char *id = fdl->left_child->right_sibling->value_string;     // should strdup this for the symbol table?
-
+  
   // Count arguments
   ast_node arg = fdl->left_child->right_sibling->right_sibling;
   assert(arg->left_child);
@@ -191,11 +202,12 @@ ast_node handle_func_decl_node(ast_node fdl, symboltable_t * symtab) {
 
   /* collect all argument parameters */
   if (arg->node_type != VOID_N) {
+    printf("Parameters for function are not void\n");
 
     int arg_arr_size = 5;     /* magic number */
     arg_arr = (var_symbol *)calloc(arg_arr_size, sizeof(var_symbol));
     assert(arg_arr);
-    
+   
     type_specifier_t type;
     modifier_t mod;
     char * name;
@@ -203,7 +215,7 @@ ast_node handle_func_decl_node(ast_node fdl, symboltable_t * symtab) {
     while (arg != NULL) {
 
       /* make a variable for each argument */
-      type = get_datatype(arg->left_child);
+      type = get_datatype(arg->left_child->left_child);
       if (arg->node_type == FORMAL_PARAM_N)
         mod = SINGLE_DT;
       else if (arg->node_type == FORMAL_PARAM_ARR_N)
@@ -243,11 +255,10 @@ ast_node handle_func_decl_node(ast_node fdl, symboltable_t * symtab) {
   if (compound_stmt->left_child != NULL) {
 
     /* enter new scope -- skipping CS node */
-    enter_scope(symtab, compound_stmt->left_child);
+    enter_scope(symtab, compound_stmt->left_child, fdl_node->name);
 
     /* add function parameters to this new scope symbol table */
     for (int i = 0; i < arg_count; i++) {
-
       // Insert var node in leaf symhashtable
       symnode_t *var_node = insert_into_symboltable(symtab, (&arg_arr[i])->name);
 
@@ -270,8 +281,8 @@ ast_node handle_func_decl_node(ast_node fdl, symboltable_t * symtab) {
     //leave_scope(symtab);
   } 
 
-  if (arg_arr != NULL)
-    free(arg_arr);
+  // if (arg_arr != NULL)
+  //   free(arg_arr);
 
   return next_node;
 

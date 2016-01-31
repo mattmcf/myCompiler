@@ -105,6 +105,12 @@ void set_node_func(symnode_t *node, char * name, type_specifier_t type, int arg_
   node->s.f.return_type = type;
   node->s.f.arg_count = arg_count;
   node->s.f.arg_arr = arg_arr;
+
+  for (int i = 0; i < arg_count; i++) {
+    printf("Param name: %s\n", node->s.f.arg_arr[i].name);
+    printf("Param type: %s\n", TYPE_NAME(node->s.f.arg_arr[i].type));
+    printf("Param modifier: %s\n", MODIFIER_NAME(node->s.f.arg_arr[i].modifier));
+  }
 }
 
 int name_is_equal(symnode_t *node, char *name) {
@@ -129,7 +135,7 @@ symhashtable_t *create_symhashtable(int entries)    // modified function call
   assert(hashtable);
   // hashtable->type = type;  -- don't use
   hashtable->size = entries;
-  hashtable->table = calloc(entries, sizeof(symnode_t));
+  hashtable->table = calloc(entries, sizeof(symnode_t *));
 
   assert(hashtable->table);
 
@@ -191,6 +197,7 @@ symnode_t *insert_into_symhashtable(symhashtable_t *hashtable, char *name) {
     node = create_symnode(hashtable, name);
     node->next = hashtable->table[slot];
     hashtable->table[slot] = node;
+    hashtable->size++;
   } else {
     node = NULL;
   }
@@ -214,10 +221,13 @@ symboltable_t  *create_symboltable() {
 
   symhashtable_t *hashtable = create_symhashtable(HASHSIZE);
   hashtable->level = 0;
-  hashtable->name = "0";
+  hashtable->name = "GLOBAL";
 
   symtab->root = hashtable;
   symtab->leaf = hashtable;
+
+  printf("Entering scope: GLOBAL\n");
+
   return symtab;
 }
 
@@ -267,11 +277,11 @@ symnode_t *lookup_in_symboltable(symboltable_t  *symtab, char *name) {
  * When entering scope, a new symbol table is created at the innermost scope
 */
 // void enter_scope(symboltable_t *symtab, int type, ast_node node)
-void enter_scope(symboltable_t *symtab, ast_node node) {
+void enter_scope(symboltable_t *symtab, ast_node node, char *name) {
   assert(symtab);
 
   // Check if current leaf has any children
-  if (symtab->leaf->child != NULL) {
+  if (symtab->leaf->child == NULL) {
     // Child becomes new leaf
     symtab->leaf->child = create_symhashtable(HASHSIZE);
     symtab->leaf->child->level = symtab->leaf->level + 1;
@@ -295,10 +305,11 @@ void enter_scope(symboltable_t *symtab, ast_node node) {
     symtab->leaf = hashtable->rightsib;
   }
 
+  printf("Entering scope: %s\n", name);
+
   // Label new hash table with node type that begins the new scope
   // i.e. COMPOUND, IF, WHILE, FOR, etc.
-  symtab->leaf->name = NODE_NAME(node->node_type);
-
+  symtab->leaf->name = name;
   // Push current AST node onto scopeStack as the first node
   ASTPush(node, symtab->leaf->scopeStack);
 }
@@ -309,13 +320,14 @@ void enter_scope(symboltable_t *symtab, ast_node node) {
  */
 void leave_scope(symboltable_t *symtab) {
   assert(symtab);
-
-  symtab->leaf = symtab->leaf->parent;
+  printf("Leaving scope: %s\n", symtab->leaf->name);
 
   // Destroy stack associated with this scope, don't need it 
   // once done with traversal of scope
   DestroyASTStack(symtab->leaf->scopeStack);
   symtab->leaf->scopeStack = NULL;
+
+  symtab->leaf = symtab->leaf->parent;
 }
 
 void print_symhash(symhashtable_t *hashtable) {
@@ -324,24 +336,33 @@ void print_symhash(symhashtable_t *hashtable) {
     printf("  ");
   }
 
+  // Print hash table name
+  printf("SCOPE: %s\n", hashtable->name);
+
   // Print hash table contents
   for (int i = 0; i < hashtable->size; i++) {
     symnode_t *node;
 
     for (node = hashtable->table[i]; node != NULL; node = node->next) {
-      printf("name: %s ", node->name);
+      // Print spacing
+      for (int i = 0; i < hashtable->level + 1; i++) {
+        printf("  ");
+      }
+
+      printf("NAME: %s, ", node->name);
 
       switch (node->sym_type) {
         case VAR_SYM:
-          printf("%d", node->s.v.type);
+          printf("VAR_TYPE: %s, ", TYPE_NAME(node->s.v.type));
+          printf("MODIFIER: %s", MODIFIER_NAME(node->s.v.modifier));
           break;
 
         case FUNC_SYM:
-          printf("symbol type: %d, ", node->s.f.return_type);
-          printf("arg count: %d, ", node->s.f.arg_count);
-          printf("args: ");
+          printf("RETURN_TYPE: %s, ", TYPE_NAME(node->s.f.return_type));
+          printf("ARG_COUNT: %d, ", node->s.f.arg_count);
+          printf("ARGS: ");
           for (int j = 0; j < node->s.f.arg_count; j++) {
-            printf("[%d, %s] ",i,node->s.f.arg_arr[j].name);
+            printf("[%s, %s, %s], ", node->s.f.arg_arr[j].name, TYPE_NAME(node->s.f.arg_arr[j].type), MODIFIER_NAME(node->s.f.arg_arr[j].modifier));
           }
 
           break;
@@ -349,6 +370,7 @@ void print_symhash(symhashtable_t *hashtable) {
         default:
           break;
       }
+
       printf("\n");
     }
   }
