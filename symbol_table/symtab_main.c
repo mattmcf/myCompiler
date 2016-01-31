@@ -73,7 +73,7 @@ void traverse_ast_tree(ast_node root, symboltable_t * symtab) {
   switch(root->node_type) {
   case FUNC_DECLARATION_N:
 
-    printf("handling function declaration node\n");
+    // printf("handling function declaration node\n");
 
     // handle function node declaration and skip to first child of function compound statement
     for (ast_node child = handle_func_decl_node(root,symtab); child != NULL; 
@@ -85,7 +85,7 @@ void traverse_ast_tree(ast_node root, symboltable_t * symtab) {
 
   case VAR_DECLARATION_N:
 
-    printf("handling variable declaration line node\n");
+    // printf("handling variable declaration line node\n");
 
     handle_var_decl_line_node(root,symtab);
     // don't traverse these children
@@ -93,7 +93,7 @@ void traverse_ast_tree(ast_node root, symboltable_t * symtab) {
     break;
 
   case COMPOUND_STMT_N:
-    if (root->left_child != NULL)
+    if (root->left_child != NULL) 
       enter_scope(symtab, root->left_child, "BLOCK");
 
     for (ast_node child = root->left_child; child != NULL; child = child->right_sibling)
@@ -110,7 +110,7 @@ void traverse_ast_tree(ast_node root, symboltable_t * symtab) {
 
   ASTPop(symtab->leaf->scopeStack);
 
-  if (ASTSize(symtab->leaf->scopeStack) == 0)
+  if (ASTSize(symtab->leaf->scopeStack) == 0 && root->right_sibling == NULL)
     leave_scope(symtab);
 
   return;
@@ -159,7 +159,7 @@ ast_node handle_func_decl_node(ast_node fdl, symboltable_t * symtab) {
 
   /* collect all argument parameters */
   if (arg->node_type != VOID_N) {
-    printf("Parameters for function are not void\n");
+    // printf("Parameters for function are not void\n");
 
     int arg_arr_size = 5;     /* magic number */
     arg_arr = (var_symbol *)calloc(arg_arr_size, sizeof(var_symbol));
@@ -171,7 +171,7 @@ ast_node handle_func_decl_node(ast_node fdl, symboltable_t * symtab) {
 
     while (arg != NULL) {
 
-      printf("arg node type is %s\n",NODE_NAME(arg->left_child->node_type));
+      // printf("arg node type is %s\n",NODE_NAME(arg->left_child->node_type));
 
       /* make a variable for each argument */
       type = get_datatype(arg->left_child->left_child);
@@ -201,7 +201,7 @@ ast_node handle_func_decl_node(ast_node fdl, symboltable_t * symtab) {
     }
   }
 
-  printf("finished collecting arguments\n");
+  // printf("finished collecting arguments\n");
 
   /* add function symbol to current (global) scope */
 
@@ -214,12 +214,12 @@ ast_node handle_func_decl_node(ast_node fdl, symboltable_t * symtab) {
 
   if (compound_stmt->left_child != NULL) {
 
-    printf("seeing a function declaration compound statement\n");
+    // printf("seeing a function declaration compound statement\n");
 
     /* enter new scope -- skipping CS node */
     enter_scope(symtab, compound_stmt->left_child, fdl_node->name);
 
-    printf("entered a new scope\n");
+    // printf("entered a new scope\n");
 
     /* add function parameters to this new scope symbol table */
     for (int i = 0; i < arg_count; i++) {
