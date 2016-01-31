@@ -46,3 +46,18 @@ If any errors occur during the construction of the symbol table, the program wil
 
 We built upon the skeleton code to implement the symbol table construction. We used a recursive `traverse_ast_tree` function which walks the AST parse tree created from the bison parser and add symbols in the appropriate scopes.
 
+## Testing Files
+All test files live in the tests directory
+
+We hand wrote our answer key files by manually going through input files and constructing what we thought should be the expected symbol table structure for a particular file. We then piped our output into a .out file which we diffed with our key file to check if the actual output matched our expected output.
+
+### tcurly.c and tcurly_ans.txt
+Sample C program with numerous nested block scopes and variable declarations within them.
+
+### tscope.c and tscope_ans.txt
+Sample C program with multiple function scopes, as well as edge cases such as blocks with a single semi-colon, empty functions without any variable declarations. We do not reflect this in our key file, but we can also test for duplicate variable declarations by uncommenting line 21 in tscope.c. The output will be that a duplicate variable has been found and the symbol table program will stop running.
+
+Note: other test input files without key files can also be found in the tests directory.
+
+
+
