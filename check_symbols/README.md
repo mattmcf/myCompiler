@@ -1,9 +1,14 @@
-# Symbol Table Readme
+# Check_Symbols Readme
 ## Matt McFarland and Yondon Fu - Delights (CS 57 - 16W)
 (For more enjoyable reading, please see https://github.com/MattRMcFarland/myCompiler/tree/master/symbol_table)
 
 ## General Overview
 The file structure our our symbol table generator is as follows:
+
+We structured our file structure a little bit to more conveniently handle the source files.
+* `src/`
+**
+
 
 * `scan.l` is our Flex scanner file. It is unchanged from the parser segment of the assignment.
 * `parser.y` is our bison file. We had to slightly correct its behavior for compound statement reductions since the parser assignment submission.

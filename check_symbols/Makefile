@@ -42,7 +42,7 @@ parser.tab.c : parser.y
 
 
 clean :
-	rm -f symtab parser_print $(SRC_DIR)*.o *.o \
+	rm -f check_symbols symtab parser_print $(SRC_DIR)*.o *.o \
 	parser.tab.h parser.tab.c lex.yy.c *~ parser.output \
 	&& rm -rf results
 
