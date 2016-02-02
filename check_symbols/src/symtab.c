@@ -17,7 +17,6 @@
 #include <string.h>
 #include <stdio.h>
 
-#define NOHASHSLOT -1
 #define INIT_STK_SIZE 10
 
 static const int HASHSIZE = 211;
@@ -34,6 +33,9 @@ void traverse_ast_tree(ast_node root, symboltable_t * symtab) {
 
   ASTPush(root, symtab->leaf->scopeStack);
 
+  /* attach root's scope to current scope */
+  root->scope_table = symtab->leaf;
+
   /* attached root to it's scope symboltable */
   root->scope_table = symtab->leaf;
 
@@ -48,6 +50,7 @@ void traverse_ast_tree(ast_node root, symboltable_t * symtab) {
     break;
 
   case VAR_DECLARATION_N:
+    add_scope_to_children(root, symtab);
     handle_var_decl_line_node(root,symtab);
     // don't traverse these children
     // can return now because parent call will move onto sibling
@@ -89,6 +92,12 @@ ast_node handle_func_decl_node(ast_node fdl, symboltable_t * symtab) {
 
   // Insert symnode for function into leaf symhashtable
   symnode_t *fdl_node = insert_into_symboltable(symtab, fdl->left_child->right_sibling->value_string);
+
+  // add scope to all current scope children -- type specifer and ID_T and compound statement
+  // formal params should be added to new scope which is done after enter_new scope is called
+  add_scope_to_children(fdl->left_child, symtab);
+  add_scope_to_children(fdl->left_child->right_sibling, symtab);
+  fdl->left_child->right_sibling->right_sibling->right_sibling->scope_table = symtab->leaf;
 
   if (fdl_node == NULL) {
     /* duplicate symbol in scope */
@@ -162,7 +171,9 @@ ast_node handle_func_decl_node(ast_node fdl, symboltable_t * symtab) {
 
     /* enter new scope -- skipping CS node */
     enter_scope(symtab, compound_stmt->left_child, fdl_node->name);
-    //enter_scope(symtab, fdl, fdl_node->name);
+
+    /* add scope to all argument parameter children */
+    add_scope_to_children(arg_params, symtab);
 
     /* add function parameters to this new scope symbol table */
     for (int i = 0; i < arg_count; i++) {
@@ -177,8 +188,6 @@ ast_node handle_func_decl_node(ast_node fdl, symboltable_t * symtab) {
       set_node_type(var_node, VAR_SYM);
       set_node_var(var_node, &arg_arr[i]);
     }
-
-
 
     /* return next node to start traverse on */
     next_node = compound_stmt->left_child;
@@ -230,6 +239,21 @@ void handle_var_decl_line_node(ast_node vdl, symboltable_t * symtab) {
     // Next variable
     child = child->right_sibling;
   }
+}
+
+/*
+ * adds a scope pointer to leaf symbolhashtable to all children
+ * - does not change scope though
+ */
+void add_scope_to_children(ast_node root, symboltable_t * symtab) {
+  assert(root);
+  assert(symtab);
+
+  root->scope_table = symtab->leaf;
+
+  for (ast_node child = root->left_child; child != NULL; child = child->right_sibling)
+    add_scope_to_children(child, symtab);
+  
 }
 
 /*
@@ -370,7 +394,7 @@ static int hashPJW(char *s, int size) {
   for (p = s; *p != '\0'; p++) {
       h = (h << 4) + *p;
       if ((g = (h & 0xf0000000)) != 0)
-	h ^= (g >> 24) ^ g;
+  h ^= (g >> 24) ^ g;
     }
 
   return h % size;
@@ -380,7 +404,7 @@ static int hashPJW(char *s, int size) {
    the symnode for the entry or NULL.  slot is where to look; if slot
    == NOHASHSLOT, then apply the hash function to figure it out. */
 symnode_t *lookup_symhashtable(symhashtable_t *hashtable, char *name,
-				   int slot) {
+           int slot) {
   symnode_t *node;       // return NULL if not found
 
   assert(hashtable);
