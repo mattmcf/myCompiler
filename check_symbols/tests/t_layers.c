@@ -35,4 +35,5 @@ void arr_arg(int to_fill[], int size) {
 	for (i = 0; i < size; ++i) {
 		to_fill[i] = i * i;
 	}
+	return;
 }

@@ -449,11 +449,12 @@ for_header_expr : expression {
 /*
  * RULE 23
  * 
- * If returning a value, return expression is held in left child.
- * If no left child, then no return value (void).
+ * Return expression / void_N is left child
  */
 return_stmt : RETURN_T ';' {
 	ast_node t = create_ast_node(RETURN_N);
+	ast_node void_n = create_ast_node(VOID_N);
+	t->left_child = void_n;
 	$$ = t; }
 | RETURN_T expression ';' {
 	ast_node t = create_ast_node(RETURN_N);

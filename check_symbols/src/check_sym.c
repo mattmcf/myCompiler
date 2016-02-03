@@ -43,6 +43,63 @@ void set_type(ast_node root) {
 
 			break;
 
+		/* 
+		 * Handle r-value operand nodes -> both arguments must be same type 
+		 */
+		case OP_PLUS_N:
+		case OP_MINUS_N:
+		case OP_NEG_N:
+		case OP_TIMES_N:
+		case OP_DIVIDE_N:
+		case OP_MOD_N:
+		case OP_LT_N:
+		case OP_GT_N:
+		case OP_GTE_N:
+		case OP_LTE_N:
+		case OP_EQ_N:
+		case OP_NE_N:
+		case OP_AND_N:
+		case OP_OR_N:
+
+			if (check_op_arg_types(root, 2, INT_TS, SINGLE_DT)) {
+
+				fprintf(stderr,"mismatching type arguments for operation %s\n", NODE_NAME(root->node_type));
+				root->type 	= NULL_TS;
+				root->mod 	= NULL_DT;
+
+			} else {
+
+				/* no error -- expecting single ints only, so not scaled for more types */
+				root->type 	= INT_TS;
+				root->mod 	= SINGLE_DT;
+			}
+
+			break;
+
+		/*
+		 * Handle single arguments r-value nodes 
+		 */
+		case OP_INC_N:
+		case OP_DECR_N:
+
+			if (check_op_arg_types(root, 1, INT_TS, SINGLE_DT)) {
+
+				fprintf(stderr,"mismatching type arguments for operation %s\n", NODE_NAME(root->node_type));
+				root->type 	= NULL_TS;
+				root->mod 	= NULL_DT;
+
+			} else {
+
+				/* no error -- expecting single ints only, so not scaled for more types */
+				root->type 	= INT_TS;
+				root->mod 	= SINGLE_DT;
+			}
+
+			break;
+
+		/*
+		 * handle variable call
+		 */
 		case VAR_N: /* could be a single variable instance or array */
 
 			if (check_var_node(root)) {
@@ -84,6 +141,34 @@ symnode_t * find_symnode(symhashtable_t * hashtable, char * name) {
 
 	return found;
 } 
+
+/*
+ * check argument types -> expected number of child of type and modifier
+ *
+ * returns 0 if no error
+ * returns 1 if error
+ */
+int check_op_arg_types(ast_node op_node, int child_count, type_specifier_t type, modifier_t mod) {
+
+	assert(op_node);
+
+	if (child_count < 1)
+		return 0;
+
+	/* go through specified number of children, checking for matching type and modifier */
+	ast_node child = op_node->left_child;
+	for(int i = 0; i < child_count; i++) {
+		if (!child)
+			return 1;
+		else if (child->type != type || child->mod != mod) {
+			return 1;
+		}
+
+		child = child->right_sibling;
+	}
+
+	return 0;
+}
 
 /*
  * returns 1 if errors occurs
