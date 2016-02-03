@@ -26,7 +26,7 @@ typedef enum {
   NULL_TS,
   INT_TS,       // int literals
   VOID_TS,      // void returns
-  FUNC_TS
+  FUNC_TS       // not a type specifier -> used for symbols
 } type_specifier_t;
 
 /* Table for type specifiers */

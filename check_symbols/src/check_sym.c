@@ -28,18 +28,59 @@ void set_type(ast_node root) {
 		set_type(child);
 
 	switch(root->node_type) {
+
+		/* 
+		 * Handle Base cases
+		 */
+		case INT_LITERAL_N:
+			root->type 	= INT_TS;
+			root->mod 	= SINGLE_DT;
+			break;
+
+		case VOID_N:
+			root->type 	= VOID_TS;
+			root->mod 	= SINGLE_DT;
+			break;
+
 		case VAR_DECL_N:
 			// for any variables declared with initialization, make sure that initializing expression has matching type
 			break;
+
 		case FUNC_DECLARATION_N:
 			// ?
 
 			break;
+
 		case EXPRESSION_N:
-			// call set_type on chidren
-			// if r-value ... 
-			// if variable expression ...
-			// assign this node's type based on types of children (should match)
+
+			/* check if expression is variable assignment or r-value */
+			if (root->left_child->right_sibling != NULL) {
+
+				/* var = expr production */
+				ast_node var = root->left_child;
+				ast_node expr = root->left_child->right_sibling;
+
+				if (var->type == expr->type && var->mod == expr->mod) {
+					root->type 	= var->type;
+					root->mod 	= expr->mod;
+				} else {
+					fprintf(stderr, "mismatching types for variable assignment\n");
+					root->type 	= NULL_TS;
+					root->mod 	= NULL_DT;
+				}
+
+			} else {
+
+				/* r_value production */
+				if (root->left_child->type != NULL_TS && root->left_child->mod != NULL_DT) {
+					root->type 	= root->left_child->type;
+					root->mod 	= root->left_child->mod;					
+				} else {
+					root->type 	= NULL_TS;
+					root->mod 	= NULL_DT;
+				}
+
+			}
 
 			break;
 
@@ -60,6 +101,8 @@ void set_type(ast_node root) {
 		case OP_NE_N:
 		case OP_AND_N:
 		case OP_OR_N:
+
+			// alternative: coererce types == a function to modify argument types and return coerced type
 
 			if (check_op_arg_types(root, 2, INT_TS, SINGLE_DT)) {
 
