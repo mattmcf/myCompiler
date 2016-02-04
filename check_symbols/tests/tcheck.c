@@ -1,7 +1,7 @@
 int a, b;
 int c[100];
 
-int main(void) {
+void main(void) {
 	int x, y, z;
 
 	a = 10;

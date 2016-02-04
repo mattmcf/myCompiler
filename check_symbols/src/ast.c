@@ -35,6 +35,23 @@ ast_node create_ast_node(ast_node_type node_type) {
   return new_node;
 }
 
+int get_line_number(ast_node root) {
+  assert(root);
+  ast_node child;
+  int to_return;
+
+  if (root->left_child != NULL) {
+    /* go to left most child */
+    for (child = root->left_child; child->left_child != NULL; child = child->left_child)
+      ;
+    to_return = child->line_number;
+  } else {
+    /* no child, so just return root's line number */
+    to_return = root->line_number;
+  }
+  return to_return;
+}
+
 /* Print the contents of a subtree of an abstract syntax tree, given
    the root of the subtree and the depth of the subtree root. */
 void print_ast(ast_node root, int depth) {
@@ -82,7 +99,7 @@ void print_ast(ast_node root, int depth) {
   if (hashtable != NULL)
     printf(" (scope: %d-%d %s)", hashtable->level, hashtable->sibno, hashtable->name);
 
-  printf(" [Line Number: %d]",root->line_number);
+  printf(" [Line Number: %d]", get_line_number(root));
   printf("\n");
   
 

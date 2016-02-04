@@ -29,7 +29,7 @@ int check_fdl_node(ast_node root);
 
 int gopher(type_specifier_t return_type, modifier_t mod_type, ast_node function_header, int * return_flag, ast_node root);
 
-void type_err(int occurs_at_line_number);
+void type_err(ast_node root);
 
 
 void set_type(ast_node root) {
@@ -68,6 +68,7 @@ void set_type(ast_node root) {
 
 		case VAR_DECL_N:
 			// can't declare void variables
+			// ** TODO **
 			// for any variables declared with initialization, make sure that initializing expression has matching type
 			break;
 
@@ -88,7 +89,7 @@ void set_type(ast_node root) {
 					root->type 	= var->type;
 					root->mod 	= expr->mod;
 				} else {
-					type_err(root->line_number);
+					type_err(root);
 					root->type 	= NULL_TS;
 					root->mod 	= NULL_DT;
 				}
@@ -100,7 +101,7 @@ void set_type(ast_node root) {
 					root->type 	= root->left_child->type;
 					root->mod 	= root->left_child->mod;					
 				} else {
-					type_err(root->line_number);
+					type_err(root);
 					root->type 	= NULL_TS;
 					root->mod 	= NULL_DT;
 				}
@@ -132,7 +133,7 @@ void set_type(ast_node root) {
 			if (check_op_arg_types(root, 2, INT_TS, SINGLE_DT)) {
 
 				fprintf(stderr,"mismatching type arguments for operation %s\n", NODE_NAME(root->node_type));
-				type_err(root->line_number);
+				type_err(root);
 				root->type 	= NULL_TS;
 				root->mod 	= NULL_DT;
 
@@ -154,7 +155,7 @@ void set_type(ast_node root) {
 			if (check_op_arg_types(root, 1, INT_TS, SINGLE_DT)) {
 
 				fprintf(stderr,"mismatching type arguments for operation %s\n", NODE_NAME(root->node_type));
-				type_err(root->line_number);
+				type_err(root);
 				root->type 	= NULL_TS;
 				root->mod 	= NULL_DT;
 
@@ -190,6 +191,7 @@ void set_type(ast_node root) {
 			// make sure function declaration is a valid symbol
 			// make sure correct argument # and types are given
 			// set this node's type to function's return type
+			// ** TODO **		
 			break;
 
 		default:
@@ -371,7 +373,9 @@ int check_fdl_node(ast_node root) {
 }
 
 /*
- * gopher
+ * gopher -- runs down the children of a function's compound statement, searching for
+ * return statements. Returns 0 if expected type matches up. Returns 1 if there's a mismatch.
+ * Recursively calls itself on node children. Also points a return node to it's parent function.
  */
 int gopher(type_specifier_t return_type, modifier_t mod_type, ast_node function_header, int * return_flag, ast_node root) {
 	if (!root)
@@ -381,7 +385,7 @@ int gopher(type_specifier_t return_type, modifier_t mod_type, ast_node function_
 		(*return_flag)++; 	// found a return statement
 
 		if (root->type != return_type || root->mod != mod_type) {
-			type_err(root->line_number);
+			type_err(root);
 			fprintf(stderr,"return statement on line %d doesn't have correct type (has %s type and %s mod, expecting %s and %s)\n", 
 				root->line_number, TYPE_NAME(root->type), MODIFIER_NAME(root->mod), TYPE_NAME(return_type), MODIFIER_NAME(mod_type));
 			return 1;			
@@ -399,7 +403,8 @@ int gopher(type_specifier_t return_type, modifier_t mod_type, ast_node function_
 	return rc;
 }
 
-void type_err(int occurs_at_line_number) {
+void type_err(ast_node root) {
+	assert(root);
 	type_error_count++;
-	fprintf(stderr, "Type error on line %d of program\n",occurs_at_line_number);
+	fprintf(stderr, "Type error on line %d of program (node %s)\n", get_line_number(root),NODE_NAME(root->node_type));
 }

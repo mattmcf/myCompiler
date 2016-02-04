@@ -150,6 +150,11 @@ struct ast_node_struct {
    node. */
 ast_node create_ast_node(ast_node_type node_type);
 
+/*
+ * returns line number of left most child.
+ */
+int get_line_number(ast_node root);
+
 /* Print the contents of a subtree of an abstract syntax tree, given
    the root of the subtree and the depth of the subtree root. */
 void print_ast(ast_node root, int depth);

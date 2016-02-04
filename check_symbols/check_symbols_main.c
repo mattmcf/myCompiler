@@ -30,7 +30,7 @@ int main(void) {
   if (parseError)
     fprintf(stderr, "WARNING: There were parse errors.\nParse tree may be ill-formed.\n");
 
-  if (!noRoot) {
+  if (!noRoot && !parseError) {
   	print_ast(root,0);
   	
     /* create empty symboltable */
