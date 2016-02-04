@@ -8,9 +8,9 @@ int main(void) {
 
 	b = x;
 
-	//y = c[0];
+	y = c[0];
 
-	//c[99] = z;
+	c[99] = z;
 
 	return 0;
 }

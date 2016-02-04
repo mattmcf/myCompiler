@@ -133,6 +133,8 @@ struct ast_node_struct {
   // scope information
   //symhashtable_t * scope_table;
   void * scope_table;
+  int line_number;
+  ast_node parent_function;     // for RETURN_N
 
   // type information
   type_specifier_t type;

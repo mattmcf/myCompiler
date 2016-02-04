@@ -20,6 +20,7 @@
 #include "symtab.h"
 #include "types.h"
 
+extern int yylineno;
 
 /* Create a node with a given token type and return a pointer to the
    node. */
@@ -30,6 +31,7 @@ ast_node create_ast_node(ast_node_type node_type) {
     exit(1);
   }
   new_node->node_type = node_type;
+  new_node->line_number = yylineno;
   return new_node;
 }
 
@@ -64,6 +66,11 @@ void print_ast(ast_node root, int depth) {
     printf("%s", root->value_string);
     break;
 
+  case RETURN_N:
+    if (root->parent_function != NULL) {
+      printf("returns to %s", root->parent_function->left_child->right_sibling->value_string);
+    }
+      
   default:
     break;
   }
@@ -75,6 +82,7 @@ void print_ast(ast_node root, int depth) {
   if (hashtable != NULL)
     printf(" (scope: %d-%d %s)", hashtable->level, hashtable->sibno, hashtable->name);
 
+  printf(" [Line Number: %d]",root->line_number);
   printf("\n");
   
 

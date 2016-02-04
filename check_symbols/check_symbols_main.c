@@ -16,7 +16,9 @@ ast_node root = NULL;
 
 extern int yyparse(); 
 extern int yydebug; 
-int parseError = 0; 	// global flag
+int parseError = 0; 	   // global flag
+int type_error_count = 0;   // used to count type errors
+
 
 int main(void) {
   int noRoot = 0;		/* 0 means we will have a root */
@@ -29,7 +31,7 @@ int main(void) {
     fprintf(stderr, "WARNING: There were parse errors.\nParse tree may be ill-formed.\n");
 
   if (!noRoot) {
-  	//print_ast(root,0);
+  	print_ast(root,0);
   	
     /* create empty symboltable */
     symtab = create_symboltable();
@@ -43,12 +45,17 @@ int main(void) {
 
     /* check types */
     set_type(root);
+    if (type_error_count != 0) {
+      fprintf(stderr,"%d type errors found. Please fix before continuing.\n",type_error_count);
+      return 1;
+    }
 
-    //printf("****** PRETTY PRINTING SYMBOLTABLE ******\n");
-    //print_symtab(symtab);
 
-    //printf("\n\n ----- PRETTY PRINTING AST TREE WITH TYPES -----\n");
-    //print_ast(root,0);
+    printf("****** PRETTY PRINTING SYMBOLTABLE ******\n");
+    print_symtab(symtab);
+
+    printf("\n\n ----- PRETTY PRINTING AST TREE WITH TYPES -----\n");
+    print_ast(root,0);
   }
 
   return 0;

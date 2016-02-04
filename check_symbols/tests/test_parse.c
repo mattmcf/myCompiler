@@ -10,7 +10,7 @@ int main(void) {
 
 	a = 25;
 
-	ans = myFunction(a, b);
+	//ans = myFunction(a, b);
 
 	print "hello world!\n";
 
