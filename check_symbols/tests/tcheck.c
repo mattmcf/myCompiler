@@ -3,6 +3,7 @@ int c[100];
 
 void main(void) {
 	int x, y, z;
+	int bad_var = "hi";
 
 	a = 10;
 
@@ -12,5 +13,5 @@ void main(void) {
 
 	c[99] = z;
 
-	return 0;
+	return;
 }

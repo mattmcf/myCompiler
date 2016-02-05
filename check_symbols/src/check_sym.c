@@ -21,6 +21,12 @@ extern int type_error_count;
  */
 int check_var_node(ast_node root);
 
+/* 
+ * returns 0 if all checks out
+ * returns 1 if type mismatch
+ */
+int check_var_declaration(ast_node root);
+
 /*
  * returns 1 if errors occurs
  * else returns 0 if all good
@@ -68,14 +74,26 @@ void set_type(ast_node root) {
 			root->mod 	= root->left_child->mod;
 			break;
 
+		case VAR_DECLARATION_N:
+			if (root->left_child->type == VOID_TS) {
+				type_err(root);
+				fprintf(stderr, "cannot have void variables\n");
+			} 
+
+			break;
+
 		case VAR_DECL_N:
-			// can't declare void variables
-			// ** TODO **
-			// for any variables declared with initialization, make sure that initializing expression has matching type
+			if (check_var_declaration(root)) {
+				type_err(root);
+				fprintf(stderr,"variable %s has improper type assignment\n",root->left_child->value_string);
+			}
 			break;
 
 		case FUNC_DECLARATION_N:
-			check_fdl_node(root);
+			if (check_fdl_node(root)) {
+				// type_errs() in gopher function
+				fprintf(stderr,"function declaration for \'%s\' contains errors in body\n", root->left_child->right_sibling->value_string);
+			}		
 			break;
 
 		case EXPRESSION_N:
@@ -177,6 +195,7 @@ void set_type(ast_node root) {
 
 			if (check_var_node(root)) {
 				/* error occurred so set error values */
+				type_err(root);
 				root->type 	= NULL_TS;
 				root->mod 	= NULL_DT;
 			}
@@ -184,7 +203,11 @@ void set_type(ast_node root) {
 			break;
 
 		case RETURN_N:
-			assert(root->left_child);
+			root->type 	= root->left_child->type;
+			root->mod 	= root->left_child->mod;
+			break;
+
+		case ARG_LIST_N:
 			root->type 	= root->left_child->type;
 			root->mod 	= root->left_child->mod;
 			break;
@@ -316,6 +339,31 @@ int check_var_node(ast_node root) {
 	return 0;
 }
 
+/* 
+ * returns 0 if all checks out
+ * returns 1 if type mismatch
+ */
+int check_var_declaration(ast_node root) {
+	assert(root);
+
+	symnode_t * sym = find_symnode(root->scope_table, root->left_child->value_string);
+	if (!sym)
+		return 1;
+
+	type_specifier_t t	= sym->s.v.type;
+	modifier_t 	m	 	= sym->s.v.modifier;
+
+	if (root->left_child->right_sibling != NULL && root->left_child->right_sibling->type != INT_TS ) {
+
+		/* check initialization assignment */
+		if (root->left_child->right_sibling->type != t || root->left_child->right_sibling->mod != m) {
+			return 1;
+		}
+	}
+
+	return 0;
+}
+
 /*
  * returns 1 if errors occurs
  * else returns 0 if all good
@@ -337,7 +385,7 @@ int check_fdl_node(ast_node root) {
 	if (found_return == 0) {
 
 		if (ret_type == VOID_TS) {
-			/* add a void return */
+			/* add a void return statement */
 
 			/* get compound statement node */
 			ast_node new_return;
@@ -398,6 +446,8 @@ int gopher(type_specifier_t return_type, modifier_t mod_type, ast_node function_
 				root->line_number, TYPE_NAME(root->type), MODIFIER_NAME(root->mod), TYPE_NAME(return_type), MODIFIER_NAME(mod_type));
 			return 1;			
 		} else {
+
+			/* return statement checks out -- point to parent function */
 			root->parent_function = function_header;
 			return 0;
 		}
