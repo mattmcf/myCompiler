@@ -25,7 +25,7 @@ int check_var_node(ast_node root);
  * returns 0 if all checks out
  * returns 1 if type mismatch
  */
-int check_var_declaration(root);
+int check_var_declaration(ast_node root);
 
 /*
  * returns 1 if errors occurs
@@ -75,7 +75,7 @@ void set_type(ast_node root) {
 		case VAR_DECLARATION_N:
 			if (root->left_child->type == VOID_TS) {
 				type_err(root);
-				fprintf("cannot have void variables\n");
+				fprintf(stderr, "cannot have void variables\n");
 			} 
 
 			break;
@@ -83,14 +83,14 @@ void set_type(ast_node root) {
 		case VAR_DECL_N:
 			if (check_var_declaration(root)) {
 				type_err(root);
-				fprintf("variable %s has improper type assignment\n",root->left_child->value_string);
+				fprintf(stderr,"variable %s has improper type assignment\n",root->left_child->value_string);
 			}
 			break;
 
 		case FUNC_DECLARATION_N:
 			if (check_fdl_node(root)) {
 				// type_errs() in gopher function
-				fprintf("function declaration for \'%s\' contains errors in body\n", root->left_child->right_sibling->value_string);
+				fprintf(stderr,"function declaration for \'%s\' contains errors in body\n", root->left_child->right_sibling->value_string);
 			}		
 			break;
 
@@ -336,10 +336,10 @@ int check_var_node(ast_node root) {
  * returns 0 if all checks out
  * returns 1 if type mismatch
  */
-int check_var_declaration(root) {
+int check_var_declaration(ast_node root) {
 	assert(root);
 
-	symnode_t * sym = lookup_symhashtable(root->scope_table, root->left_child->value_string, NOHASHSLOT);
+	symnode_t * sym = find_symnode(root->scope_table, root->left_child->value_string);
 	if (!sym)
 		return 1;
 
