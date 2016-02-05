@@ -29,6 +29,8 @@ int check_fdl_node(ast_node root);
 
 int gopher(type_specifier_t return_type, modifier_t mod_type, ast_node function_header, int * return_flag, ast_node root);
 
+int check_call(ast_node root);
+
 void type_err(ast_node root);
 
 
@@ -191,7 +193,12 @@ void set_type(ast_node root) {
 			// make sure function declaration is a valid symbol
 			// make sure correct argument # and types are given
 			// set this node's type to function's return type
-			// ** TODO **		
+			// ** TODO **
+			if (check_call(root)) {
+				type_err(root);
+				root->type = NULL_TS;
+				root->mod = NULL_DT;
+			}		
 			break;
 
 		default:
@@ -335,6 +342,7 @@ int check_fdl_node(ast_node root) {
 			/* get compound statement node */
 			ast_node new_return;
 			ast_node stmt = root->left_child->right_sibling->right_sibling->right_sibling;
+			
 			if (stmt->left_child == NULL) {
 
 				/* add as first child of empty compound statement list */
@@ -347,7 +355,7 @@ int check_fdl_node(ast_node root) {
 				ast_node add_return_at;
 				for (add_return_at = stmt->left_child; 
 						add_return_at->right_sibling != NULL;
-						add_return_at = add_return_at->right_sibling)
+						add_return_at = add_return_at->right_sibling);
 
 				add_return_at->right_sibling = create_ast_node(RETURN_N);
 				assert(add_return_at->right_sibling);	
@@ -401,6 +409,55 @@ int gopher(type_specifier_t return_type, modifier_t mod_type, ast_node function_
 	}
 		
 	return rc;
+}
+
+int check_call(ast_node root) {
+	// Look up function in symtab using function identifier
+	symnode_t *func = lookup_symhashtable(((symhashtable_t *)root->scope_table)->parent, root->left_child->value_string, NOHASHSLOT);
+
+	if (func == NULL) {
+		fprintf(stderr, "Undeclared function: \'%s\'\n", root->left_child->value_string);
+		return 1;
+	} else if (func->sym_type != FUNC_SYM) {
+		fprintf(stderr, "Declared symbol \'%s\' isn't a function\n", root->left_child->value_string);
+		return 1;
+	}
+
+	var_symbol * func_args = func->s.f.arg_arr;
+	int func_arg_count = func->s.f.arg_count;
+
+	// Access arg list
+	if (root->left_child->right_sibling != NULL) {
+		int arg_count = 0;
+
+		ast_node arg;
+		for (arg = root->left_child->right_sibling->left_child; arg != NULL; arg = arg->right_sibling) {
+			arg_count++;
+			if (arg_count > func_arg_count) {
+				fprintf(stderr, "Mismatched arg count for function %s. Expected %d, got %d\n", func->name, func_arg_count, arg_count);
+				return 1;
+			}
+			// Check if each argument is of the right type
+			if (func_args != NULL && arg->type != func_args[arg_count].type) {
+				fprintf(stderr, "Mismatched arg type for function %s. Expected %s, got %s\n", func->name, TYPE_NAME(func_args[arg_count].type),
+					TYPE_NAME(arg->type));
+				return 1;
+			}
+
+			arg_count++;
+		}
+
+		if (arg_count != func_arg_count) {
+			fprintf(stderr, "Mismatched arg count for function %s. Expected %d, got %d\n", func->name, func_arg_count, arg_count);
+			return 1;
+		}
+	}
+
+	// Set this node's type to function's return type
+	root->type = func->s.f.return_type;
+	root->mod = SINGLE_DT;
+
+	return 0;
 }
 
 void type_err(ast_node root) {
