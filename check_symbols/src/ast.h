@@ -131,9 +131,9 @@ struct ast_node_struct {
   ast_node left_child, right_sibling;
 
   // scope information
-  //symhashtable_t * scope_table;
-  void * scope_table;
-  int line_number;
+  int id;                       // unique id
+  void * scope_table;           // void becuase of include dependencies
+  int line_number;              // yylineno that this node was synthesized on
   ast_node parent_function;     // for RETURN_N
 
   // type information

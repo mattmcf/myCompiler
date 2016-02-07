@@ -65,9 +65,9 @@ int check_fdl_node(ast_node root);
 int check_call(ast_node root);
 
 /*
- * searches an fdl parent tree for all all the RETURN_N subnodes. Given a function
- * return type, this function will return 1 (recursively called) if there's a mismatch
- * between what the return type is and what the return type should be.
+ * find_return -- runs down the children of a function's compound statement, searching for
+ * return statements. Returns 0 if expected type matches up. Returns 1 if there's a mismatch.
+ * Recursively calls itself on node children. Also points a RETURN_N node to it's parent function.
  */
 int find_return(type_specifier_t return_type, modifier_t mod_type, ast_node function_header, int * return_flag, ast_node root);
 
@@ -109,7 +109,6 @@ void set_type(ast_node root) {
 			break;
 
 		case EXPRESSION_N:
-
 			/* check if expression is variable assignment or r-value */
 			if (root->left_child->right_sibling != NULL) {
 
@@ -132,14 +131,12 @@ void set_type(ast_node root) {
 				if (root->left_child->type != NULL_TS && root->left_child->mod != NULL_DT) {
 					root->type 	= root->left_child->type;
 					root->mod 	= root->left_child->mod;					
-				} else {
+				} else { 
 					type_err(root);
 					root->type 	= NULL_TS;
 					root->mod 	= NULL_DT;
 				}
-
 			}
-
 			break;
 
 		/* 
@@ -159,9 +156,6 @@ void set_type(ast_node root) {
 		case OP_NE_N:
 		case OP_AND_N:
 		case OP_OR_N:
-
-			// alternative: coererce types == a function to modify argument types and return coerced type
-
 			if (check_op_arg_types(root, 2, INT_TS, SINGLE_DT)) {
 
 				fprintf(stderr,"mismatching type arguments for operation %s\n", NODE_NAME(root->node_type));
@@ -175,7 +169,6 @@ void set_type(ast_node root) {
 				root->type 	= INT_TS;
 				root->mod 	= SINGLE_DT;
 			}
-
 			break;
 
 		/*
@@ -183,7 +176,6 @@ void set_type(ast_node root) {
 		 */
 		case OP_INC_N:
 		case OP_DECR_N:
-
 			if (check_op_arg_types(root, 1, INT_TS, SINGLE_DT)) {
 
 				fprintf(stderr,"mismatching type arguments for operation %s\n", NODE_NAME(root->node_type));
@@ -197,7 +189,6 @@ void set_type(ast_node root) {
 				root->type 	= INT_TS;
 				root->mod 	= SINGLE_DT;
 			}
-
 			break;
 
 		/*
@@ -226,7 +217,7 @@ void set_type(ast_node root) {
 			break;
 
 		/*
-		 * Handle variable call
+		 * Handle Variable Call
 		 */
 		case VAR_N: /* could be a single variable instance or array */
 
@@ -239,26 +230,21 @@ void set_type(ast_node root) {
 
 			break;
 
-		case RETURN_N:
-			root->type 	= root->left_child->type;
-			root->mod 	= root->left_child->mod;
-			break;
-
-		case ARG_LIST_N:
-			root->type 	= root->left_child->type;
-			root->mod 	= root->left_child->mod;
-			break;
-
+		/* 
+		 * Handle Function Call
+		 */
 		case CALL_N:
-			// make sure function declaration is a valid symbol
-			// make sure correct argument # and types are given
-			// set this node's type to function's return type
-			// ** TODO **
 			if (check_call(root)) {
+				/* error in arguments or unrecognized function */
 				type_err(root);
 				root->type = NULL_TS;
 				root->mod = NULL_DT;
 			}		
+			break;
+
+		case RETURN_N:
+			root->type 	= root->left_child->type;
+			root->mod 	= root->left_child->mod;
 			break;
 
 		default:
@@ -322,8 +308,6 @@ int check_op_arg_types(ast_node op_node, int child_count, type_specifier_t type,
 int check_var_node(ast_node root) {
 	assert(root);
 
-	//printf("examining node %s with name %s\n", NODE_NAME(root->node_type),root->left_child->value_string);
-
 	char * sym_name = root->left_child->value_string;
 	symnode_t * sym_n = find_symnode(root->scope_table, sym_name);
 
@@ -338,12 +322,8 @@ int check_var_node(ast_node root) {
 		return 1;
 	}
 
-	//printf("found symnode\n");
-
 	/* accessing array variable */
 	if (root->left_child->right_sibling != NULL) {
-
-		//printf("root is an array\n");
 
 		if (sym_n->s.v.modifier != ARRAY_DT) {
 			fprintf(stderr,"symbol \'%s\' is not an array\n",sym_name);
@@ -360,8 +340,6 @@ int check_var_node(ast_node root) {
 
 	/* accessing single variable */
 	else {
-
-		//printf("root is a single variable\n");
 
 		if (sym_n->s.v.modifier != SINGLE_DT) {
 			fprintf(stderr,"symbol \'%s\' is not an single variable\n", sym_name);
@@ -465,11 +443,7 @@ int check_fdl_node(ast_node root) {
 	return 0;
 }
 
-/*
- * find_return -- runs down the children of a function's compound statement, searching for
- * return statements. Returns 0 if expected type matches up. Returns 1 if there's a mismatch.
- * Recursively calls itself on node children. Also points a return node to it's parent function.
- */
+
 int find_return(type_specifier_t return_type, modifier_t mod_type, ast_node function_header, int * return_flag, ast_node root) {
 	if (!root)
 		return 0;
@@ -521,17 +495,16 @@ int check_call(ast_node root) {
 		for (arg = root->left_child->right_sibling->left_child; arg != NULL; arg = arg->right_sibling) {
 			arg_count++;
 			if (arg_count > func_arg_count) {
-				fprintf(stderr, "Mismatched arg count for function %s. Expected %d, got %d\n", func->name, func_arg_count, arg_count);
+				fprintf(stderr, "Mismatched arg count for function %s. Expected %d, got %d\n", 
+					func->name, func_arg_count, arg_count);
 				return 1;
 			}
-			// Check if each argument is of the right type
-			if (func_args != NULL && arg->type != func_args[arg_count].type) {
-				fprintf(stderr, "Mismatched arg type for function %s. Expected %s, got %s\n", func->name, TYPE_NAME(func_args[arg_count].type),
-					TYPE_NAME(arg->type));
+			// Check if each argument is of the right type and modifier
+			if (func_args != NULL && (arg->type != func_args[arg_count-1].type || arg->mod != func_args[arg_count-1].modifier)) {
+				fprintf(stderr, "Mismatched arg type for function %s. Expected %s, got %s (also check for matching modifier).\n", 
+					func->name, TYPE_NAME(func_args[arg_count].type), TYPE_NAME(arg->type));
 				return 1;
 			}
-
-			arg_count++;
 		}
 
 		if (arg_count != func_arg_count) {
