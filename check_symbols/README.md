@@ -82,6 +82,6 @@ Sample C program with function calls. We can also test our program's capability 
 Sample C program with multiple function scopes, as well as edge cases such as blocks with a single semi-colon, empty functions without any variable declarations. We do not reflect this in our key file, but we can also test for duplicate variable declarations by uncommenting line 21 in tscope.c. The output will be that a duplicate variable has been found and the symbol table program will stop running.
 
 ### ttypecheck.c and ttypecheck_ans.txt
-Sample C program with a main function and two other functions. The function bar contains a nested function call to the function foo. We can test for error catching with undeclared variables by uncommenting line 17, which attempts to call the foo function with an undeclared variable z. We can also test for error catching with undeclared functions by uncommenting line 21, which attempts to call an undeclared function hello.
+Sample C program with a main function and two other functions. The function bar contains a nested function call to the function foo. We can test for error catching with undeclared variables by uncommenting line 17, which attempts to call the foo function with an undeclared variable z. We can also test for error catching with undeclared functions by uncommenting line 21, which attempts to call an undeclared function hello. We also handle edge cases that include passing arrays as parameters and accessing their contents as single variables via indexing.
 
 
