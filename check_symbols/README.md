@@ -72,7 +72,7 @@ For expression statements and r-value (operation) nodes, the children must have 
 ## Testing Files
 All test files live in the tests directory
 
-We manually generate our answer key files by first retrieving the output for a normal AST pretty printing operation on a given input file, which serves as the base tree structure for when we are filling in fields with our expected values. We know the base tree structure is correct based on our work on generating ASTs in assignemnts from previous weeks. Then we fill in the appropriate fields for each node with our expected values. When testing, we piped the output for a given input file into a .out file which we diffed with our key file to check if the actual output matched our expected output.
+We manually generate our answer key files by first retrieving the output for a normal AST pretty printing operation on a given input file, which serves as the base tree structure for when we are filling in fields with our expected values. We know the base tree structure is correct based on our work on generating ASTs in assignments from previous weeks. Then we fill in the appropriate fields for each node with our expected values. When testing, we piped the output for a given input file into a .out file which we diffed with our key file to check if the actual output matched our expected output.
 
 
 ### tfunc.c and tfunc_ans.txt
