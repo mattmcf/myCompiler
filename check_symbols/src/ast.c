@@ -21,6 +21,7 @@
 #include "types.h"
 
 extern int yylineno;
+extern int node_count;
 
 /* Create a node with a given token type and return a pointer to the
    node. */
@@ -32,6 +33,7 @@ ast_node create_ast_node(ast_node_type node_type) {
   }
   new_node->node_type = node_type;
   new_node->line_number = yylineno;
+  new_node->id = node_count++;
 
   return new_node;
 }
@@ -100,7 +102,7 @@ void print_ast(ast_node root, int depth) {
   if (hashtable != NULL)
     printf(" (scope: %d-%d %s)", hashtable->level, hashtable->sibno, hashtable->name);
 
-  printf(" [Line Number: %d]", get_line_number(root));
+  printf(" [Line Number: %d -- (#%d)]", get_line_number(root),root->id);
   printf("\n");
   
 

@@ -17,7 +17,7 @@ int main(void){
 		int z;
 	}
 
-	a = f3(b, c, d);
+	a = f3(b, c);
 
 	f2();
 

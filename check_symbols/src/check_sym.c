@@ -14,6 +14,21 @@
 extern int type_error_count;
 
 /*
+ * starting at lowest scope, searches for symbol with name
+ *
+ * returns NULL if not found
+ */
+symnode_t * find_symnode(symhashtable_t * hashtable, char * name);
+
+/*
+ * check argument types -> expected number of child of type and modifier
+ *
+ * returns 0 if no error
+ * returns 1 if error
+ */
+int check_op_arg_types(ast_node op_node, int child_count, type_specifier_t type, modifier_t mod);
+
+/*
  * check VAR_N for correct types
  *
  * returns 1 if errors occurs
@@ -22,30 +37,49 @@ extern int type_error_count;
 int check_var_node(ast_node root);
 
 /* 
+ * check var_declaration node for initialization types
+ *
  * returns 0 if all checks out
  * returns 1 if type mismatch
  */
 int check_var_declaration(ast_node root);
 
 /*
+ * Checks a function declaration node for appropriate argument types and
+ * for the right return statements.
+ * 
+ * Note: this type_err() inside the function whenever an incorrect return 
+ * is found in the find return statement.
+ *
  * returns 1 if errors occurs
  * else returns 0 if all good
  */
 int check_fdl_node(ast_node root);
 
-int gopher(type_specifier_t return_type, modifier_t mod_type, ast_node function_header, int * return_flag, ast_node root);
-
+/*
+ * Checks a function call for appropriate arguments and sets return type
+ *
+ * Returns 1 if errors occur
+ * else returns 0
+ */
 int check_call(ast_node root);
 
-void type_err(ast_node root);
+/*
+ * find_return -- runs down the children of a function's compound statement, searching for
+ * return statements. Returns 0 if expected type matches up. Returns 1 if there's a mismatch.
+ * Recursively calls itself on node children. Also points a RETURN_N node to it's parent function.
+ */
+int find_return(type_specifier_t return_type, modifier_t mod_type, ast_node function_header, int * return_flag, ast_node root);
 
-
+/*
+ * Recursive function that implements all top-down type checking
+ */
 void set_type(ast_node root) {
 
 	if (!root) 
 		return;
 
-	/* have children set types before setting this node's type / modifier */
+	/* top-down means setting children types and then synthesizing root type before returning */
 	for (ast_node child = root->left_child; child != NULL; child = child->right_sibling)
 		set_type(child);
 
@@ -74,30 +108,7 @@ void set_type(ast_node root) {
 			root->mod 	= root->left_child->mod;
 			break;
 
-		case VAR_DECLARATION_N:
-			if (root->left_child->type == VOID_TS) {
-				type_err(root);
-				fprintf(stderr, "cannot have void variables\n");
-			} 
-
-			break;
-
-		case VAR_DECL_N:
-			if (check_var_declaration(root)) {
-				type_err(root);
-				fprintf(stderr,"variable %s has improper type assignment\n",root->left_child->value_string);
-			}
-			break;
-
-		case FUNC_DECLARATION_N:
-			if (check_fdl_node(root)) {
-				// type_errs() in gopher function
-				fprintf(stderr,"function declaration for \'%s\' contains errors in body\n", root->left_child->right_sibling->value_string);
-			}		
-			break;
-
 		case EXPRESSION_N:
-
 			/* check if expression is variable assignment or r-value */
 			if (root->left_child->right_sibling != NULL) {
 
@@ -120,14 +131,12 @@ void set_type(ast_node root) {
 				if (root->left_child->type != NULL_TS && root->left_child->mod != NULL_DT) {
 					root->type 	= root->left_child->type;
 					root->mod 	= root->left_child->mod;					
-				} else {
+				} else { 
 					type_err(root);
 					root->type 	= NULL_TS;
 					root->mod 	= NULL_DT;
 				}
-
 			}
-
 			break;
 
 		/* 
@@ -147,9 +156,6 @@ void set_type(ast_node root) {
 		case OP_NE_N:
 		case OP_AND_N:
 		case OP_OR_N:
-
-			// alternative: coererce types == a function to modify argument types and return coerced type
-
 			if (check_op_arg_types(root, 2, INT_TS, SINGLE_DT)) {
 
 				fprintf(stderr,"mismatching type arguments for operation %s\n", NODE_NAME(root->node_type));
@@ -163,7 +169,6 @@ void set_type(ast_node root) {
 				root->type 	= INT_TS;
 				root->mod 	= SINGLE_DT;
 			}
-
 			break;
 
 		/*
@@ -171,7 +176,6 @@ void set_type(ast_node root) {
 		 */
 		case OP_INC_N:
 		case OP_DECR_N:
-
 			if (check_op_arg_types(root, 1, INT_TS, SINGLE_DT)) {
 
 				fprintf(stderr,"mismatching type arguments for operation %s\n", NODE_NAME(root->node_type));
@@ -185,11 +189,35 @@ void set_type(ast_node root) {
 				root->type 	= INT_TS;
 				root->mod 	= SINGLE_DT;
 			}
-
 			break;
 
 		/*
-		 * handle variable call
+		 * Handle Variable / Function Declaration and initialization cases
+		 */
+		case VAR_DECLARATION_N:
+			if (root->left_child->type == VOID_TS) {
+				type_err(root);
+				fprintf(stderr, "cannot have void variables\n");
+			} 
+
+			break;
+
+		case VAR_DECL_N:
+			if (check_var_declaration(root)) {
+				type_err(root);
+				fprintf(stderr,"variable %s has improper type assignment\n",root->left_child->value_string);
+			}
+			break;
+
+		case FUNC_DECLARATION_N:
+			if (check_fdl_node(root)) {
+				type_err(root);
+				fprintf(stderr,"function declaration for \'%s\' contains errors in body\n", root->left_child->right_sibling->value_string);
+			}		
+			break;
+
+		/*
+		 * Handle Variable Call
 		 */
 		case VAR_N: /* could be a single variable instance or array */
 
@@ -202,26 +230,21 @@ void set_type(ast_node root) {
 
 			break;
 
-		case RETURN_N:
-			root->type 	= root->left_child->type;
-			root->mod 	= root->left_child->mod;
-			break;
-
-		case ARG_LIST_N:
-			root->type 	= root->left_child->type;
-			root->mod 	= root->left_child->mod;
-			break;
-
+		/* 
+		 * Handle Function Call
+		 */
 		case CALL_N:
-			// make sure function declaration is a valid symbol
-			// make sure correct argument # and types are given
-			// set this node's type to function's return type
-			// ** TODO **
 			if (check_call(root)) {
+				/* error in arguments or unrecognized function */
 				type_err(root);
 				root->type = NULL_TS;
 				root->mod = NULL_DT;
 			}		
+			break;
+
+		case RETURN_N:
+			root->type 	= root->left_child->type;
+			root->mod 	= root->left_child->mod;
 			break;
 
 		default:
@@ -285,8 +308,6 @@ int check_op_arg_types(ast_node op_node, int child_count, type_specifier_t type,
 int check_var_node(ast_node root) {
 	assert(root);
 
-	//printf("examining node %s with name %s\n", NODE_NAME(root->node_type),root->left_child->value_string);
-
 	char * sym_name = root->left_child->value_string;
 	symnode_t * sym_n = find_symnode(root->scope_table, sym_name);
 
@@ -301,12 +322,8 @@ int check_var_node(ast_node root) {
 		return 1;
 	}
 
-	//printf("found symnode\n");
-
 	/* accessing array variable */
 	if (root->left_child->right_sibling != NULL) {
-
-		//printf("root is an array\n");
 
 		if (sym_n->s.v.modifier != ARRAY_DT) {
 			fprintf(stderr,"symbol \'%s\' is not an array\n",sym_name);
@@ -323,8 +340,6 @@ int check_var_node(ast_node root) {
 
 	/* accessing single variable */
 	else {
-
-		//printf("root is a single variable\n");
 
 		if (sym_n->s.v.modifier != SINGLE_DT) {
 			fprintf(stderr,"symbol \'%s\' is not an single variable\n", sym_name);
@@ -375,7 +390,7 @@ int check_fdl_node(ast_node root) {
 	modifier_t mod 				= root->left_child->mod;
 
 	int found_return = 0;
-	if (gopher(ret_type,mod, root, &found_return, root->left_child->right_sibling->right_sibling->right_sibling)) {
+	if (find_return(ret_type,mod, root, &found_return, root->left_child->right_sibling->right_sibling->right_sibling)) {
 
 		/* found return statements with non matching return types */
 		return 1;
@@ -428,12 +443,8 @@ int check_fdl_node(ast_node root) {
 	return 0;
 }
 
-/*
- * gopher -- runs down the children of a function's compound statement, searching for
- * return statements. Returns 0 if expected type matches up. Returns 1 if there's a mismatch.
- * Recursively calls itself on node children. Also points a return node to it's parent function.
- */
-int gopher(type_specifier_t return_type, modifier_t mod_type, ast_node function_header, int * return_flag, ast_node root) {
+
+int find_return(type_specifier_t return_type, modifier_t mod_type, ast_node function_header, int * return_flag, ast_node root) {
 	if (!root)
 		return 0;
 
@@ -455,7 +466,7 @@ int gopher(type_specifier_t return_type, modifier_t mod_type, ast_node function_
 
 	int rc = 0;
 	for (ast_node child = root->left_child; child != NULL; child = child->right_sibling) {
-		rc += gopher(return_type, mod_type, function_header, return_flag, child);
+		rc += find_return(return_type, mod_type, function_header, return_flag, child);
 	}
 		
 	return rc;
@@ -484,16 +495,17 @@ int check_call(ast_node root) {
 		for (arg = root->left_child->right_sibling->left_child; arg != NULL; arg = arg->right_sibling) {
 			arg_count++;
 			if (arg_count > func_arg_count) {
-				fprintf(stderr, "Mismatched arg count for function %s. Expected %d, got %d\n", func->name, func_arg_count, arg_count);
+				fprintf(stderr, "Mismatched arg count for function %s. Expected %d, got %d\n", 
+					func->name, func_arg_count, arg_count);
 				return 1;
 			}
-			// Check if each argument is of the right type
-			if (func_args != NULL && arg->type != func_args[arg_count-1].type) {
-				fprintf(stderr, "Mismatched arg type for function %s. Expected %s, got %s\n", func->name, TYPE_NAME(func_args[arg_count-1].type),
-					TYPE_NAME(arg->type));
+			// Check if each argument is of the right type and modifier
+			if (func_args != NULL && (arg->type != func_args[arg_count-1].type || arg->mod != func_args[arg_count-1].modifier)) {
+				fprintf(stderr, "Mismatched arg type for function %s. Expected %s, got %s (also check for matching modifier).\n", 
+					func->name, TYPE_NAME(func_args[arg_count].type), TYPE_NAME(arg->type));
 				return 1;
 			}
-			//arg_count++;
+
 		}
 
 		if (arg_count != func_arg_count) {
@@ -514,3 +526,5 @@ void type_err(ast_node root) {
 	type_error_count++;
 	fprintf(stderr, "Type error on line %d of program (node %s)\n", get_line_number(root),NODE_NAME(root->node_type));
 }
+
+

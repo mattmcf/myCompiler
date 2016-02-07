@@ -1,88 +1,73 @@
 # Check_Symbols Readme
 ## Matt McFarland and Yondon Fu - Delights (CS 57 - 16W)
-(For more enjoyable reading, please see https://github.com/MattRMcFarland/myCompiler/tree/master/symbol_table)
+(For more enjoyable reading, please see https://github.com/MattRMcFarland/myCompiler/tree/master/check_symbols)
 
 ## General Overview
 The file structure our our symbol table generator is as follows:
 
-We structured our file structure a little bit to more conveniently handle the source files.
-* `src/`
-**
+We added a source directory to manage the increasing number of source files we created:
+* `src/ast.h` and `src/ast.c` : contain functions and definitions for ast nodes. Note: we added several fields to ast_node for this part of the project.
+* `src/check_sym.h` and `src/check_sym.c` : contain the set_type function and top-down type check handling.
+* `src/symtab.h` and `src/symtab.c` : contain the symbol table creation functions.
+* `src/types.h` : is our new struction declaration file. We had trouble with include dependencies and so we consolidated most of our symboltable structures in one file.
+* `src/toktypes.h` : legacy file for pretty printing token names.
+* `src/ast_stack.h` and `src/ast_stack.c` : contains implementation of ast_node stack (for symbol tables).
 
-
-* `scan.l` is our Flex scanner file. It is unchanged from the parser segment of the assignment.
-* `parser.y` is our bison file. We had to slightly correct its behavior for compound statement reductions since the parser assignment submission.
-* `parser_main.c` is an ast tree creation and printing execution source file. It builds a parse tree and was useful for testing the ast_stack functionality.
-* `ast.c` and `ast.h` contain the AST node naming conventions and functions used in the parser.
-* `ast_stack.h` declares structures and functions for interacting with a stack devoted to carrying `ast_node` data types.
-* `ast_stack.c` implements the functions listed in `ast_stack.h`.
-* `stack_test.c` contains a testing routine of the `ast_stack` structure.
-* `symtab.h` contains all of the structures and function declarations used in the symbol table. The functions and basic structures given in the skeleton were expanded upon here.
-* `symtab.c` implements all of the symbol table structure functions as well as ast_node handling functions such as function declaration node and variable declaration line node.
-* `symtab_main.c` contains the source code for an executable that builds a parser tree and then traverses the tree to build the symbol tables. (Reads from stdin.)
-* `toktypes.h` contains token enumeration. Used for names only in bison parser.
+Top - Level Files
+* `mytest.sh` : building and testing script for the top-down symbol checking.
+* `check_symbol_main.c` : executable for type checking testing.
+* `scan.l` : flex file from last week
+* `parser.y` : bison parsing file. A few changes made for type checking ease.
+* `Makefile` : this week's makefile. Includes several exectuable 
+* `symtab_main.c` : created symbol table (legacy from last week).
+* `parser_main.c` : create parse tree from tokens (legacy).
 
 Instructions for running tests:
 
-`cd symbol_table`
+`cd check_symbols`
 
 `./mytest.sh`
 
 Instructions for running tests and error reporting:
 
-`cd symbol_table`
+`cd check_symbols`
 
-`make clean && make` (makes symtab_main executable by default)
+`make clean && make` (makes check_symbols executable by default)
 
-`./symtab < tests/tscope.c`
+`./check_symbols < tests/tfunc.c`
+
+If any errors occur during the construction of the symbol table, the program will report the type for the error and exit. Errors include: 
+* Failure during parsing due to syntax
+* Failure to create symbol table due to duplicate symbols
+* Syntax errors found during type checking
+
+Instructions to make parser_print executable that builds ast tree and symboltable
+
+`cd check_symbols`
+
+`make clean && make symtab`
+
+`./symtab < ./tests/tscope.c`
 
 Instructions to make parser_print executable that builds ast tree and tests ast_stack
 
-`cd symbol_table`
+`cd check_symbols`
 
 `make clean && make parser_print`
 
 `./parser_print < ./tests/tscope.c`
 
-If any errors occur during the construction of the symbol table, the program will report the duplicate symbol responsible for the error and exit. On success, the symbol table will be printed out.
-
 ## Implementation Specifics
 
-Because our AST traversal function acts recursively, we can define the appropriate actions for symbols defined in terms of the node (root) being currently visited. (These actions can be seen in the `traverse_ast_node` function in symtab.c) We realized that there were only three ast nodes that we need to attend to in filling out the symbol table. They are enumerated below. In general, our algorithm looked like this: 
+We mirrored the same approach to type checking as we implemented during creation of the symbol table. The function `set_type()` is a called on the root node, and it gets recrusively called on root's children. Because this traversal needs to be bottom-up (parents synthesize their types from their children after checking their children for appropriate type matches), `set_type` is called on root's children before root can check the children type and set its own type. Once `set_type()` reaches a base case (a variable, a type specifier, or a constant), it can set root's type and return to the parent. (When variables are referenced, `set_type()` looks up the variable's type in the symboltable. The same occurs when functions are called for the functions return values and argument types.) 
 
-```
-Push root onto current scope's stack
+### Handling Function Declaration Nodes
 
-Get root's ast node type
+In order to verify a Function Declaration was correct, we needed to make sure that each return statement within the function returned the correct type. In order to do this, we fashioned another function called `find_return` that holds a target return type. This function searches all of the children nodes of the function declaration for return statements. Once one is found, the function compares it's payload (the intended return type) against the discovered return statement. It also increments a count of found return statements. Once all of the probes of this `find_return` function return (and return 0, the success status), the handle_function_declaration caller then examines the number of found return statements. If the function returns `void` and does not contain a return statement, then the caller manually adds a return void node to the end of the function's compound statement node (this will be helpful when we traverse the tree once more to build our intermediate representation code). Each return statement also gets pointed back to its parent function. If the function does not return void and there are no return statements, the `set_type()` function will report an error. 
 
-Handle root for it's type (described below -- add symbols or enter new scope)
+### Handling Expression and r-value nodes
 
-For each child
-	traverse child
-
-Pop current scope stack
-If stack is empty and there are no sibling nodes
-	Exit scope
-
-Return
-```
-
-* Handling a function declaration node:
-
-This ended up being the most conceptually difficult symbol to add. We first went through the function nodes children to collect it's return type, symbol ID, and arguments (the arguments were stored in terms of a new structure called a 'variable' which contains an ID, a type and a datatype modifier [array or single instance]). The function symbol was added to the current scope. Then we entered a new scope manually and added each argument to the new scope's symbols. We then returned the first child in the function's compound statement block to begin a horizontal traversal. (We have to return the child of the compound statement node to avoid entering another new scope.) 
-
-
-* Handling a variable declaration line node:
-
-This node was fairly simple to handle. We look for the type specifier in the left most child and then went through the children to add symbol IDs and modifiers (arrays or single instances). This handling function does not return any new ast node to continue traversal on because new scopes cannot exist under a variable declaration node.
-
-* Handling a compound statement node:
-
-This node triggers the entrance of a new scope.
-
-* Logic for exiting scope
-
-We built an AST stack to help the recursive tranversal function know when to exit scope. Each node in the current scope is pushed onto the stack, and once all nodes are popped and there are no further possible nodes to visit in the current scope, the scope should be exited. When there are no items on the top level stack and no further nodes to visit, the traversal is finished.
+For expression statements and r-value (operation) nodes, the children must have matching types. Since we are not implementing type coercion or conversion right now, we don't need to worry about the complications of type coercion. So the children type and modifier fields must match for these nodes. If a mismatch occurs, the expression / r-value node's is set to a null value and an error is reported.
 
 ## Testing Files
 All test files live in the tests directory
