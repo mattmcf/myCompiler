@@ -38,7 +38,6 @@
 *.tar
 
 *yy.lex*
-check_symbols
 lexical_analyzer/results/
 *.tab*
 *.output
