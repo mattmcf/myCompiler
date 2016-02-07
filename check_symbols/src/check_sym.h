@@ -14,18 +14,9 @@
 void set_type(ast_node root);
 
 /*
- * starting at lowest scope, searches for symbol with name
- *
- * returns NULL if not found
+ * increments the global type_err_count and prints a message to console about
+ * error on line
  */
-symnode_t * find_symnode(symhashtable_t * hashtable, char * name);
-
-/*
- * check argument types -> expected number of child of type and modifier
- *
- * returns 0 if no error
- * returns 1 if error
- */
-int check_op_arg_types(ast_node op_node, int child_count, type_specifier_t type, modifier_t mod);
+void type_err(ast_node root);
 
 #endif // _CHECK_SYM_H
