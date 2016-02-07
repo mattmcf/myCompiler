@@ -488,13 +488,12 @@ int check_call(ast_node root) {
 				return 1;
 			}
 			// Check if each argument is of the right type
-			if (func_args != NULL && arg->type != func_args[arg_count].type) {
-				fprintf(stderr, "Mismatched arg type for function %s. Expected %s, got %s\n", func->name, TYPE_NAME(func_args[arg_count].type),
+			if (func_args != NULL && arg->type != func_args[arg_count-1].type) {
+				fprintf(stderr, "Mismatched arg type for function %s. Expected %s, got %s\n", func->name, TYPE_NAME(func_args[arg_count-1].type),
 					TYPE_NAME(arg->type));
 				return 1;
 			}
-
-			arg_count++;
+			//arg_count++;
 		}
 
 		if (arg_count != func_arg_count) {
