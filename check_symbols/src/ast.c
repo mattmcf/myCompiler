@@ -32,6 +32,7 @@ ast_node create_ast_node(ast_node_type node_type) {
   }
   new_node->node_type = node_type;
   new_node->line_number = yylineno;
+
   return new_node;
 }
 
