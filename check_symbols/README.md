@@ -72,15 +72,16 @@ For expression statements and r-value (operation) nodes, the children must have 
 ## Testing Files
 All test files live in the tests directory
 
-We hand wrote our answer key files by manually going through input files and constructing what we thought should be the expected symbol table structure for a particular file. We then piped our output into a .out file which we diffed with our key file to check if the actual output matched our expected output.
+We manually generate our answer key files by first retrieving the output for a normal AST pretty printing operation on a given input file, which serves as the base tree structure for when we are filling in fields with our expected values. We know the base tree structure is correct based on our work on generating ASTs in assignemnts from previous weeks. Then we fill in the appropriate fields for each node with our expected values. When testing, we piped the output for a given input file into a .out file which we diffed with our key file to check if the actual output matched our expected output.
 
-### tcurly.c and tcurly_ans.txt
-Sample C program with numerous nested block scopes and variable declarations within them.
+
+### tfunc.c and tfunc_ans.txt
+Sample C program with function calls. We can also test our program's capability to display errors by providing more arguments than needed in a function call or attempting to assign a function return value to a variable when the function's return type is void. In these cases, the program will display an error message explaining the cause and the line number that the error occurs on.
 
 ### tscope.c and tscope_ans.txt
 Sample C program with multiple function scopes, as well as edge cases such as blocks with a single semi-colon, empty functions without any variable declarations. We do not reflect this in our key file, but we can also test for duplicate variable declarations by uncommenting line 21 in tscope.c. The output will be that a duplicate variable has been found and the symbol table program will stop running.
 
-Note: other test input files without key files can also be found in the tests directory.
-
+### ttypecheck.c and ttypecheck_ans.txt
+Sample C program with a main function and two other functions. The function bar contains a nested function call to the function foo. We can test for error catching with undeclared variables by uncommenting line 17, which attempts to call the foo function with an undeclared variable z. We can also test for error catching with undeclared functions by uncommenting line 21, which attempts to call an undeclared function hello.
 
 

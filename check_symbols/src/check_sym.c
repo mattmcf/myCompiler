@@ -505,6 +505,7 @@ int check_call(ast_node root) {
 					func->name, TYPE_NAME(func_args[arg_count].type), TYPE_NAME(arg->type));
 				return 1;
 			}
+
 		}
 
 		if (arg_count != func_arg_count) {
@@ -525,4 +526,5 @@ void type_err(ast_node root) {
 	type_error_count++;
 	fprintf(stderr, "Type error on line %d of program (node %s)\n", get_line_number(root),NODE_NAME(root->node_type));
 }
+
 
