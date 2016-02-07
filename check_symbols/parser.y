@@ -525,12 +525,15 @@ var : ID_T {
 	id_n->value_string = strdup(savedIdText);
 	t->left_child = id_n;
 	$$ = t; }
-| ID_T '[' expression ']' {
-	ast_node t = create_ast_node(VAR_N);
+| ID_T {
+	/* embedded action to catch ID_T string */
 	ast_node id_n = create_ast_node(ID_N);
 	id_n->value_string = strdup(savedIdText);
-	t->left_child = id_n;
-	t->left_child->right_sibling = $3;
+	$1 = id_n;
+} '[' expression ']' {
+	ast_node t = create_ast_node(VAR_N);
+	t->left_child = $1;
+	t->left_child->right_sibling = $4;
 	$$ = t; }
 ;
 

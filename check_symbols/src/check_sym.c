@@ -322,34 +322,26 @@ int check_var_node(ast_node root) {
 		return 1;
 	}
 
-	/* accessing array variable */
-	if (root->left_child->right_sibling != NULL) {
+	root->type 	= sym_n->s.v.type;
+	root->mod 	= sym_n->s.v.modifier;
 
-		if (sym_n->s.v.modifier != ARRAY_DT) {
-			fprintf(stderr,"symbol \'%s\' is not an array\n",sym_name);
-			return 1;
-		}
+	if (root->mod == ARRAY_DT && root->left_child->right_sibling != NULL) {
 
 		/* array index should be an int */
 		if (root->left_child->right_sibling->type != INT_TS || 		
 			root->left_child->right_sibling->mod  != SINGLE_DT) {
 			fprintf(stderr,"Array index for symbol \'%s\' is not a single integer\n", sym_name);
 			return 1;
-		}
-	} 
+		} else {
 
-	/* accessing single variable */
-	else {
+			/* ACCESSING ARRAY LIKE IT'S AN ARRAY, SO SET DATA TYPE TO SINGLE! */
+			root->mod = SINGLE_DT;
+		}	
+	} else if (root->mod != ARRAY_DT && root->left_child->right_sibling != NULL) {
 
-		if (sym_n->s.v.modifier != SINGLE_DT) {
-			fprintf(stderr,"symbol \'%s\' is not an single variable\n", sym_name);
-			return 1;
-		}
+		fprintf(stderr,"symbol \'%s\' is not an array\n", sym_name);
+		return 1;
 	}
-
-	/* set ast_node's type and modifier */
-	root->type 	= sym_n->s.v.type;
-	root->mod 	= SINGLE_DT;
 
 	return 0;
 }
@@ -501,8 +493,9 @@ int check_call(ast_node root) {
 			}
 			// Check if each argument is of the right type and modifier
 			if (func_args != NULL && (arg->type != func_args[arg_count-1].type || arg->mod != func_args[arg_count-1].modifier)) {
-				fprintf(stderr, "Mismatched arg type for function %s. Expected %s, got %s (also check for matching modifier).\n", 
-					func->name, TYPE_NAME(func_args[arg_count].type), TYPE_NAME(arg->type));
+				fprintf(stderr, "Mismatched arg type for function %s. Expected type %s, got type %s. Expecting modifier %s, got modifier %s.\n", 
+					func->name, TYPE_NAME(func_args[arg_count].type), TYPE_NAME(arg->type),
+					MODIFIER_NAME(func_args[arg_count].modifier), MODIFIER_NAME(arg->mod));
 				return 1;
 			}
 

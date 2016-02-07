@@ -96,7 +96,7 @@ void print_ast(ast_node root, int depth) {
   }
 
   if (root->type != NULL_TS || root->mod != NULL_DT)
-    printf(" -- type: %s, modifier: %s ", TYPE_NAME(root->type), MODIFIER_NAME(root->mod));
+    printf(" type: %s, modifier: %s ", TYPE_NAME(root->type), MODIFIER_NAME(root->mod));
 
   symhashtable_t * hashtable = (symhashtable_t *)root->scope_table;
   if (hashtable != NULL)

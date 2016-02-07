@@ -31,7 +31,7 @@ int main(void) {
     fprintf(stderr, "WARNING: There were parse errors.\nParse tree may be ill-formed.\n");
 
   if (!noRoot && !parseError) {
-  	print_ast(root,0);
+  	//print_ast(root,0);
   	
     /* create empty symboltable */
     symtab = create_symboltable();
@@ -43,6 +43,9 @@ int main(void) {
     /* fill symbol table up */
     traverse_ast_tree(root, symtab);
 
+    //printf("****** PRETTY PRINTING SYMBOLTABLE ******\n");
+    //print_symtab(symtab);
+
     /* check types */
     set_type(root);
 
@@ -50,9 +53,6 @@ int main(void) {
       fprintf(stderr,"%d type errors found. Please fix before continuing.\n",type_error_count);
       return 1;
     }
-
-    printf("****** PRETTY PRINTING SYMBOLTABLE ******\n");
-    print_symtab(symtab);
 
     printf("\n\n ----- PRETTY PRINTING AST TREE WITH TYPES -----\n");
     print_ast(root,0);   
