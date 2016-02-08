@@ -53,7 +53,7 @@ if [ "$?" -ne "0" ]
 fi
 
 SRC_FILE3=/tests/ttypecheck.c
-ANS_FILE3=/tests/ttypecheck_ans.txt
+SRC_FILE3=/tests/ttypecheck_ans.txt
 
 ./check_symbols < tests/ttypecheck.c > results/ttypecheck.out
 
