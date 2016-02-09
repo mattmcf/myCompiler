@@ -8,6 +8,8 @@ int myfunc1(int arg1, int arg2, int arg3[]){
 	int local_var1, local_var2;
 	int local_arr1[100];
 
+	print "here";
+
 	return 0;
 }
 

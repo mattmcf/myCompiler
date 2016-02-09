@@ -13,10 +13,10 @@
 #include "src/check_sym.h"
 #include "src/IR_gen.h"
 
-ast_node root = NULL;
-
 extern int yyparse(); 
 extern int yydebug; 
+
+ast_node root = NULL;
 int parseError = 0; 	      // global flag
 int type_error_count = 0;   // used to count type errors
 int node_count = 0;         // used to give unique node IDs

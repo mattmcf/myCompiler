@@ -37,6 +37,7 @@
 *.gz
 *.tar
 
+
 *yy.lex*
 lexical_analyzer/results/
 *.tab*

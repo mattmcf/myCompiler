@@ -13,7 +13,7 @@
  * returns label of form "L_N[#]_[NODE TYPE]"
  * should be free'd after done using
  */
-char * make_label(ast_node root) {
+char * NewLabel(ast_node root) {
        if (!root)
 	      return NULL;
 
@@ -26,15 +26,17 @@ char * make_label(ast_node root) {
        return label;
 }
 
+
 void print_label(ast_node root) {
   if (!root)
     return;
 
-  char * label = make_label(root);
+  char * label = NewLabel(root);
   printf("%s\n",label);
   free(label);
 
   for (ast_node child = root->left_child; child != NULL; child = child->right_sibling)
-    print_label(child);
+    NewLabel(child);
 }
-	       
+
+

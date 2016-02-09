@@ -19,6 +19,7 @@
 #include "ast.h"
 #include "symtab.h"
 #include "types.h"
+#include "IR_gen.h"     // for label function
 
 extern int yylineno;
 extern int node_count;
@@ -70,7 +71,10 @@ void print_ast(ast_node root, int depth) {
   }
 
   /* Print the node type. */
-  printf("%s, ", NODE_NAME(root->node_type));
+  //printf("%s, ", NODE_NAME(root->node_type));
+  char * label = NewLabel(root);
+  printf("%s ",label);
+  free(label);
 
   /* Print attributes specific to node types. */
   switch (root->node_type) {
