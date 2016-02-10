@@ -44,8 +44,8 @@ int main(void) {
     /* fill symbol table up */
     traverse_ast_tree(root, symtab);
 
-    //printf("****** PRETTY PRINTING SYMBOLTABLE ******\n");
-    //print_symtab(symtab);
+    // printf("****** PRETTY PRINTING SYMBOLTABLE ******\n");
+    // print_symtab(symtab);
 
     /* check types */
     set_type(root);
