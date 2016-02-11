@@ -78,7 +78,34 @@ temp_var * CG(ast_node root) {
         // GenQuad(ASSIGN_Q, t1, t2)
         // GenQuad(ASSIGN_Q, t3, t1)
         // return t3
-        break;
+        {
+          printf("Found assign\n");
+
+          temp_var * t1 = CG(root->left_child->right_sibling);
+          temp_var * t2 = CG(root->left_child);
+          temp_var * t3 = new_temp(temps_list);
+
+          quad_arg * arg1 = (quad_arg *)malloc(sizeof(quad_arg));
+          arg1->type = TEMP_VAR_Q_ARG;
+          arg1->temp = t1;
+
+          quad_arg * arg2 = (quad_arg *)malloc(sizeof(quad_arg));
+          arg2->type = TEMP_VAR_Q_ARG;
+          arg2->temp = t2;
+
+          quad_arg * arg3 = (quad_arg *)malloc(sizeof(quad_arg));
+          arg3->type = TEMP_VAR_Q_ARG;
+          arg3->temp = t3;
+
+          gen_quad(ASSIGN_Q, arg3, arg1, NULL);
+          gen_quad(ASSIGN_Q, arg2, arg3, NULL);
+
+          t3->int_literal = t1->int_literal;
+
+          to_return = t3;
+
+          return to_return;
+        }
 
       case OP_PLUS_N:
         // new temp t1 = new_temp()
@@ -272,6 +299,16 @@ temp_var * CG(ast_node root) {
         // GenQuad(READ_Q, t1, -, -)
         break;
 
+      case ID_N:
+        to_return = new_temp(temps_list);
+        to_return->var_id = root->value_string;
+        return to_return;
+
+      case INT_LITERAL_N:
+        to_return = new_temp(temps_list);
+        to_return->int_literal = root->value_int;
+        return to_return;
+
       default:
         break;
 
@@ -281,7 +318,7 @@ temp_var * CG(ast_node root) {
 
     /* do we really want to call GC on children here? Or should this be rolled into the default case? */
     while (child != NULL) {
-      CG(child);
+      to_return = CG(child);
       child = child->right_sibling;
     }
   }
@@ -420,25 +457,29 @@ void print_quad(quad * q) {
   /* print three arguments */
   quad_arg arg;
   for (int i = 0; i < QUAD_ARG_NUM; i++) {
-
-    switch(q->args[i]->type) {
+    if (q->args[i] == NULL) {
+      printf(" - ");
+    } else {
+      switch(q->args[i]->type) {
 
       case INT_LITERAL_Q_ARG:
-        printf("constant: %d",q->args[i]->int_literal);
+        printf("Constant: %d",q->args[i]->int_literal);
         break;
 
       case TEMP_VAR_Q_ARG:
-        printf("temp: %d",q->args[i]->temp->id);
+        printf("Temp (ID: %d)",
+          q->args[i]->temp->id);
         break;
 
       case LABEL_Q_ARG:
-        printf("label: %s",q->args[i]->label);
+        printf("Label: %s",q->args[i]->label);
         break;
 
       default:  // null arg case
         printf(" - ");
         break;
-    }
+      }
+    } 
 
     if (i < QUAD_ARG_NUM - 1)
       printf(", ");

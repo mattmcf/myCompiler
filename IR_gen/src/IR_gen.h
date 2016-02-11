@@ -110,6 +110,8 @@ typedef struct temp_list {
  */
 typedef	struct temp_var {
 	int id;
+	int int_literal;
+	char * var_id;
 } temp_var;
 
 
