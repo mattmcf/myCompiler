@@ -42,14 +42,11 @@ typedef enum {
 	PROLOG_Q,
 	EPILOG_Q,
 	PRECALL_Q,
-	POSTRET_Q
+	POSTRET_Q,
 
 	/* constant creation operations */
 	STRING_Q,
-	INT_LITERAL_Q,
-
-	/* label generator */
-	LABEL_Q
+	INT_LITERAL_Q
 } quad_op;
 
 /*
@@ -75,7 +72,7 @@ typedef struct quad_arg {
 	int int_literal;
 	temp_var * temp;
 	char * label; 	// for variable ID's, function ID's and Label ID's
-}
+} quad_arg;
 
 /*
  * Quad structure
