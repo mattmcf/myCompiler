@@ -34,7 +34,6 @@ typedef enum {
 	IFFALSE_Q, 	
 	GOTO_Q,
 
-	LABEL_Q,
 	PRINT_Q,
 	READ_Q,
 
@@ -42,7 +41,7 @@ typedef enum {
 	PROLOG_Q,
 	EPILOG_Q,
 	PRECALL_Q,
-	POSTRET_Q
+	POSTRET_Q,
 
 	/* constant creation operations */
 	STRING_Q,
@@ -75,7 +74,7 @@ typedef struct quad_arg {
 	int int_literal;
 	temp_var * temp;
 	char * label; 	// for variable ID's, function ID's and Label ID's
-}
+} quad_arg;
 
 /*
  * Quad structure
@@ -91,9 +90,16 @@ typedef struct quad {
 	quad_arg a3;
 } quad;
 
+/*
+ * dynamically sized array of quads
+ */
+typedef struct quad_arr {
+	quad * arr;
+	int size; 			// max size
+	int count;			// number of current entries
+} quad_arr;
 
-
-/**
+/*
  * Traverses AST to generate code
  * Should return array of quads. Dynamically sizing array or LL?
  */
@@ -136,5 +142,19 @@ void destroy_temp_var(temp_var * v);
  * destroys a temp_list
  */
 void destroy_temp_list(temp_list * lst);
+
+/*
+ * initializes quad structure. GenQuad will fail until this is called.
+ */
+quad_arr * init_quad_list(quad_arr * lst);
+
+/*
+ * gen_quad -- adds quad to quad list 
+ *
+ * Looks for global quad_arr * called "quad_list" in main.c file
+ *
+ * Unused arguments are uninitialized quads
+ */
+void gen_quad(quad_op, quad_arg a1, quad_arg a2, quad_arg a3);
 
 #endif 	// _IR_GEN_H

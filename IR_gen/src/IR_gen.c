@@ -58,8 +58,8 @@ void CG(ast_node root) {
         case OP_INC_N:
         case OP_DECR_N:
 
-        case ASSIGN_N:
-          temp_var * t = new_temp
+        case OP_ASSIGN_N:
+          // temp_var * t = new_temp
           // get new temp
           // new_temp = CG(right hand side)
           // store temp at destination location (arg1)

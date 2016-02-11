@@ -502,7 +502,7 @@ print_stmt : PRINT_T expression ';' {
  * 	evaluated right sibling expression.
  */
 expression : var '=' expression {
-	ast_node t = create_ast_node(EXPRESSION_N);
+	ast_node t = create_ast_node(OP_ASSIGN_N);
 	t->left_child = $1;
 	t->left_child->right_sibling = $3;
 	$$ = t; }
