@@ -15,7 +15,9 @@ extern quad_arr * quad_list;
 
 #define INIT_QUAD_LIST_SIZE 200
 
-void CG(ast_node root) {
+temp_var * CG(ast_node root) {
+  temp_var * to_return;
+
   if (root != NULL) {
     switch (root->node_type) {
       // Switch on node types to handle root
@@ -277,6 +279,7 @@ void CG(ast_node root) {
 
     ast_node child = root->left_child;
 
+    /* do we really want to call GC on children here? Or should this be rolled into the default case? */
     while (child != NULL) {
       CG(child);
       child = child->right_sibling;

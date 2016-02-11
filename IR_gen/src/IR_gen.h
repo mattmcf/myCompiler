@@ -154,7 +154,7 @@ typedef struct quad_arr {
  * Traverses AST to generate code
  * Should return array of quads. Dynamically sizing array or LL?
  */
-void CG(ast_node root);
+temp_var * CG(ast_node root);
 
 /*
  * returns label of form "L_N[#]_[NODE TYPE]"
