@@ -20,6 +20,8 @@ ast_node root = NULL;
 int parseError = 0; 	      // global flag
 int type_error_count = 0;   // used to count type errors
 int node_count = 0;         // used to give unique node IDs
+quad_arr * quad_list = NULL;    // global quad list
+
 
 int main(void) {
   int noRoot = 0;		/* 0 means we will have a root */
