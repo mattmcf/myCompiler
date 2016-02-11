@@ -49,10 +49,7 @@ typedef enum {
 
 	/* constant creation operations */
 	STRING_Q,
-	INT_LITERAL_Q,
-
-	/* label generator */
-	LABEL_Q
+	INT_LITERAL_Q
 } quad_op;
 
 static val_name_pair quad_op_table[] = {
