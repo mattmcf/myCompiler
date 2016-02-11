@@ -1,4 +1,4 @@
-int foo() {
+int foo(int a) {
   return 1;
 }
 
@@ -8,7 +8,9 @@ int main(void) {
 
   a = 7;
 
-  if (a == 7) {
+  b = foo(a);
+
+  if (a == 7 || b == 1) {
   	print 7;
   } else {
   	print 0;
