@@ -6,8 +6,11 @@
 #include "ast.h"
 #include "types.h"
 #include "toktypes.h"
+#include "IR_gen.h"
 
 #define MAX_LABEL_LENGTH 100 	// should be enough?
+
+extern temp_list * temps_list;
 
 void CG(ast_node root) {
   if (root != NULL) {
@@ -26,13 +29,49 @@ void CG(ast_node root) {
           break;
         case WHILE_N:
           break;
+
+        case OP_PLUS_N:
+          // new temp1 for result
+          // new temp2 = CG(arg1)
+          // new temp3 = CG(arg2)
+          // GenQuad(addl, temp1, temp2, temp3);
+          break;
+
+        case OP_MINUS_N:
+          // new temp1 for result
+          // GenQuad(addl, temp1, arg1, arg2);
+          // return temp1
+          break;
+
+        case OP_NEG_N:
+        case OP_TIMES_N:
+        case OP_DIVIDE_N:
+        case OP_MOD_N:
+        case OP_LT_N:
+        case OP_GT_N:
+        case OP_GTE_N:
+        case OP_LTE_N:
+        case OP_EQ_N:
+        case OP_NE_N:
+        case OP_AND_N:
+        case OP_OR_N:
+        case OP_INC_N:
+        case OP_DECR_N:
+
+        case ASSIGN_N:
+          temp_var * t = new_temp
+          // get new temp
+          // new_temp = CG(right hand side)
+          // store temp at destination location (arg1)
+          break;
+
         default:
           break;
 
         // Logical operations? Arrays?
       }
 
-      CG(child);
+      // CG(child);
       child = child->right_sibling;
     }
 
@@ -44,7 +83,7 @@ void CG(ast_node root) {
  * returns label of form "L_N[#]_[NODE TYPE]"
  * should be free'd after done using
  */
-char * NewLabel(ast_node root) {
+char * new_label(ast_node root) {
   if (!root)
     return NULL;
 
@@ -62,12 +101,47 @@ void print_label(ast_node root) {
   if (!root)
     return;
 
-  char * label = NewLabel(root);
+  char * label = new_label(root);
   printf("%s\n",label);
   free(label);
 
   for (ast_node child = root->left_child; child != NULL; child = child->right_sibling)
-    NewLabel(child);
+    new_label(child);
+}
+
+
+
+temp_list * init_temp_list() {
+  temp_list * lst = (temp_list *)malloc(sizeof(temp_list));
+  assert(lst);
+  lst->count = 0;
+  return lst;
+}
+
+
+
+temp_var * new_temp(temp_list * lst) {
+  if (!lst)
+    return NULL;
+
+  temp_var * new_var = (temp_var *)malloc(sizeof(temp_var));
+  assert(new_var);
+  new_var->id = lst->count++;          // give unique id
+
+  return new_var;
+}
+
+
+void destroy_temp_var(temp_var * v) {
+  if (v != NULL)
+    free(v);
+}
+
+
+
+void destroy_temp_list(temp_list * lst){
+  if (lst != NULL)
+    free(lst);
 }
 
 

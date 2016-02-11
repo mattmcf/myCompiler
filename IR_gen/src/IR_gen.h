@@ -43,7 +43,39 @@ typedef enum {
 	EPILOG_Q,
 	PRECALL_Q,
 	POSTRET_Q
+
+	/* constant creation operations */
+	STRING_Q,
+	INT_LITERAL_Q,
+
+	/* label generator */
+	LABEL_Q
 } quad_op;
+
+/*
+ * simplest temporary variable structure
+ * each temporary will be given out once (so it's read once only)
+ */
+typedef struct temp_list {
+	int count;
+} temp_list;
+
+/*
+ * temporary variable structure
+ */
+typedef	struct temp_var {
+	int id;
+} temp_var;
+
+
+/*
+ * at most, only one field is non-NULL
+ */
+typedef struct quad_arg {
+	int int_literal;
+	temp_var * temp;
+	char * label; 	// for variable ID's, function ID's and Label ID's
+}
 
 /*
  * Quad structure
@@ -53,11 +85,13 @@ typedef enum {
  * arg1 / arg2 -> can be registers, numbers or labels
  */
 typedef struct quad {
-	int op;
-	int dest;
-	int arg1;
-	int arg2;
+	quad_op op;
+	quad_arg a1;
+	quad_arg a2;
+	quad_arg a3;
 } quad;
+
+
 
 /**
  * Traverses AST to generate code
@@ -69,18 +103,38 @@ void CG(ast_node root);
  * returns label of form "L_N[#]_[NODE TYPE]"
  * should be free'd after done using
  */
-char * NewLabel(ast_node root);
+char * new_label(ast_node root);
 
 /*
  * calls make_label() on root and all of root's children
  */
 void print_label(ast_node root);
 
-/*
- * NewTemp() 
- *
- * returns a new temp
- */
 
+/*
+ * init_temp_list()
+ *
+ * returns NULL on failure
+ */
+temp_list * init_temp_list();
+
+/*
+ * new_temp()
+ *
+ * returns a new temp or NULL on failure
+ */
+ temp_var * new_temp(temp_list * lst);
+
+/*
+ * destroys a temporary variable struct
+ */
+void destroy_temp_var(temp_var * v);
+
+/*
+ * destroy_temp_list()
+ *
+ * destroys a temp_list
+ */
+void destroy_temp_list(temp_list * lst);
 
 #endif 	// _IR_GEN_H
