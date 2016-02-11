@@ -11,6 +11,9 @@
 #define MAX_LABEL_LENGTH 100 	// should be enough?
 
 extern temp_list * temps_list;
+extern quad_arr * quad_list;
+
+#define INIT_QUAD_LIST_SIZE 200
 
 void CG(ast_node root) {
   if (root != NULL) {
@@ -144,4 +147,102 @@ void destroy_temp_list(temp_list * lst){
     free(lst);
 }
 
+
+quad_arr * init_quad_list() {
+
+  if(!quad_list) {
+    quad_list = (quad_arr *)malloc(sizeof(quad) * INIT_QUAD_LIST_SIZE);
+    assert(quad_list);
+    quad_list->size = 0;
+    quad_list->count = 0;
+  }
+
+  return quad_list;
+}
+
+/*
+ * gen_quad -- adds quad to quad list 
+ *
+ * Looks for global quad_arr * called "quad_list" in main.c file
+ *
+ * Unused arguments are uninitialized quads
+ *
+ * returns 1 on failure
+ */
+int gen_quad(quad_op operation, quad_arg a1, quad_arg a2, quad_arg a3) {
+
+  if (!quad_list)
+    return 1;
+
+  quad_list->arr[quad_list->count].op = operation;
+  quad_list->arr[quad_list->count].args[0] = a1;
+  quad_list->arr[quad_list->count].args[1] = a2;
+  quad_list->arr[quad_list->count].args[2] = a3;
+
+  /* double array size if full */
+  if (++quad_list->count == quad_list->size) {
+    printf("resizing quad_list to %d\n", 2 * quad_list->size);
+    quad_list->size *= 2;
+    quad_list->arr = realloc(quad_list->arr,sizeof(quad) * quad_list->size);
+    assert(quad_list->arr);
+  }
+
+  return 0;
+}
+
+/*
+ * looks for and prints "quad_list" in main.c
+ */
+void print_quad_list() {
+  if (quad_list != NULL) {
+    for (int i = 0; i < quad_list->count; i++) {
+      print_quad(quad_list->arr[i]);
+    }
+  } else {
+    fprintf(stderr,"cannot print quad list because list is null\n");
+  }
+}
+
+void print_quad(quad q) {
+
+  /* print quad operation */
+  printf("(%s,",QUAD_NAME(q.op));
+
+  /* print three arguments */
+  quad_arg arg;
+  for (int i = 0; i < QUAD_ARG_NUM; i++) {
+
+    switch(q.args[i].type) {
+
+      case INT_LITERAL_Q_ARG:
+        printf("constant: %d",q.args[i].int_literal);
+        break;
+
+      case TEMP_VAR_Q_ARG:
+        printf("temp: %d",q.args[i].temp->id);
+        break;
+
+      case LABEL_Q_ARG:
+        printf("label: %s",q.args[i].label);
+        break;
+
+      default:  // null arg case
+        printf(" - ");
+        break;
+    }
+
+    if (i < QUAD_ARG_NUM - 1)
+      printf(", ");
+  }
+
+  printf(")\n");
+}
+
+/*
+ * looks for and frees "quad_list" global quad arr in main.c file 
+ */
+void destroy_quad_list() {
+  if (quad_list != NULL)
+    free(quad_list);
+}
 

@@ -11,6 +11,10 @@
 #ifndef _IR_GEN_H
 #define _IR_GEN_H
 
+#include "types.h"	// for val_name_pair struct
+
+#define QUAD_ARG_NUM 3 	/* MAGIC NUMBER !?!?! */
+
 typedef enum {
 	/* arithmatic operations */
 	ADD_Q,
@@ -51,6 +55,50 @@ typedef enum {
 	LABEL_Q
 } quad_op;
 
+static val_name_pair quad_op_table[] = {
+	/* arithmatic operations */
+	{ADD_Q, "add"},
+	{SUB_Q, "sub"},
+	{MUL_Q, "multiply"},
+	{DIV_Q, "divide"},
+	{MOD_Q, "mod divide"},
+	{ASSIGN_Q, "assign"}, 	
+
+	/* comparison operations */
+	{LT_Q, "less than"},
+	{GT_Q, "greater than"},
+	{LTE_Q, "less than or equal to"},
+	{GTE_Q, "greater than or equal to"},
+	{NE_Q, "not equal"},
+	{EQ_Q, "equal to"},
+	{LDR_Q, "load"},
+	{STR_Q, "store"},
+
+	/* jump operations */
+	{IFFALSE_Q, "if false"}, 	
+	{GOTO_Q, "goto"},
+
+	{PRINT_Q, "print"},
+	{READ_Q, "read"},
+
+	/* function operations */
+	{PROLOG_Q, "prolog"},
+	{EPILOG_Q, "epilog"},
+	{PRECALL_Q, "precall"},
+	{POSTRET_Q, "post return"},
+
+	/* constant creation operations */
+	{STRING_Q, "save string"},
+	{INT_LITERAL_Q, "save constant"},
+
+	/* label generator */
+	{LABEL_Q, "make label"},
+  	{ 0, NULL }
+};
+
+#define QUAD_INDEX(X)    ( (X) - ADD_Q)
+#define QUAD_NAME(X)     ( quad_op_table[ QUAD_INDEX((X)) ].name)
+
 /*
  * simplest temporary variable structure
  * each temporary will be given out once (so it's read once only)
@@ -67,10 +115,18 @@ typedef	struct temp_var {
 } temp_var;
 
 
+typedef enum quad_arg_discriminant {
+	NULL_ARG, 	
+	INT_LITERAL_Q_ARG,
+	TEMP_VAR_Q_ARG,
+	LABEL_Q_ARG
+} quad_arg_discriminant;
+
 /*
  * at most, only one field is non-NULL
  */
 typedef struct quad_arg {
+	quad_arg_discriminant type;
 	int int_literal;
 	temp_var * temp;
 	char * label; 	// for variable ID's, function ID's and Label ID's
@@ -85,9 +141,7 @@ typedef struct quad_arg {
  */
 typedef struct quad {
 	quad_op op;
-	quad_arg a1;
-	quad_arg a2;
-	quad_arg a3;
+	quad_arg args[QUAD_ARG_NUM];
 } quad;
 
 /*
@@ -144,9 +198,9 @@ void destroy_temp_var(temp_var * v);
 void destroy_temp_list(temp_list * lst);
 
 /*
- * initializes quad structure. GenQuad will fail until this is called.
+ * initializes global "quad_list" quad_arr structure. GenQuad will fail until this is called.
  */
-quad_arr * init_quad_list(quad_arr * lst);
+quad_arr * init_quad_list();
 
 /*
  * gen_quad -- adds quad to quad list 
@@ -154,7 +208,24 @@ quad_arr * init_quad_list(quad_arr * lst);
  * Looks for global quad_arr * called "quad_list" in main.c file
  *
  * Unused arguments are uninitialized quads
+ *
+ * returns 1 on failure
  */
-void gen_quad(quad_op, quad_arg a1, quad_arg a2, quad_arg a3);
+int gen_quad(quad_op, quad_arg a1, quad_arg a2, quad_arg a3);
+
+/*
+ * looks for and prints "quad_list" in main.c
+ */
+void print_quad_list();
+
+/*
+ * prints quad
+ */
+void print_quad(quad q);
+
+/*
+ * looks for and frees "quad_list" global quad arr in main.c file 
+ */
+void destroy_quad_list();
 
 #endif 	// _IR_GEN_H
