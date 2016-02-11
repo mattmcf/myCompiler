@@ -23,6 +23,7 @@ temp_var * CG(ast_node root) {
       // Switch on node types to handle root
       case IF_STMT_N:
         // new temp t1 = new_temp()
+        // new label L_FI = new_label()
         // t1 = CG(root->left_child)
         // GenQuad(IFFALSE_Q, t1, L_FI, -)
         // CG(root->left_child->right_sibling)
@@ -115,7 +116,33 @@ temp_var * CG(ast_node root) {
         // t3 = CG(root->left_child)
         // GenQuad(ADD_Q, t1, t2, t3);
         // return t1
-        break;
+        {
+          printf("Found op plus\n");
+
+          temp_var * t1 = CG(root->left_child->right_sibling);
+          temp_var * t2 = CG(root->left_child);
+          temp_var * t3 = new_temp(temps_list);
+
+          quad_arg * arg1 = (quad_arg *)malloc(sizeof(quad_arg));
+          arg1->type = TEMP_VAR_Q_ARG;
+          arg1->temp = t1;
+
+          quad_arg * arg2 = (quad_arg *)malloc(sizeof(quad_arg));
+          arg2->type = TEMP_VAR_Q_ARG;
+          arg2->temp = t2;
+
+          quad_arg * arg3 = (quad_arg *)malloc(sizeof(quad_arg));
+          arg3->type = TEMP_VAR_Q_ARG;
+          arg3->temp = t3;
+
+          gen_quad(ADD_Q, arg3, arg1, arg2);
+
+          t3->int_literal = t1->int_literal + t2->int_literal;
+
+          to_return = t3;
+
+          return to_return;
+        }
 
       case OP_MINUS_N:
         // new temp t1 = new_temp()
@@ -123,7 +150,33 @@ temp_var * CG(ast_node root) {
         // new temp t3 = new_temp()
         // GenQuad(SUB_Q, t1, t2, t3);
         // return t1
-        break;
+        {
+          printf("Found op minus\n");
+
+          temp_var * t1 = CG(root->left_child->right_sibling);
+          temp_var * t2 = CG(root->left_child);
+          temp_var * t3 = new_temp(temps_list);
+
+          quad_arg * arg1 = (quad_arg *)malloc(sizeof(quad_arg));
+          arg1->type = TEMP_VAR_Q_ARG;
+          arg1->temp = t1;
+
+          quad_arg * arg2 = (quad_arg *)malloc(sizeof(quad_arg));
+          arg2->type = TEMP_VAR_Q_ARG;
+          arg2->temp = t2;
+
+          quad_arg * arg3 = (quad_arg *)malloc(sizeof(quad_arg));
+          arg3->type = TEMP_VAR_Q_ARG;
+          arg3->temp = t3;
+
+          gen_quad(SUB_Q, arg3, arg1, arg2);
+
+          t3->int_literal = t1->int_literal - t2->int_literal;
+
+          to_return = t3;
+
+          return to_return;
+        }
 
       case OP_TIMES_N:
         // new temp t1 = new_temp()
@@ -133,7 +186,33 @@ temp_var * CG(ast_node root) {
         // t3 = CG(root->left_child)
         // GenQuad(MUL_Q, t1, t2, t3);
         // return t1
-        break;
+        {
+          printf("Found op mult\n");
+
+          temp_var * t1 = CG(root->left_child->right_sibling);
+          temp_var * t2 = CG(root->left_child);
+          temp_var * t3 = new_temp(temps_list);
+
+          quad_arg * arg1 = (quad_arg *)malloc(sizeof(quad_arg));
+          arg1->type = TEMP_VAR_Q_ARG;
+          arg1->temp = t1;
+
+          quad_arg * arg2 = (quad_arg *)malloc(sizeof(quad_arg));
+          arg2->type = TEMP_VAR_Q_ARG;
+          arg2->temp = t2;
+
+          quad_arg * arg3 = (quad_arg *)malloc(sizeof(quad_arg));
+          arg3->type = TEMP_VAR_Q_ARG;
+          arg3->temp = t3;
+
+          gen_quad(MUL_Q, arg3, arg1, arg2);
+
+          t3->int_literal = t1->int_literal * t2->int_literal;
+
+          to_return = t3;
+
+          return to_return;
+        }
 
       case OP_DIVIDE_N:
         // new temp t1 = new_temp()
@@ -143,7 +222,33 @@ temp_var * CG(ast_node root) {
         // t3 = CG(root->left_child)
         // GenQuad(DIV_Q, t1, t2, t3);
         // return t1
-        break;
+        {
+          printf("Found op divide\n");
+
+          temp_var * t1 = CG(root->left_child->right_sibling);
+          temp_var * t2 = CG(root->left_child);
+          temp_var * t3 = new_temp(temps_list);
+
+          quad_arg * arg1 = (quad_arg *)malloc(sizeof(quad_arg));
+          arg1->type = TEMP_VAR_Q_ARG;
+          arg1->temp = t1;
+
+          quad_arg * arg2 = (quad_arg *)malloc(sizeof(quad_arg));
+          arg2->type = TEMP_VAR_Q_ARG;
+          arg2->temp = t2;
+
+          quad_arg * arg3 = (quad_arg *)malloc(sizeof(quad_arg));
+          arg3->type = TEMP_VAR_Q_ARG;
+          arg3->temp = t3;
+
+          gen_quad(DIV_Q, arg3, arg1, arg2);
+
+          t3->int_literal = t1->int_literal / t2->int_literal;
+
+          to_return = t3;
+
+          return to_return;
+        }
 
       case OP_MOD_N:
         // new temp t1 = new_temp()
@@ -153,7 +258,33 @@ temp_var * CG(ast_node root) {
         // t3 = CG(root->left_child)
         // GenQuad(MOD_Q, t1, t2, t3);
         // return t1
-        break;
+        {
+          printf("Found op mod\n");
+
+          temp_var * t1 = CG(root->left_child->right_sibling);
+          temp_var * t2 = CG(root->left_child);
+          temp_var * t3 = new_temp(temps_list);
+
+          quad_arg * arg1 = (quad_arg *)malloc(sizeof(quad_arg));
+          arg1->type = TEMP_VAR_Q_ARG;
+          arg1->temp = t1;
+
+          quad_arg * arg2 = (quad_arg *)malloc(sizeof(quad_arg));
+          arg2->type = TEMP_VAR_Q_ARG;
+          arg2->temp = t2;
+
+          quad_arg * arg3 = (quad_arg *)malloc(sizeof(quad_arg));
+          arg3->type = TEMP_VAR_Q_ARG;
+          arg3->temp = t3;
+
+          gen_quad(MOD_Q, arg3, arg1, arg2);
+
+          t3->int_literal = t1->int_literal % t2->int_literal;
+
+          to_return = t3;
+
+          return to_return;
+        }
 
       case OP_INC_N:
         // new temp t1 = new_temp()
@@ -161,7 +292,28 @@ temp_var * CG(ast_node root) {
         // t1 = CG(root->left_child)
         // GenQuad(ADD_Q, t2, t1, 1)
         // return t2
-        break;
+        {
+          printf("Found op increment\n");
+
+          temp_var * t1 = CG(root->left_child);
+          temp_var * t2 = new_temp(temps_list);
+
+          quad_arg * arg1 = (quad_arg *)malloc(sizeof(quad_arg));
+          arg1->type = TEMP_VAR_Q_ARG;
+          arg1->temp = t1;
+
+          quad_arg * arg2 = (quad_arg *)malloc(sizeof(quad_arg));
+          arg2->type = TEMP_VAR_Q_ARG;
+          arg2->temp = t2;
+
+          quad_arg * arg3 = (quad_arg *)malloc(sizeof(quad_arg));
+          arg3->type = INT_LITERAL_Q_ARG;
+          arg3->int_literal = 1;
+
+          gen_quad(ADD_Q, arg2, arg1, arg3);
+
+          break;
+        }
 
       case OP_DECR_N:
         // new temp t1 = new_temp()
@@ -169,7 +321,28 @@ temp_var * CG(ast_node root) {
         // t1 = CG(root->left_child)
         // GenQuad(SUB_Q, t2, t1, 1)
         // return t2
-        break;
+        {
+          printf("Found op decrement\n");
+
+          temp_var * t1 = CG(root->left_child);
+          temp_var * t2 = new_temp(temps_list);
+
+          quad_arg * arg1 = (quad_arg *)malloc(sizeof(quad_arg));
+          arg1->type = TEMP_VAR_Q_ARG;
+          arg1->temp = t1;
+
+          quad_arg * arg2 = (quad_arg *)malloc(sizeof(quad_arg));
+          arg2->type = TEMP_VAR_Q_ARG;
+          arg2->temp = t2;
+
+          quad_arg * arg3 = (quad_arg *)malloc(sizeof(quad_arg));
+          arg3->type = INT_LITERAL_Q_ARG;
+          arg3->int_literal = 1;
+
+          gen_quad(SUB_Q, arg2, arg1, arg3);
+          
+          break;
+        }
 
       case OP_EQ_N:
         // new temp t1 = new_temp()
@@ -179,7 +352,38 @@ temp_var * CG(ast_node root) {
         // t2 = CG(root->left_child->right_sibling)
         // GenQuad(EQ_Q, t3, t1, t2)
         // return t3
-        break;
+        {
+     
+          printf("Found op equals\n");
+
+          temp_var * t1 = CG(root->left_child->right_sibling);
+          temp_var * t2 = CG(root->left_child);
+          temp_var * t3 = new_temp(temps_list);
+
+          quad_arg * arg1 = (quad_arg *)malloc(sizeof(quad_arg));
+          arg1->type = TEMP_VAR_Q_ARG;
+          arg1->temp = t1;
+
+          quad_arg * arg2 = (quad_arg *)malloc(sizeof(quad_arg));
+          arg2->type = TEMP_VAR_Q_ARG;
+          arg2->temp = t2;
+
+          quad_arg * arg3 = (quad_arg *)malloc(sizeof(quad_arg));
+          arg3->type = TEMP_VAR_Q_ARG;
+          arg3->temp = t3;
+
+          gen_quad(EQ_Q, arg3, arg1, arg2);
+
+          if (t1->int_literal == t2->int_literal) {
+            t3->int_literal = 1;
+          } else {
+            t3->int_literal = 0;
+          }
+
+          to_return = t3;
+
+          return to_return;
+        }
 
       case OP_NE_N:
         // new temp t1 = new_temp()
@@ -310,17 +514,21 @@ temp_var * CG(ast_node root) {
         return to_return;
 
       default:
-        break;
+        {
+          ast_node child = root->left_child;
+
+          /* do we really want to call GC on children here? Or should this be rolled into the default case? */
+          while (child != NULL) {
+            to_return = CG(child);
+            child = child->right_sibling;
+          }
+
+          break;
+        }
 
     }
 
-    ast_node child = root->left_child;
-
-    /* do we really want to call GC on children here? Or should this be rolled into the default case? */
-    while (child != NULL) {
-      to_return = CG(child);
-      child = child->right_sibling;
-    }
+    
   }
 
   return to_return;
