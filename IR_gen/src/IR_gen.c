@@ -19,8 +19,6 @@ void CG(ast_node root) {
   if (root != NULL) {
     switch (root->node_type) {
       // Switch on node types to handle root
-      case EXPRESSION_STMT_N:
-        break;
       case IF_STMT_N:
         // new temp t1 = new_temp()
         // t1 = CG(root->left_child)
@@ -144,22 +142,133 @@ void CG(ast_node root) {
         // return t2
         break;
 
+      case OP_EQ_N:
+        // new temp t1 = new_temp()
+        // new temp t2 = new_temp()
+        // new temp t3 = new_temp()
+        // t1 = CG(root->left_child)
+        // t2 = CG(root->left_child->right_sibling)
+        // GenQuad(EQ_Q, t3, t1, t2)
+        // return t3
+        break;
+
+      case OP_NE_N:
+        // new temp t1 = new_temp()
+        // new temp t2 = new_temp()
+        // new temp t3 = new_temp()
+        // t1 = CG(root->left_child)
+        // t2 = CG(root->left_child->right_sibling)
+        // GenQuad(NE_Q, t3, t1, t2)
+        // return t3
+        break;
+
+      case OP_LT_N:
+        // new temp t1 = new_temp()
+        // new temp t2 = new_temp()
+        // new temp t3 = new_temp()
+        // t1 = CG(root->left_child)
+        // t2 = CG(root->left_child->right_sibling)
+        // GenQuad(LT_Q, t3, t1, t2)
+        // return t3
+        break;
+
+      case OP_GT_N:
+        // new temp t1 = new_temp()
+        // new temp t2 = new_temp()
+        // new temp t3 = new_temp()
+        // t1 = CG(root->left_child)
+        // t2 = CG(root->left_child->right_sibling)
+        // GenQuad(GT_Q, t3, t1, t2)
+        // return t3
+        break;
+
+      case OP_GTE_N:
+        // new temp t1 = new_temp()
+        // new temp t2 = new_temp()
+        // new temp t3 = new_temp()
+        // t1 = CG(root->left_child)
+        // t2 = CG(root->left_child->right_sibling)
+        // GenQuad(GTE_Q, t3, t1, t2)
+        // return t3
+        break;
+
+      case OP_LTE_N:
+        // new temp t1 = new_temp()
+        // new temp t2 = new_temp()
+        // new temp t3 = new_temp()
+        // t1 = CG(root->left_child)
+        // t2 = CG(root->left_child->right_sibling)
+        // GenQuad(LTE_Q, t3, t1, t2)
+        // return t3
+        break;
+
       case OP_AND_N:
+        // new temp t1 = new_temp()
+        // new temp t2 = new_temp()
+        // new temp t3 = new_temp()
+        // new label L_FALSE = new_label()
+        // new label L_DONE = new_label()
+        // t1 = CG(root->left_child)
+        // GenQuad(IFFALSE_Q, t1, L_FALSE, -)
+        // t2 = CG(root->left_child->right_sibling)
+        // GenQuad(IFFALSE_Q, t2, L_FALSE, -)
+        // GenQuad(ASSIGN_Q, t3, 1, -)
+        // GenQuad(GOTO_Q, L_DONE, -, -)
+        // GenQuad(LABEL_Q, L_FALSE, -, -)
+        // GenQuad(ASSIGN_Q, t3, 0, -)
+        // GenQuad(LABEL_Q, L_DONE, -, -)
+        // return t3
         break;
 
       case OP_OR_N:
+        // new temp t1 = new_temp()
+        // new temp t2 = new_temp()
+        // new temp t3 = new_temp()
+        // new label L_FALSE = new_label()
+        // new label L_ALL_FALSE = new_label()
+        // new label L_DONE = new_label()
+        // t1 = CG(root->left_child)
+        // GenQuad(IFFALSE_Q, t1, L_FALSE, -)
+        // GenQuad(ASSIGN_Q, t2, 1, -) // t1 was true, so skip RHS expr
+        // GenQuad(GOTO_Q, L_DONE, -, -) // Skip to finish
+        // GenQuad(LABEL_Q, L_FALSE, -, -)
+        // t3 = CG(root->left_child->right_sibling) // t1 was false, so evaluate RHS expr
+        // GenQuad(IFFALSE_Q, t3, L_ALL_FALSE, -)
+        // GenQuad(ASSIGN_Q, t2, 1, -) // t3 was True
+        // GenQuad(GOTO_Q, L_DONE, -, -)
+        // GenQuad(LABEL_Q, L_ALL_FALSE, -, -)
+        // GenQuad(ASSIGN_Q, t2, 0, -) // t1 and t3 both false
+        // GenQuad(LABEL_Q, L_DONE, -, -)
+        // return t2
         break;
 
       case OP_NEG_N:
-      case OP_LT_N:
-      case OP_GT_N:
-      case OP_GTE_N:
-      case OP_LTE_N:
-      case OP_EQ_N:
-      case OP_NE_N:
+        // ??
+        break;
+
+      case CALL_N:
+        // new temp t1 = new_temp()
+        // new temp t2 = new_temp()
+        // t1 = CG(root->left_child->right_sibling) // Get argument list
+        // for arg in t1:
+        //   new temp t = new_temp()
+        //   GenQuad(ASSIGN_Q, t, arg, -)
+        // new temp t2 = CG(root->left_child) // Get function
+        // GenQuad(PRECALL_Q, t2, -, -) // Specify function being called
+        // GenQuad(POSTRET_Q, t2, -, -) // Specify function being called
+        break;
 
       case PRINT_N:
+        // new temp t1 = new_temp()
+        // t1 = CG(root->left_child)
+        // GenQuad(PRINT_Q, t1, -, -)
+        break;
+
       case READ_N:
+        // new temp t1 = new_temp()
+        // t1 = CG(root->left_child)
+        // GenQuad(READ_Q, t1, -, -)
+        break;
 
       default:
         break;
@@ -174,73 +283,6 @@ void CG(ast_node root) {
     }
   }
 }
-
-// void CG(ast_node root) {
-//   if (root != NULL) {
-//     ast_node child = root->left_child;
-
-//     while (child != NULL) {
-//       // Generate code for child
-//       switch (child->node_type) {
-//         case EXPRESSION_STMT_N:
-//           break;
-//         case IF_STMT_N:
-//           break;
-//         case IF_ELSE_STMT_N:
-//           break;
-//         case FOR_STMT_N:
-//           break;
-//         case WHILE_N:
-//           break;
-
-//         case OP_PLUS_N:
-//           // new temp1 for result
-//           // new temp2 = CG(arg1)
-//           // new temp3 = CG(arg2)
-//           // GenQuad(addl, temp1, temp2, temp3);
-//           break;
-
-//         case OP_MINUS_N:
-//           // new temp1 for result
-//           // GenQuad(addl, temp1, arg1, arg2);
-//           // return temp1
-//           break;
-
-//         case OP_NEG_N:
-//         case OP_TIMES_N:
-//         case OP_DIVIDE_N:
-//         case OP_MOD_N:
-//         case OP_LT_N:
-//         case OP_GT_N:
-//         case OP_GTE_N:
-//         case OP_LTE_N:
-//         case OP_EQ_N:
-//         case OP_NE_N:
-//         case OP_AND_N:
-//         case OP_OR_N:
-//         case OP_INC_N:
-//         case OP_DECR_N:
-
-//         case ASSIGN_N:
-//           temp_var * t = new_temp
-//           // get new temp
-//           // new_temp = CG(right hand side)
-//           // store temp at destination location (arg1)
-//           break;
-
-//         default:
-//           break;
-
-//         // Logical operations? Arrays?
-//       }
-
-//       // CG(child);
-//       child = child->right_sibling;
-//     }
-
-//     // Generate code for root
-//   }
-// }
 
 /*
  * returns label of form "L_N[#]_[NODE TYPE]"
