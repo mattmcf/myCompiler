@@ -147,7 +147,7 @@ typedef struct quad {
 typedef struct quad_arr {
 	quad * arr;
 	int size; 			// max size
-	int count;			// number of current entries
+	int count;			// number of current entries (points at first unused entry)
 } quad_arr;
 
 /*
