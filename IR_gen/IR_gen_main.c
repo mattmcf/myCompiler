@@ -61,7 +61,8 @@ int main(void) {
     print_ast(root,0);  
 
     /* Start to generate quads */
-    init_quad_list();
+    quad_list = init_quad_list();
+    // CG(root);
     // call CG on root to fill quad_list
     print_quad_list();
     destroy_quad_list();

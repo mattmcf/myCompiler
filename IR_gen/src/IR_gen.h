@@ -37,6 +37,7 @@ typedef enum {
 	/* jump operations */
 	IFFALSE_Q, 	
 	GOTO_Q,
+	LABEL_Q,
 
 	PRINT_Q,
 	READ_Q,
@@ -90,7 +91,7 @@ static val_name_pair quad_op_table[] = {
 
 	/* label generator */
 	{LABEL_Q, "make label"},
-  	{ 0, NULL }
+  {0, NULL}
 };
 
 #define QUAD_INDEX(X)    ( (X) - ADD_Q)
@@ -138,14 +139,14 @@ typedef struct quad_arg {
  */
 typedef struct quad {
 	quad_op op;
-	quad_arg args[QUAD_ARG_NUM];
+	quad_arg * args[QUAD_ARG_NUM];
 } quad;
 
 /*
  * dynamically sized array of quads
  */
 typedef struct quad_arr {
-	quad * arr;
+	quad ** arr;
 	int size; 			// max size
 	int count;			// number of current entries (points at first unused entry)
 } quad_arr;
@@ -208,7 +209,7 @@ quad_arr * init_quad_list();
  *
  * returns 1 on failure
  */
-int gen_quad(quad_op, quad_arg a1, quad_arg a2, quad_arg a3);
+int gen_quad(quad_op, quad_arg * a1, quad_arg * a2, quad_arg * a3);
 
 /*
  * looks for and prints "quad_list" in main.c
@@ -218,7 +219,7 @@ void print_quad_list();
 /*
  * prints quad
  */
-void print_quad(quad q);
+void print_quad(quad * q);
 
 /*
  * looks for and frees "quad_list" global quad arr in main.c file 

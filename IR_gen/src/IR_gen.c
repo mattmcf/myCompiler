@@ -285,6 +285,8 @@ temp_var * CG(ast_node root) {
       child = child->right_sibling;
     }
   }
+
+  return to_return;
 }
 
 /*
@@ -356,8 +358,9 @@ void destroy_temp_list(temp_list * lst){
 quad_arr * init_quad_list() {
 
   if(!quad_list) {
-    quad_list = (quad_arr *)malloc(sizeof(quad) * INIT_QUAD_LIST_SIZE);
+    quad_list = (quad_arr *)malloc(sizeof(quad_arr));
     assert(quad_list);
+    quad_list->arr = (quad **)malloc(sizeof(quad) * INIT_QUAD_LIST_SIZE);
     quad_list->size = 0;
     quad_list->count = 0;
   }
@@ -374,15 +377,16 @@ quad_arr * init_quad_list() {
  *
  * returns 1 on failure
  */
-int gen_quad(quad_op operation, quad_arg a1, quad_arg a2, quad_arg a3) {
+int gen_quad(quad_op operation, quad_arg * a1, quad_arg * a2, quad_arg * a3) {
 
   if (!quad_list)
     return 1;
 
-  quad_list->arr[quad_list->count].op = operation;
-  quad_list->arr[quad_list->count].args[0] = a1;
-  quad_list->arr[quad_list->count].args[1] = a2;
-  quad_list->arr[quad_list->count].args[2] = a3;
+  quad_list->arr[quad_list->count] = (quad *)malloc(sizeof(quad));
+  quad_list->arr[quad_list->count]->op = operation;
+  quad_list->arr[quad_list->count]->args[0] = a1;
+  quad_list->arr[quad_list->count]->args[1] = a2;
+  quad_list->arr[quad_list->count]->args[2] = a3;
 
   /* double array size if full */
   if (++quad_list->count == quad_list->size) {
@@ -408,27 +412,27 @@ void print_quad_list() {
   }
 }
 
-void print_quad(quad q) {
+void print_quad(quad * q) {
 
   /* print quad operation */
-  printf("(%s,",QUAD_NAME(q.op));
+  printf("(%s, ",QUAD_NAME(q->op));
 
   /* print three arguments */
   quad_arg arg;
   for (int i = 0; i < QUAD_ARG_NUM; i++) {
 
-    switch(q.args[i].type) {
+    switch(q->args[i]->type) {
 
       case INT_LITERAL_Q_ARG:
-        printf("constant: %d",q.args[i].int_literal);
+        printf("constant: %d",q->args[i]->int_literal);
         break;
 
       case TEMP_VAR_Q_ARG:
-        printf("temp: %d",q.args[i].temp->id);
+        printf("temp: %d",q->args[i]->temp->id);
         break;
 
       case LABEL_Q_ARG:
-        printf("label: %s",q.args[i].label);
+        printf("label: %s",q->args[i]->label);
         break;
 
       default:  // null arg case
