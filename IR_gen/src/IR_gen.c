@@ -21,6 +21,38 @@ temp_var * CG(ast_node root) {
   if (root != NULL) {
     switch (root->node_type) {
       // Switch on node types to handle root
+      case VAR_DECL_N:
+        {
+          printf("Found variable declaration\n");
+          // Check if there is a RHS value
+          if (root->left_child->right_sibling != NULL) {
+            temp_var * t1 = CG(root->left_child->right_sibling);
+            temp_var * t2 = CG(root->left_child);
+            temp_var * t3 = new_temp(temps_list);
+            
+            quad_arg * arg1 = (quad_arg *)malloc(sizeof(quad_arg));
+            arg1->type = TEMP_VAR_Q_ARG;
+            arg1->temp = t1;
+
+            quad_arg * arg2 = (quad_arg *)malloc(sizeof(quad_arg));
+            arg2->type = TEMP_VAR_Q_ARG;
+            arg2->temp = t2;
+
+            quad_arg * arg3 = (quad_arg *)malloc(sizeof(quad_arg));
+            arg3->type = TEMP_VAR_Q_ARG;
+            arg3->temp = t3;
+
+            gen_quad(ASSIGN_Q, arg3, arg1, NULL);
+            gen_quad(ASSIGN_Q, arg2, arg3, NULL);
+
+            t3->int_literal = t1->int_literal;
+
+            to_return = t3;
+          }
+
+          return to_return;
+        }
+
       case IF_STMT_N:
         // new temp t1 = new_temp()
         // new label L_FI = new_label()
@@ -29,7 +61,26 @@ temp_var * CG(ast_node root) {
         // CG(root->left_child->right_sibling)
         // new label L_FI = new_label()
         // GenQuad(LABEL_Q, L_FI, -, -)
-        break;
+        {
+          temp_var * t1 = CG(root->left_child);
+          char * label_fi = new_label(root, "FI");
+
+          quad_arg * arg1 = (quad_arg *)malloc(sizeof(quad_arg));
+          arg1->type = TEMP_VAR_Q_ARG;
+          arg1->temp = t1;
+
+          quad_arg * arg2 = (quad_arg *)malloc(sizeof(quad_arg));
+          arg2->type = LABEL_Q_ARG;
+          arg2->label = label_fi;
+
+          gen_quad(IFFALSE_Q, arg1, arg2, NULL);
+
+          CG(root->left_child->right_sibling);
+
+          gen_quad(LABEL_Q, arg2, NULL, NULL);
+
+          return to_return;
+        }
 
       case IF_ELSE_STMT_N:
         // new temp t1 = new_temp()
@@ -42,7 +93,37 @@ temp_var * CG(ast_node root) {
         // GenQuad(LABEL_Q, L_ELSE, -, -)
         // CG(root->left_child->right_sibling->right_sibling)
         // GenQuad(LABEL_Q, L_FI, -, -)
-        break;
+        {
+          temp_var * t1 = CG(root->left_child);
+          char * label_else = new_label(root, "ELSE");
+          char * label_fi = new_label(root, "FI");
+
+          quad_arg * arg1 = (quad_arg *)malloc(sizeof(quad_arg));
+          arg1->type = TEMP_VAR_Q_ARG;
+          arg1->temp = t1;
+
+          quad_arg * fi_arg = (quad_arg *)malloc(sizeof(quad_arg));
+          fi_arg->type = LABEL_Q_ARG;
+          fi_arg->label = label_fi;
+
+          quad_arg * else_arg = (quad_arg *)malloc(sizeof(quad_arg));
+          else_arg->type = LABEL_Q_ARG;
+          else_arg->label = label_else;
+
+          gen_quad(IFFALSE_Q, arg1, else_arg, NULL);
+
+          CG(root->left_child->right_sibling);
+
+          gen_quad(GOTO_Q, fi_arg, NULL, NULL);
+
+          gen_quad(LABEL_Q, else_arg, NULL, NULL);
+
+          CG(root->left_child->right_sibling->right_sibling);
+
+          gen_quad(LABEL_Q, fi_arg, NULL, NULL);
+
+          return to_return;
+        }
 
       case FOR_STMT_N:
         // new label L_FOR_TEST = new_label()
@@ -68,7 +149,35 @@ temp_var * CG(ast_node root) {
         // CG(root->left_child->right_sibling)
         // GenQuad(GOTO_Q, L_WHILE_TEST, -, -)
         // GenQuad(LABEL_Q, L_WHILE_EXIT, -, -)
-        break;
+        {
+          char * label_test = new_label(root, "WHILE_TEST");
+          char * label_exit = new_label(root, "WHILE_EXIT");
+
+          quad_arg * test_arg = (quad_arg *)malloc(sizeof(quad_arg));
+          test_arg->type = LABEL_Q_ARG;
+          test_arg->label = label_test;
+
+          quad_arg * exit_arg = (quad_arg *)malloc(sizeof(quad_arg));
+          exit_arg->type = LABEL_Q_ARG;
+          exit_arg->label = label_exit;
+
+          gen_quad(LABEL_Q, test_arg, NULL, NULL);
+
+          temp_var * t1 = CG(root->left_child);
+
+          quad_arg * arg1 = (quad_arg *)malloc(sizeof(quad_arg));
+          arg1->type = TEMP_VAR_Q_ARG;
+          arg1->temp = t1;
+
+          gen_quad(IFFALSE_Q, arg1, exit_arg, NULL);
+
+          CG(root->left_child->right_sibling);
+
+          gen_quad(GOTO_Q, test_arg, NULL, NULL);
+          gen_quad(LABEL_Q, exit_arg, NULL, NULL);
+
+          return to_return;
+        }
 
       case OP_ASSIGN_N:
         // new temp t1 = new_temp()
@@ -421,7 +530,38 @@ temp_var * CG(ast_node root) {
         // t2 = CG(root->left_child->right_sibling)
         // GenQuad(NE_Q, t3, t1, t2)
         // return t3
-        break;
+        {
+     
+          printf("Found op not equals\n");
+
+          temp_var * t1 = CG(root->left_child->right_sibling);
+          temp_var * t2 = CG(root->left_child);
+          temp_var * t3 = new_temp(temps_list);
+
+          quad_arg * arg1 = (quad_arg *)malloc(sizeof(quad_arg));
+          arg1->type = TEMP_VAR_Q_ARG;
+          arg1->temp = t1;
+
+          quad_arg * arg2 = (quad_arg *)malloc(sizeof(quad_arg));
+          arg2->type = TEMP_VAR_Q_ARG;
+          arg2->temp = t2;
+
+          quad_arg * arg3 = (quad_arg *)malloc(sizeof(quad_arg));
+          arg3->type = TEMP_VAR_Q_ARG;
+          arg3->temp = t3;
+
+          gen_quad(NE_Q, arg3, arg1, arg2);
+
+          if (t1->int_literal != t2->int_literal) {
+            t3->int_literal = 1;
+          } else {
+            t3->int_literal = 0;
+          }
+
+          to_return = t3;
+
+          return to_return;
+        }
 
       case OP_LT_N:
         // new temp t1 = new_temp()
@@ -431,7 +571,40 @@ temp_var * CG(ast_node root) {
         // t2 = CG(root->left_child->right_sibling)
         // GenQuad(LT_Q, t3, t1, t2)
         // return t3
-        break;
+        {
+     
+          printf("Found op less than\n");
+
+          temp_var * t1 = CG(root->left_child->right_sibling);
+          printf("RHS Val: %d\n", t1->int_literal);
+          temp_var * t2 = CG(root->left_child);
+          printf("LHS Val: %s\n", t2->var_id);
+          temp_var * t3 = new_temp(temps_list);
+
+          quad_arg * arg1 = (quad_arg *)malloc(sizeof(quad_arg));
+          arg1->type = TEMP_VAR_Q_ARG;
+          arg1->temp = t1;
+
+          quad_arg * arg2 = (quad_arg *)malloc(sizeof(quad_arg));
+          arg2->type = TEMP_VAR_Q_ARG;
+          arg2->temp = t2;
+
+          quad_arg * arg3 = (quad_arg *)malloc(sizeof(quad_arg));
+          arg3->type = TEMP_VAR_Q_ARG;
+          arg3->temp = t3;
+
+          gen_quad(LT_Q, arg3, arg1, arg2);
+
+          if (t1->int_literal < t2->int_literal) {
+            t3->int_literal = 1;
+          } else {
+            t3->int_literal = 0;
+          }
+
+          to_return = t3;
+
+          return to_return;
+        }
 
       case OP_GT_N:
         // new temp t1 = new_temp()
@@ -441,7 +614,38 @@ temp_var * CG(ast_node root) {
         // t2 = CG(root->left_child->right_sibling)
         // GenQuad(GT_Q, t3, t1, t2)
         // return t3
-        break;
+       {
+     
+          printf("Found op greater than\n");
+
+          temp_var * t1 = CG(root->left_child->right_sibling);
+          temp_var * t2 = CG(root->left_child);
+          temp_var * t3 = new_temp(temps_list);
+
+          quad_arg * arg1 = (quad_arg *)malloc(sizeof(quad_arg));
+          arg1->type = TEMP_VAR_Q_ARG;
+          arg1->temp = t1;
+
+          quad_arg * arg2 = (quad_arg *)malloc(sizeof(quad_arg));
+          arg2->type = TEMP_VAR_Q_ARG;
+          arg2->temp = t2;
+
+          quad_arg * arg3 = (quad_arg *)malloc(sizeof(quad_arg));
+          arg3->type = TEMP_VAR_Q_ARG;
+          arg3->temp = t3;
+
+          gen_quad(GT_Q, arg3, arg1, arg2);
+
+          if (t1->int_literal > t2->int_literal) {
+            t3->int_literal = 1;
+          } else {
+            t3->int_literal = 0;
+          }
+
+          to_return = t3;
+
+          return to_return;
+        }
 
       case OP_GTE_N:
         // new temp t1 = new_temp()
@@ -451,7 +655,38 @@ temp_var * CG(ast_node root) {
         // t2 = CG(root->left_child->right_sibling)
         // GenQuad(GTE_Q, t3, t1, t2)
         // return t3
-        break;
+        {
+     
+          printf("Found op greater than or equal to\n");
+
+          temp_var * t1 = CG(root->left_child->right_sibling);
+          temp_var * t2 = CG(root->left_child);
+          temp_var * t3 = new_temp(temps_list);
+
+          quad_arg * arg1 = (quad_arg *)malloc(sizeof(quad_arg));
+          arg1->type = TEMP_VAR_Q_ARG;
+          arg1->temp = t1;
+
+          quad_arg * arg2 = (quad_arg *)malloc(sizeof(quad_arg));
+          arg2->type = TEMP_VAR_Q_ARG;
+          arg2->temp = t2;
+
+          quad_arg * arg3 = (quad_arg *)malloc(sizeof(quad_arg));
+          arg3->type = TEMP_VAR_Q_ARG;
+          arg3->temp = t3;
+
+          gen_quad(GTE_Q, arg3, arg1, arg2);
+
+          if (t1->int_literal >= t2->int_literal) {
+            t3->int_literal = 1;
+          } else {
+            t3->int_literal = 0;
+          }
+
+          to_return = t3;
+
+          return to_return;
+        }
 
       case OP_LTE_N:
         // new temp t1 = new_temp()
@@ -461,7 +696,38 @@ temp_var * CG(ast_node root) {
         // t2 = CG(root->left_child->right_sibling)
         // GenQuad(LTE_Q, t3, t1, t2)
         // return t3
-        break;
+        {
+     
+          printf("Found op less than or equal to\n");
+
+          temp_var * t1 = CG(root->left_child->right_sibling);
+          temp_var * t2 = CG(root->left_child);
+          temp_var * t3 = new_temp(temps_list);
+
+          quad_arg * arg1 = (quad_arg *)malloc(sizeof(quad_arg));
+          arg1->type = TEMP_VAR_Q_ARG;
+          arg1->temp = t1;
+
+          quad_arg * arg2 = (quad_arg *)malloc(sizeof(quad_arg));
+          arg2->type = TEMP_VAR_Q_ARG;
+          arg2->temp = t2;
+
+          quad_arg * arg3 = (quad_arg *)malloc(sizeof(quad_arg));
+          arg3->type = TEMP_VAR_Q_ARG;
+          arg3->temp = t3;
+
+          gen_quad(LTE_Q, arg3, arg1, arg2);
+
+          if (t1->int_literal <= t2->int_literal) {
+            t3->int_literal = 1;
+          } else {
+            t3->int_literal = 0;
+          }
+
+          to_return = t3;
+
+          return to_return;
+        }
 
       case OP_AND_N:
         // new temp t1 = new_temp()
@@ -522,6 +788,7 @@ temp_var * CG(ast_node root) {
       case PRINT_N:
         // new temp t1 = new_temp()
         // t1 = CG(root->left_child)
+        // GenQuad -> save string / expression?
         // GenQuad(PRINT_Q, t1, -, -)
         break;
 
@@ -531,21 +798,28 @@ temp_var * CG(ast_node root) {
         // GenQuad(READ_Q, t1, -, -)
         break;
 
+      case VAR_N:
+        // look up id
+        // load id to temp (location)
+        // return temp
+        break;
+
       case ID_N:
         to_return = new_temp(temps_list);
         to_return->var_id = root->value_string;
-        return to_return;
+        //return to_return;
+        break;
 
       case INT_LITERAL_N:
         to_return = new_temp(temps_list);
         to_return->int_literal = root->value_int;
-        return to_return;
+        //return to_return;
+        break;
 
       default:
         {
           ast_node child = root->left_child;
 
-          /* do we really want to call GC on children here? Or should this be rolled into the default case? */
           while (child != NULL) {
             to_return = CG(child);
             child = child->right_sibling;
@@ -566,14 +840,14 @@ temp_var * CG(ast_node root) {
  * returns label of form "L_N[#]_[NODE TYPE]"
  * should be free'd after done using
  */
-char * new_label(ast_node root) {
+char * new_label(ast_node root, char * name) {
   if (!root)
     return NULL;
 
   char * label = (char *)calloc(MAX_LABEL_LENGTH,sizeof(char));
   assert(label);
 
-  sprintf(label,"L_N%d_%s", root->id, NODE_NAME(root->node_type));
+  sprintf(label,"L_N%d_%s",root->id, name);
 
   assert(label);
   return label;
@@ -584,12 +858,12 @@ void print_label(ast_node root) {
   if (!root)
     return;
 
-  char * label = new_label(root);
+  char * label = new_label(root, NODE_NAME(root->node_type));
   printf("%s\n",label);
   free(label);
 
   for (ast_node child = root->left_child; child != NULL; child = child->right_sibling)
-    new_label(child);
+    new_label(child, NODE_NAME(child->node_type));
 }
 
 /*
@@ -716,7 +990,9 @@ void print_quad(quad * q) {
 
       case TEMP_VAR_Q_ARG:
         printf("Temp (ID: %d)",
-          q->args[i]->temp->id);
+         q->args[i]->temp->id);
+        //printf("Temp (ID: %d, INT_LITERAL: %d, VAR_ID: %s)",
+        //  q->args[i]->temp->id, q->args[i]->temp->int_literal, q->args[i]->temp->var_id);
         break;
 
       case LABEL_Q_ARG:
