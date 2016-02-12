@@ -37,7 +37,6 @@ typedef enum {
 	/* jump operations */
 	IFFALSE_Q, 	
 	GOTO_Q,
-	LABEL_Q,
 
 	PRINT_Q,
 	READ_Q,
@@ -50,7 +49,9 @@ typedef enum {
 
 	/* constant creation operations */
 	STRING_Q,
-	INT_LITERAL_Q
+	INT_LITERAL_Q,
+
+	LABEL_Q
 } quad_op;
 
 static val_name_pair quad_op_table[] = {
@@ -163,7 +164,7 @@ temp_var * CG(ast_node root);
  * returns label of form "L_N[#]_[NODE TYPE]"
  * should be free'd after done using
  */
-char * new_label(ast_node root);
+char * new_label(ast_node root, char * name);
 
 /*
  * calls make_label() on root and all of root's children

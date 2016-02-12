@@ -61,8 +61,26 @@ temp_var * CG(ast_node root) {
         // CG(root->left_child->right_sibling)
         // new label L_FI = new_label()
         // GenQuad(LABEL_Q, L_FI, -, -)
+        {
+          temp_var * t1 = CG(root->left_child);
+          char * label_fi = new_label(root, "FI");
 
-        break;
+          quad_arg * arg1 = (quad_arg *)malloc(sizeof(quad_arg));
+          arg1->type = TEMP_VAR_Q_ARG;
+          arg1->temp = t1;
+
+          quad_arg * arg2 = (quad_arg *)malloc(sizeof(quad_arg));
+          arg2->type = LABEL_Q_ARG;
+          arg2->label = label_fi;
+
+          gen_quad(IFFALSE_Q, arg1, arg2, NULL);
+
+          CG(root->left_child->right_sibling);
+
+          gen_quad(LABEL_Q, arg2, NULL, NULL);
+
+          return to_return;
+        }
 
       case IF_ELSE_STMT_N:
         // new temp t1 = new_temp()
@@ -75,7 +93,37 @@ temp_var * CG(ast_node root) {
         // GenQuad(LABEL_Q, L_ELSE, -, -)
         // CG(root->left_child->right_sibling->right_sibling)
         // GenQuad(LABEL_Q, L_FI, -, -)
-        break;
+        {
+          temp_var * t1 = CG(root->left_child);
+          char * label_else = new_label(root, "ELSE");
+          char * label_fi = new_label(root, "FI");
+
+          quad_arg * arg1 = (quad_arg *)malloc(sizeof(quad_arg));
+          arg1->type = TEMP_VAR_Q_ARG;
+          arg1->temp = t1;
+
+          quad_arg * fi_arg = (quad_arg *)malloc(sizeof(quad_arg));
+          fi_arg->type = LABEL_Q_ARG;
+          fi_arg->label = label_fi;
+
+          quad_arg * else_arg = (quad_arg *)malloc(sizeof(quad_arg));
+          else_arg->type = LABEL_Q_ARG;
+          else_arg->label = label_else;
+
+          gen_quad(IFFALSE_Q, arg1, else_arg, NULL);
+
+          CG(root->left_child->right_sibling);
+
+          gen_quad(GOTO_Q, fi_arg, NULL, NULL);
+
+          gen_quad(LABEL_Q, else_arg, NULL, NULL);
+
+          CG(root->left_child->right_sibling->right_sibling);
+
+          gen_quad(LABEL_Q, fi_arg, NULL, NULL);
+
+          return to_return;
+        }
 
       case FOR_STMT_N:
         // new label L_FOR_TEST = new_label()
@@ -101,7 +149,35 @@ temp_var * CG(ast_node root) {
         // CG(root->left_child->right_sibling)
         // GenQuad(GOTO_Q, L_WHILE_TEST, -, -)
         // GenQuad(LABEL_Q, L_WHILE_EXIT, -, -)
-        break;
+        {
+          char * label_test = new_label(root, "WHILE_TEST");
+          char * label_exit = new_label(root, "WHILE_EXIT");
+
+          quad_arg * test_arg = (quad_arg *)malloc(sizeof(quad_arg));
+          test_arg->type = LABEL_Q_ARG;
+          test_arg->label = label_test;
+
+          quad_arg * exit_arg = (quad_arg *)malloc(sizeof(quad_arg));
+          exit_arg->type = LABEL_Q_ARG;
+          exit_arg->label = label_exit;
+
+          gen_quad(LABEL_Q, test_arg, NULL, NULL);
+
+          temp_var * t1 = CG(root->left_child);
+
+          quad_arg * arg1 = (quad_arg *)malloc(sizeof(quad_arg));
+          arg1->type = TEMP_VAR_Q_ARG;
+          arg1->temp = t1;
+
+          gen_quad(IFFALSE_Q, arg1, exit_arg, NULL);
+
+          CG(root->left_child->right_sibling);
+
+          gen_quad(GOTO_Q, test_arg, NULL, NULL);
+          gen_quad(LABEL_Q, exit_arg, NULL, NULL);
+
+          return to_return;
+        }
 
       case OP_ASSIGN_N:
         // new temp t1 = new_temp()
@@ -727,14 +803,14 @@ temp_var * CG(ast_node root) {
  * returns label of form "L_N[#]_[NODE TYPE]"
  * should be free'd after done using
  */
-char * new_label(ast_node root) {
+char * new_label(ast_node root, char * name) {
   if (!root)
     return NULL;
 
   char * label = (char *)calloc(MAX_LABEL_LENGTH,sizeof(char));
   assert(label);
 
-  sprintf(label,"L_N%d_%s",root->id,NODE_NAME(root->node_type));
+  sprintf(label,"L_N%d_%s",root->id, name);
 
   assert(label);
   return label;
@@ -745,12 +821,12 @@ void print_label(ast_node root) {
   if (!root)
     return;
 
-  char * label = new_label(root);
+  char * label = new_label(root, NODE_NAME(root->node_type));
   printf("%s\n",label);
   free(label);
 
   for (ast_node child = root->left_child; child != NULL; child = child->right_sibling)
-    new_label(child);
+    new_label(child, NODE_NAME(child->node_type));
 }
 
 

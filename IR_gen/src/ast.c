@@ -72,7 +72,7 @@ void print_ast(ast_node root, int depth) {
 
   /* Print the node type. */
   //printf("%s, ", NODE_NAME(root->node_type));
-  char * label = new_label(root);
+  char * label = new_label(root, NODE_NAME(root->node_type));
   printf("%s ",label);
   free(label);
 
