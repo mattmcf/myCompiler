@@ -22,6 +22,8 @@ typedef enum {
 	MUL_Q,
 	DIV_Q,
 	MOD_Q,
+	INC_Q,
+	DEC_Q,
 	ASSIGN_Q, 	
 
 	/* comparison operations */
@@ -61,6 +63,8 @@ static val_name_pair quad_op_table[] = {
 	{MUL_Q, "multiply"},
 	{DIV_Q, "divide"},
 	{MOD_Q, "mod divide"},
+	{INC_Q, "increment"},
+	{DEC_Q, "decrement"},
 	{ASSIGN_Q, "assign"}, 	
 
 	/* comparison operations */
@@ -158,7 +162,10 @@ typedef struct quad_arr {
  * Traverses AST to generate code
  * Should return array of quads. Dynamically sizing array or LL?
  */
-temp_var * CG(ast_node root);
+quad_arg * CG(ast_node root);
+
+quad_arg * CG_assign_op(ast_node root);
+quad_arg * CG_math_op(ast_node root, quad_op op);
 
 /*
  * returns label of form "L_N[#]_[NODE TYPE]"
@@ -184,7 +191,7 @@ temp_list * init_temp_list();
  *
  * returns a new temp or NULL on failure
  */
- temp_var * new_temp(temp_list * lst);
+temp_var * new_temp(temp_list * lst);
 
 /*
  * destroys a temporary variable struct
