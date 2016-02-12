@@ -185,27 +185,21 @@ quad_arg * CG(ast_node root) {
         // CG(root->left_child->right_sibling)
         // new label L_FI = new_label()
         // GenQuad(LABEL_Q, L_FI, -, -)
-        // {
-        //   temp_var * t1 = CG(root->left_child);
-        //   char * label_fi = new_label(root, "FI");
+        {
+          quad_arg * arg1 = CG(root->left_child);
 
-        //   quad_arg * arg1 = (quad_arg *)malloc(sizeof(quad_arg));
-        //   arg1->type = TEMP_VAR_Q_ARG;
-        //   arg1->temp = t1;
+          char * label_fi = new_label(root, "FI");
+          quad_arg * arg2 = create_quad_arg(LABEL_Q_ARG);
+          arg2->label = label_fi;
 
-        //   quad_arg * arg2 = (quad_arg *)malloc(sizeof(quad_arg));
-        //   arg2->type = LABEL_Q_ARG;
-        //   arg2->label = label_fi;
+          gen_quad(IFFALSE_Q, arg1, arg2, NULL);
 
-        //   gen_quad(IFFALSE_Q, arg1, arg2, NULL);
+          CG(root->left_child->right_sibling);
 
-        //   CG(root->left_child->right_sibling);
+          gen_quad(LABEL_Q, arg2, NULL, NULL);
 
-        //   gen_quad(LABEL_Q, arg2, NULL, NULL);
-
-        //   return to_return;
-        // }
-        break;
+          break;
+        }
 
       case IF_ELSE_STMT_N:
         // new temp t1 = new_temp()
@@ -218,38 +212,31 @@ quad_arg * CG(ast_node root) {
         // GenQuad(LABEL_Q, L_ELSE, -, -)
         // CG(root->left_child->right_sibling->right_sibling)
         // GenQuad(LABEL_Q, L_FI, -, -)
-        // {
-        //   temp_var * t1 = CG(root->left_child);
-        //   char * label_else = new_label(root, "ELSE");
-        //   char * label_fi = new_label(root, "FI");
+        {
+          quad_arg * arg1 = CG(root->left_child);
+          
+          char * label_else = new_label(root, "ELSE");
+          quad_arg * else_arg = create_quad_arg(LABEL_Q_ARG);
+          else_arg->label = label_else;
 
-        //   quad_arg * arg1 = (quad_arg *)malloc(sizeof(quad_arg));
-        //   arg1->type = TEMP_VAR_Q_ARG;
-        //   arg1->temp = t1;
+          char * label_fi = new_label(root, "FI");
+          quad_arg * fi_arg = create_quad_arg(LABEL_Q_ARG);
+          fi_arg->label = label_fi;
 
-        //   quad_arg * fi_arg = (quad_arg *)malloc(sizeof(quad_arg));
-        //   fi_arg->type = LABEL_Q_ARG;
-        //   fi_arg->label = label_fi;
+          gen_quad(IFFALSE_Q, arg1, else_arg, NULL);
 
-        //   quad_arg * else_arg = (quad_arg *)malloc(sizeof(quad_arg));
-        //   else_arg->type = LABEL_Q_ARG;
-        //   else_arg->label = label_else;
+          CG(root->left_child->right_sibling);
 
-        //   gen_quad(IFFALSE_Q, arg1, else_arg, NULL);
+          gen_quad(GOTO_Q, fi_arg, NULL, NULL);
 
-        //   CG(root->left_child->right_sibling);
+          gen_quad(LABEL_Q, else_arg, NULL, NULL);
 
-        //   gen_quad(GOTO_Q, fi_arg, NULL, NULL);
+          CG(root->left_child->right_sibling->right_sibling);
 
-        //   gen_quad(LABEL_Q, else_arg, NULL, NULL);
+          gen_quad(LABEL_Q, fi_arg, NULL, NULL);
 
-        //   CG(root->left_child->right_sibling->right_sibling);
-
-        //   gen_quad(LABEL_Q, fi_arg, NULL, NULL);
-
-        //   return to_return;
-        // }
-        break;
+          break;
+        }
 
       case FOR_STMT_N:
         // new label L_FOR_TEST = new_label()
@@ -275,36 +262,28 @@ quad_arg * CG(ast_node root) {
         // CG(root->left_child->right_sibling)
         // GenQuad(GOTO_Q, L_WHILE_TEST, -, -)
         // GenQuad(LABEL_Q, L_WHILE_EXIT, -, -)
-        // {
-        //   char * label_test = new_label(root, "WHILE_TEST");
-        //   char * label_exit = new_label(root, "WHILE_EXIT");
+        {
+          char * label_test = new_label(root, "WHILE_TEST");
+          quad_arg * test_arg = create_quad_arg(LABEL_Q_ARG);
+          test_arg->label = label_test;
 
-        //   quad_arg * test_arg = (quad_arg *)malloc(sizeof(quad_arg));
-        //   test_arg->type = LABEL_Q_ARG;
-        //   test_arg->label = label_test;
+          char * label_exit = new_label(root, "WHILE_EXIT");
+          quad_arg * exit_arg = create_quad_arg(LABEL_Q_ARG);
+          exit_arg->label = label_exit;
 
-        //   quad_arg * exit_arg = (quad_arg *)malloc(sizeof(quad_arg));
-        //   exit_arg->type = LABEL_Q_ARG;
-        //   exit_arg->label = label_exit;
+          gen_quad(LABEL_Q, test_arg, NULL, NULL);
 
-        //   gen_quad(LABEL_Q, test_arg, NULL, NULL);
+          quad_arg * arg1 = CG(root->left_child);
 
-        //   temp_var * t1 = CG(root->left_child);
+          gen_quad(IFFALSE_Q, arg1, exit_arg, NULL);
 
-        //   quad_arg * arg1 = (quad_arg *)malloc(sizeof(quad_arg));
-        //   arg1->type = TEMP_VAR_Q_ARG;
-        //   arg1->temp = t1;
+          CG(root->left_child->right_sibling);
 
-        //   gen_quad(IFFALSE_Q, arg1, exit_arg, NULL);
+          gen_quad(GOTO_Q, test_arg, NULL, NULL);
+          gen_quad(LABEL_Q, exit_arg, NULL, NULL);
 
-        //   CG(root->left_child->right_sibling);
-
-        //   gen_quad(GOTO_Q, test_arg, NULL, NULL);
-        //   gen_quad(LABEL_Q, exit_arg, NULL, NULL);
-
-        //   return to_return;
-        // }
-        break;
+          break;
+        }
 
       case OP_AND_N:
         // new temp t1 = new_temp()
