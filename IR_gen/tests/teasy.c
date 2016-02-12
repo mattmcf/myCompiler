@@ -1,5 +1,7 @@
 int main(void) {
-	int a = 0;
+	int a = 10;
+
+	a = 7;
 
 	a = 7;
 
