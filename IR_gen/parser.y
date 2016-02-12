@@ -609,8 +609,7 @@ expression '+' expression {
   $$ = t; } 
 | '!' expression {
   ast_node t = create_ast_node(OP_NOT_N);
-  t->left_child = $1;
-  t->left_child->right_sibling = $2;
+  t->left_child = $2;
   $$ = t; } 
 | '-' expression %prec UMINUS_T {
   ast_node t = create_ast_node(OP_NEG_N);

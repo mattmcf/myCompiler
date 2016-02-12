@@ -174,6 +174,7 @@ void set_type(ast_node root) {
 		/*
 		 * Handle single arguments r-value nodes 
 		 */
+		case OP_NOT_N:
 		case OP_INC_N:
 		case OP_DECR_N:
 			if (check_op_arg_types(root, 1, INT_TS, SINGLE_DT)) {

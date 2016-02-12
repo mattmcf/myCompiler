@@ -250,7 +250,29 @@ quad_arg * CG(ast_node root) {
         // CG(root->left_child->right_sibling->right_sibling) // FOR HEADER INC or DEC
         // GenQuad(GOTO_Q, L_FOR_TEST, -, -)
         // GenQuad(LABEL_Q, L_FOR_EXIT, -, -)
-        break;
+        {
+          char * label_test = new_label(root, "FOR_TEST");
+          quad_arg * test_arg = create_quad_arg(LABEL_Q_ARG);
+          test_arg->label = label_test;
+
+          char * label_exit = new_label(root, "FOR_EXIT");
+          quad_arg * exit_arg = create_quad_arg(LABEL_Q_ARG);
+          exit_arg->label = label_exit;
+
+          CG(root->left_child);
+
+          gen_quad(LABEL_Q, test_arg, NULL, NULL);
+
+          quad_arg * arg1 = CG(root->left_child->right_sibling);
+          gen_quad(IFFALSE_Q, arg1, exit_arg, NULL);
+          CG(root->left_child->right_sibling->right_sibling->right_sibling);
+          CG(root->left_child->right_sibling->right_sibling);
+
+          gen_quad(GOTO_Q, test_arg, NULL, NULL);
+          gen_quad(LABEL_Q, exit_arg, NULL, NULL);
+          
+          break;
+        }
 
       case WHILE_N:
         // new label L_WHILE_TEST = new_label()
@@ -405,6 +427,10 @@ quad_arg * CG(ast_node root) {
           break;
         }
 
+      case OP_NOT_N:
+        to_return = CG_math_op(root, NOT_Q);
+        break;
+
       case OP_NEG_N:
         // ??
         break;
@@ -488,11 +514,17 @@ quad_arg * CG_math_op(ast_node root, quad_op op) {
 
   quad_arg * arg2;
   if (root->left_child->right_sibling == NULL) {
-    // Special case for increment and decrement
-    arg2 = create_quad_arg(INT_LITERAL_Q_ARG);
-    arg2->int_literal = 1;
 
-    gen_quad(op, arg1, arg2, NULL);
+    if (op == NOT_Q) {
+      // Special case for not
+      gen_quad(op, arg1, NULL, NULL);
+    } else {
+      // Special case for increment and decrement
+      arg2 = create_quad_arg(INT_LITERAL_Q_ARG);
+      arg2->int_literal = 1;
+
+      gen_quad(op, arg1, arg2, NULL);
+    }
 
     return arg1;
   } else {

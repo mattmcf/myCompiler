@@ -24,6 +24,7 @@ typedef enum {
 	MOD_Q,
 	INC_Q,
 	DEC_Q,
+	NOT_Q,
 	ASSIGN_Q, 	
 
 	/* comparison operations */
@@ -65,6 +66,7 @@ static val_name_pair quad_op_table[] = {
 	{MOD_Q, "mod divide"},
 	{INC_Q, "increment"},
 	{DEC_Q, "decrement"},
+	{NOT_Q, "not"},
 	{ASSIGN_Q, "assign"}, 	
 
 	/* comparison operations */
