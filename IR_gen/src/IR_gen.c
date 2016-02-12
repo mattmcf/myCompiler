@@ -13,7 +13,7 @@
 extern temp_list * temps_list;
 extern quad_arr * quad_list;
 
-#define INIT_QUAD_LIST_SIZE 200
+#define INIT_QUAD_LIST_SIZE 10
 
 temp_var * CG(ast_node root) {
   temp_var * to_return;
@@ -86,16 +86,19 @@ temp_var * CG(ast_node root) {
           temp_var * t2 = CG(root->left_child);
           temp_var * t3 = new_temp(temps_list);
 
-          quad_arg * arg1 = (quad_arg *)malloc(sizeof(quad_arg));
-          arg1->type = TEMP_VAR_Q_ARG;
+          // quad_arg * arg1 = (quad_arg *)malloc(sizeof(quad_arg));
+          // arg1->type = TEMP_VAR_Q_ARG;
+          quad_arg * arg1 = create_quad_arg(TEMP_VAR_Q_ARG);
           arg1->temp = t1;
 
-          quad_arg * arg2 = (quad_arg *)malloc(sizeof(quad_arg));
-          arg2->type = TEMP_VAR_Q_ARG;
+          // quad_arg * arg2 = (quad_arg *)malloc(sizeof(quad_arg));
+          // arg2->type = TEMP_VAR_Q_ARG;
+          quad_arg * arg2 = create_quad_arg(TEMP_VAR_Q_ARG);
           arg2->temp = t2;
 
-          quad_arg * arg3 = (quad_arg *)malloc(sizeof(quad_arg));
-          arg3->type = TEMP_VAR_Q_ARG;
+          // quad_arg * arg3 = (quad_arg *)malloc(sizeof(quad_arg));
+          // arg3->type = TEMP_VAR_Q_ARG;
+          quad_arg * arg3 = create_quad_arg(TEMP_VAR_Q_ARG);
           arg3->temp = t3;
 
           gen_quad(ASSIGN_Q, arg3, arg1, NULL);
@@ -123,16 +126,19 @@ temp_var * CG(ast_node root) {
           temp_var * t2 = CG(root->left_child);
           temp_var * t3 = new_temp(temps_list);
 
-          quad_arg * arg1 = (quad_arg *)malloc(sizeof(quad_arg));
-          arg1->type = TEMP_VAR_Q_ARG;
+          // quad_arg * arg1 = (quad_arg *)malloc(sizeof(quad_arg));
+          // arg1->type = TEMP_VAR_Q_ARG;
+          quad_arg * arg1 = create_quad_arg(TEMP_VAR_Q_ARG);
           arg1->temp = t1;
 
-          quad_arg * arg2 = (quad_arg *)malloc(sizeof(quad_arg));
-          arg2->type = TEMP_VAR_Q_ARG;
+          // quad_arg * arg2 = (quad_arg *)malloc(sizeof(quad_arg));
+          // arg2->type = TEMP_VAR_Q_ARG;
+          quad_arg * arg2 = create_quad_arg(TEMP_VAR_Q_ARG);
           arg2->temp = t2;
 
-          quad_arg * arg3 = (quad_arg *)malloc(sizeof(quad_arg));
-          arg3->type = TEMP_VAR_Q_ARG;
+          // quad_arg * arg3 = (quad_arg *)malloc(sizeof(quad_arg));
+          // arg3->type = TEMP_VAR_Q_ARG;
+          quad_arg * arg3 = create_quad_arg(TEMP_VAR_Q_ARG);
           arg3->temp = t3;
 
           gen_quad(ADD_Q, arg3, arg1, arg2);
@@ -157,16 +163,19 @@ temp_var * CG(ast_node root) {
           temp_var * t2 = CG(root->left_child);
           temp_var * t3 = new_temp(temps_list);
 
-          quad_arg * arg1 = (quad_arg *)malloc(sizeof(quad_arg));
-          arg1->type = TEMP_VAR_Q_ARG;
+          // quad_arg * arg1 = (quad_arg *)malloc(sizeof(quad_arg));
+          // arg1->type = TEMP_VAR_Q_ARG;
+          quad_arg * arg1 = create_quad_arg(TEMP_VAR_Q_ARG);
           arg1->temp = t1;
 
-          quad_arg * arg2 = (quad_arg *)malloc(sizeof(quad_arg));
-          arg2->type = TEMP_VAR_Q_ARG;
+          // quad_arg * arg2 = (quad_arg *)malloc(sizeof(quad_arg));
+          // arg2->type = TEMP_VAR_Q_ARG;
+          quad_arg * arg2 = create_quad_arg(TEMP_VAR_Q_ARG);
           arg2->temp = t2;
 
-          quad_arg * arg3 = (quad_arg *)malloc(sizeof(quad_arg));
-          arg3->type = TEMP_VAR_Q_ARG;
+          // quad_arg * arg3 = (quad_arg *)malloc(sizeof(quad_arg));
+          // arg3->type = TEMP_VAR_Q_ARG;
+          quad_arg * arg3 = create_quad_arg(TEMP_VAR_Q_ARG);
           arg3->temp = t3;
 
           gen_quad(SUB_Q, arg3, arg1, arg2);
@@ -193,16 +202,19 @@ temp_var * CG(ast_node root) {
           temp_var * t2 = CG(root->left_child);
           temp_var * t3 = new_temp(temps_list);
 
-          quad_arg * arg1 = (quad_arg *)malloc(sizeof(quad_arg));
-          arg1->type = TEMP_VAR_Q_ARG;
+          // quad_arg * arg1 = (quad_arg *)malloc(sizeof(quad_arg));
+          // arg1->type = TEMP_VAR_Q_ARG;
+          quad_arg * arg1 = create_quad_arg(TEMP_VAR_Q_ARG);
           arg1->temp = t1;
 
-          quad_arg * arg2 = (quad_arg *)malloc(sizeof(quad_arg));
-          arg2->type = TEMP_VAR_Q_ARG;
+          // quad_arg * arg2 = (quad_arg *)malloc(sizeof(quad_arg));
+          // arg2->type = TEMP_VAR_Q_ARG;
+          quad_arg * arg2 = create_quad_arg(TEMP_VAR_Q_ARG);
           arg2->temp = t2;
 
-          quad_arg * arg3 = (quad_arg *)malloc(sizeof(quad_arg));
-          arg3->type = TEMP_VAR_Q_ARG;
+          // quad_arg * arg3 = (quad_arg *)malloc(sizeof(quad_arg));
+          // arg3->type = TEMP_VAR_Q_ARG;
+          quad_arg * arg3 = create_quad_arg(TEMP_VAR_Q_ARG);
           arg3->temp = t3;
 
           gen_quad(MUL_Q, arg3, arg1, arg2);
@@ -229,16 +241,19 @@ temp_var * CG(ast_node root) {
           temp_var * t2 = CG(root->left_child);
           temp_var * t3 = new_temp(temps_list);
 
-          quad_arg * arg1 = (quad_arg *)malloc(sizeof(quad_arg));
-          arg1->type = TEMP_VAR_Q_ARG;
+          // quad_arg * arg1 = (quad_arg *)malloc(sizeof(quad_arg));
+          // arg1->type = TEMP_VAR_Q_ARG;
+          quad_arg * arg1 = create_quad_arg(TEMP_VAR_Q_ARG);
           arg1->temp = t1;
 
-          quad_arg * arg2 = (quad_arg *)malloc(sizeof(quad_arg));
-          arg2->type = TEMP_VAR_Q_ARG;
+          // quad_arg * arg2 = (quad_arg *)malloc(sizeof(quad_arg));
+          // arg2->type = TEMP_VAR_Q_ARG;
+          quad_arg * arg2 = create_quad_arg(TEMP_VAR_Q_ARG);
           arg2->temp = t2;
 
-          quad_arg * arg3 = (quad_arg *)malloc(sizeof(quad_arg));
-          arg3->type = TEMP_VAR_Q_ARG;
+          // quad_arg * arg3 = (quad_arg *)malloc(sizeof(quad_arg));
+          // arg3->type = TEMP_VAR_Q_ARG;
+          quad_arg * arg3 = create_quad_arg(TEMP_VAR_Q_ARG);
           arg3->temp = t3;
 
           gen_quad(DIV_Q, arg3, arg1, arg2);
@@ -265,16 +280,19 @@ temp_var * CG(ast_node root) {
           temp_var * t2 = CG(root->left_child);
           temp_var * t3 = new_temp(temps_list);
 
-          quad_arg * arg1 = (quad_arg *)malloc(sizeof(quad_arg));
-          arg1->type = TEMP_VAR_Q_ARG;
+          // quad_arg * arg1 = (quad_arg *)malloc(sizeof(quad_arg));
+          // arg1->type = TEMP_VAR_Q_ARG;
+          quad_arg * arg1 = create_quad_arg(TEMP_VAR_Q_ARG);
           arg1->temp = t1;
 
-          quad_arg * arg2 = (quad_arg *)malloc(sizeof(quad_arg));
-          arg2->type = TEMP_VAR_Q_ARG;
+          // quad_arg * arg2 = (quad_arg *)malloc(sizeof(quad_arg));
+          // arg2->type = TEMP_VAR_Q_ARG;
+          quad_arg * arg2 = create_quad_arg(TEMP_VAR_Q_ARG);
           arg2->temp = t2;
 
-          quad_arg * arg3 = (quad_arg *)malloc(sizeof(quad_arg));
-          arg3->type = TEMP_VAR_Q_ARG;
+          // quad_arg * arg3 = (quad_arg *)malloc(sizeof(quad_arg));
+          // arg3->type = TEMP_VAR_Q_ARG;
+          quad_arg * arg3 = create_quad_arg(TEMP_VAR_Q_ARG);
           arg3->temp = t3;
 
           gen_quad(MOD_Q, arg3, arg1, arg2);
@@ -298,16 +316,19 @@ temp_var * CG(ast_node root) {
           temp_var * t1 = CG(root->left_child);
           temp_var * t2 = new_temp(temps_list);
 
-          quad_arg * arg1 = (quad_arg *)malloc(sizeof(quad_arg));
-          arg1->type = TEMP_VAR_Q_ARG;
+          // quad_arg * arg1 = (quad_arg *)malloc(sizeof(quad_arg));
+          // arg1->type = TEMP_VAR_Q_ARG;
+          quad_arg * arg1 = create_quad_arg(TEMP_VAR_Q_ARG);
           arg1->temp = t1;
 
-          quad_arg * arg2 = (quad_arg *)malloc(sizeof(quad_arg));
-          arg2->type = TEMP_VAR_Q_ARG;
+          // quad_arg * arg2 = (quad_arg *)malloc(sizeof(quad_arg));
+          // arg2->type = TEMP_VAR_Q_ARG;
+          quad_arg * arg2 = create_quad_arg(TEMP_VAR_Q_ARG);
           arg2->temp = t2;
 
-          quad_arg * arg3 = (quad_arg *)malloc(sizeof(quad_arg));
-          arg3->type = INT_LITERAL_Q_ARG;
+          // quad_arg * arg3 = (quad_arg *)malloc(sizeof(quad_arg));
+          // arg3->type = INT_LITERAL_Q_ARG;
+          quad_arg * arg3 = create_quad_arg(INT_LITERAL_Q_ARG);
           arg3->int_literal = 1;
 
           gen_quad(ADD_Q, arg2, arg1, arg3);
@@ -327,16 +348,19 @@ temp_var * CG(ast_node root) {
           temp_var * t1 = CG(root->left_child);
           temp_var * t2 = new_temp(temps_list);
 
-          quad_arg * arg1 = (quad_arg *)malloc(sizeof(quad_arg));
-          arg1->type = TEMP_VAR_Q_ARG;
+          // quad_arg * arg1 = (quad_arg *)malloc(sizeof(quad_arg));
+          // arg1->type = TEMP_VAR_Q_ARG;
+          quad_arg * arg1 = create_quad_arg(TEMP_VAR_Q_ARG);
           arg1->temp = t1;
 
-          quad_arg * arg2 = (quad_arg *)malloc(sizeof(quad_arg));
-          arg2->type = TEMP_VAR_Q_ARG;
+          // quad_arg * arg2 = (quad_arg *)malloc(sizeof(quad_arg));
+          // arg2->type = TEMP_VAR_Q_ARG;
+          quad_arg * arg2 = create_quad_arg(TEMP_VAR_Q_ARG);
           arg2->temp = t2;
 
-          quad_arg * arg3 = (quad_arg *)malloc(sizeof(quad_arg));
-          arg3->type = INT_LITERAL_Q_ARG;
+          // quad_arg * arg3 = (quad_arg *)malloc(sizeof(quad_arg));
+          // arg3->type = INT_LITERAL_Q_ARG;
+          quad_arg * arg3 = create_quad_arg(INT_LITERAL_Q_ARG);
           arg3->int_literal = 1;
 
           gen_quad(SUB_Q, arg2, arg1, arg3);
@@ -360,20 +384,24 @@ temp_var * CG(ast_node root) {
           temp_var * t2 = CG(root->left_child);
           temp_var * t3 = new_temp(temps_list);
 
-          quad_arg * arg1 = (quad_arg *)malloc(sizeof(quad_arg));
-          arg1->type = TEMP_VAR_Q_ARG;
+          // quad_arg * arg1 = (quad_arg *)malloc(sizeof(quad_arg));
+          // arg1->type = TEMP_VAR_Q_ARG;
+          quad_arg * arg1 = create_quad_arg(TEMP_VAR_Q_ARG);
           arg1->temp = t1;
 
-          quad_arg * arg2 = (quad_arg *)malloc(sizeof(quad_arg));
-          arg2->type = TEMP_VAR_Q_ARG;
+          // quad_arg * arg2 = (quad_arg *)malloc(sizeof(quad_arg));
+          // arg2->type = TEMP_VAR_Q_ARG;
+          quad_arg * arg2 = create_quad_arg(TEMP_VAR_Q_ARG);
           arg2->temp = t2;
 
-          quad_arg * arg3 = (quad_arg *)malloc(sizeof(quad_arg));
-          arg3->type = TEMP_VAR_Q_ARG;
+          // quad_arg * arg3 = (quad_arg *)malloc(sizeof(quad_arg));
+          // arg3->type = TEMP_VAR_Q_ARG;
+          quad_arg * arg3 = create_quad_arg(TEMP_VAR_Q_ARG);
           arg3->temp = t3;
 
           gen_quad(EQ_Q, arg3, arg1, arg2);
 
+          /* ? */
           if (t1->int_literal == t2->int_literal) {
             t3->int_literal = 1;
           } else {
@@ -545,7 +573,7 @@ char * new_label(ast_node root) {
   char * label = (char *)calloc(MAX_LABEL_LENGTH,sizeof(char));
   assert(label);
 
-  sprintf(label,"L_N%d_%s",root->id,NODE_NAME(root->node_type));
+  sprintf(label,"L_N%d_%s", root->id, NODE_NAME(root->node_type));
 
   assert(label);
   return label;
@@ -564,8 +592,11 @@ void print_label(ast_node root) {
     new_label(child);
 }
 
+/*
+ * Temp List functions
+ */
 
-
+// initialize global list
 temp_list * init_temp_list() {
   temp_list * lst = (temp_list *)malloc(sizeof(temp_list));
   assert(lst);
@@ -573,8 +604,7 @@ temp_list * init_temp_list() {
   return lst;
 }
 
-
-
+// get new temp
 temp_var * new_temp(temp_list * lst) {
   if (!lst)
     return NULL;
@@ -586,20 +616,23 @@ temp_var * new_temp(temp_list * lst) {
   return new_var;
 }
 
-
+// destroy temp variable
 void destroy_temp_var(temp_var * v) {
   if (v != NULL)
     free(v);
 }
 
-
-
+// destroy whole temp list
 void destroy_temp_list(temp_list * lst){
   if (lst != NULL)
     free(lst);
 }
 
+/*
+ * Functions to handle quad list and quad structs
+ */
 
+// initialize global quad list
 quad_arr * init_quad_list() {
 
   if(!quad_list) {
@@ -611,6 +644,14 @@ quad_arr * init_quad_list() {
   }
 
   return quad_list;
+}
+
+// create a quad arg struct of type
+quad_arg * create_quad_arg(quad_arg_discriminant type) {
+  quad_arg * new_arg = (quad_arg *)malloc(sizeof(quad_arg));
+  assert(new_arg);
+  new_arg->type = type;
+  return new_arg;
 }
 
 /*
@@ -644,9 +685,7 @@ int gen_quad(quad_op operation, quad_arg * a1, quad_arg * a2, quad_arg * a3) {
   return 0;
 }
 
-/*
- * looks for and prints "quad_list" in main.c
- */
+// prints global quad list
 void print_quad_list() {
   if (quad_list != NULL) {
     for (int i = 0; i < quad_list->count; i++) {
@@ -657,6 +696,7 @@ void print_quad_list() {
   }
 }
 
+// print a quad
 void print_quad(quad * q) {
 
   /* print quad operation */
@@ -696,9 +736,7 @@ void print_quad(quad * q) {
   printf(")\n");
 }
 
-/*
- * looks for and frees "quad_list" global quad arr in main.c file 
- */
+// destroys global quad list
 void destroy_quad_list() {
   if (quad_list != NULL)
     free(quad_list);

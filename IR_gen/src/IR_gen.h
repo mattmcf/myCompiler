@@ -202,6 +202,12 @@ void destroy_temp_list(temp_list * lst);
  */
 quad_arr * init_quad_list();
 
+/* 
+ * returns quad_arg pointer to newly created quad_arg struct of type
+ * must fill contents after creation
+ */
+quad_arg * create_quad_arg(quad_arg_discriminant type);
+
 /*
  * gen_quad -- adds quad to quad list 
  *

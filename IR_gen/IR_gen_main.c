@@ -61,12 +61,17 @@ int main(void) {
     printf("\n\n ----- PRETTY PRINTING AST TREE WITH TYPES -----\n");
     print_ast(root,0);  
 
+
     /* Start to generate quads */
     quad_list = init_quad_list();
     temps_list = init_temp_list();
     CG(root);
-    // call CG on root to fill quad_list
+
+    printf("\n\n ----- PRINTING QUAD LIST -----\n");
     print_quad_list();
+
+    // clean up
+    destroy_temp_list(temps_list);
     destroy_quad_list();
   }
 
