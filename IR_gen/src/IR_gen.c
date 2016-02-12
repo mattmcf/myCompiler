@@ -301,7 +301,46 @@ quad_arg * CG(ast_node root) {
         // GenQuad(ASSIGN_Q, t3, 0, -)
         // GenQuad(LABEL_Q, L_DONE, -, -)
         // return t3
-        break;
+        {
+          char * label_false = new_label(root, "FALSE");
+          quad_arg * false_arg = create_quad_arg(LABEL_Q_ARG);
+          false_arg->label = label_false;
+
+          char * label_done = new_label(root, "DONE");
+          quad_arg * done_arg = create_quad_arg(LABEL_Q_ARG);
+          done_arg->label = label_done;
+
+          temp_var * t1 = new_temp(temps_list);
+
+          quad_arg * arg1 = create_quad_arg(TEMP_VAR_Q_ARG);
+          arg1->temp = t1;
+
+          quad_arg * res_true = create_quad_arg(INT_LITERAL_Q_ARG);
+          res_true->int_literal = 1;
+
+          quad_arg * res_false = create_quad_arg(INT_LITERAL_Q_ARG);
+          res_false->int_literal = 0;
+
+          quad_arg * arg2 = CG(root->left_child);
+
+          gen_quad(IFFALSE_Q, arg2, false_arg, NULL);
+
+          quad_arg * arg3 = CG(root->left_child->right_sibling);
+
+          gen_quad(IFFALSE_Q, arg3, false_arg, NULL);
+
+          gen_quad(ASSIGN_Q, arg1, res_true, NULL);
+          gen_quad(GOTO_Q, done_arg, NULL, NULL);
+
+          gen_quad(LABEL_Q, false_arg, NULL, NULL);
+          gen_quad(ASSIGN_Q, arg1, res_false, NULL);
+
+          gen_quad(LABEL_Q, done_arg, NULL, NULL);
+
+          to_return = arg1;
+
+          break;
+        }
 
       case OP_OR_N:
         // new temp t1 = new_temp()
@@ -323,7 +362,48 @@ quad_arg * CG(ast_node root) {
         // GenQuad(ASSIGN_Q, t2, 0, -) // t1 and t3 both false
         // GenQuad(LABEL_Q, L_DONE, -, -)
         // return t2
-        break;
+        {
+          char * label_false = new_label(root, "FALSE");
+          quad_arg * false_arg = create_quad_arg(LABEL_Q_ARG);
+          false_arg->label = label_false;
+
+          char * label_all_false = new_label(root, "ALL_FALSE");
+          quad_arg * all_false_arg = create_quad_arg(LABEL_Q_ARG);
+          all_false_arg->label = label_all_false;
+
+          char * label_done = new_label(root, "DONE");
+          quad_arg * done_arg = create_quad_arg(LABEL_Q_ARG);
+          done_arg->label = label_done;
+
+          quad_arg * res_true = create_quad_arg(INT_LITERAL_Q_ARG);
+          res_true->int_literal = 1;
+
+          quad_arg * res_false = create_quad_arg(INT_LITERAL_Q_ARG);
+          res_false->int_literal = 0;
+
+          temp_var * t1 = new_temp(temps_list);
+          quad_arg * arg1 = create_quad_arg(TEMP_VAR_Q_ARG);
+          arg1->temp = t1;
+
+          quad_arg * arg2 = CG(root->left_child);
+
+          gen_quad(IFFALSE_Q, arg2, false_arg, NULL);
+          gen_quad(ASSIGN_Q, arg1, res_true, NULL);
+          gen_quad(GOTO_Q, done_arg, NULL, NULL);
+          gen_quad(LABEL_Q, false_arg, NULL, NULL);
+
+          quad_arg * arg3 = CG(root->left_child->right_sibling);
+
+          gen_quad(IFFALSE_Q, arg3, all_false_arg, NULL);
+          gen_quad(ASSIGN_Q, arg1, res_true, NULL);
+          gen_quad(GOTO_Q, done_arg, NULL, NULL);
+          gen_quad(LABEL_Q, all_false_arg, NULL, NULL);
+          gen_quad(ASSIGN_Q, arg1, res_false, NULL);
+          gen_quad(LABEL_Q, done_arg, NULL, NULL);
+
+          to_return = arg1;
+          break;
+        }
 
       case OP_NEG_N:
         // ??
