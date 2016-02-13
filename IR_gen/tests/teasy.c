@@ -6,8 +6,20 @@ int main(void) {
 	int a = 10;
 	int b;
 	int c;
+	
+	// if (a == 10) {
+	// 	a = -a;
+	// } else {
+	// 	a = a + 10;
+	// }
 
-	a = -b;
+	// while (a != 12) {
+	// 	print a;
+	// }
+
+	// for (a = 3; a < 21; ++a) {
+	// 	read a;
+	// }
 
 	// if (a == 17) {
 	// 	a = 2;
@@ -29,7 +41,7 @@ int main(void) {
 	// a = !(a == 1);
 	// print "hello";
 	
-	// a = foo(b, c);
+	a = foo(b, c);
 
 	// a && b;
 

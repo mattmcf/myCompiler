@@ -473,6 +473,9 @@ quad_arg * CG(ast_node root) {
           gen_quad(PRECALL_Q, func_arg, NULL, NULL);
           gen_quad(POSTRET_Q, func_arg, NULL, NULL);
 
+          // We should probably return a quad arg here that can be used
+          // for assignment. But how do we get the return value?
+
           break;
         }
 
