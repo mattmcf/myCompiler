@@ -1,6 +1,13 @@
+int foo(int a, int b) {
+	return a + b;
+} 
+
 int main(void) {
-	int a;
+	int a = 10;
 	int b;
+	int c;
+
+	a = -b;
 
 	// if (a == 17) {
 	// 	a = 2;
@@ -20,10 +27,9 @@ int main(void) {
 	// }
 	
 	// a = !(a == 1);
+	// print "hello";
 	
-	for (a = 10; a < 10; ++a) {
-		a = 2;
-	}
+	// a = foo(b, c);
 
 	// a && b;
 

@@ -144,7 +144,6 @@ void set_type(ast_node root) {
 		 */
 		case OP_PLUS_N:
 		case OP_MINUS_N:
-		case OP_NEG_N:
 		case OP_TIMES_N:
 		case OP_DIVIDE_N:
 		case OP_MOD_N:
@@ -174,6 +173,7 @@ void set_type(ast_node root) {
 		/*
 		 * Handle single arguments r-value nodes 
 		 */
+		case OP_NEG_N:
 		case OP_NOT_N:
 		case OP_INC_N:
 		case OP_DECR_N:

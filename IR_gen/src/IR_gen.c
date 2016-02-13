@@ -270,7 +270,7 @@ quad_arg * CG(ast_node root) {
 
           gen_quad(GOTO_Q, test_arg, NULL, NULL);
           gen_quad(LABEL_Q, exit_arg, NULL, NULL);
-          
+
           break;
         }
 
@@ -432,8 +432,22 @@ quad_arg * CG(ast_node root) {
         break;
 
       case OP_NEG_N:
-        // ??
+        to_return = CG_math_op(root, NEG_Q);
         break;
+
+      case FUNC_DECLARATION_N:
+        {
+          ast_node func_id = root->left_child->right_sibling;
+
+          quad_arg * func_arg = CG(func_id);
+          gen_quad(PROLOG_Q, func_arg, NULL, NULL);
+
+          CG(root->left_child->right_sibling->right_sibling->right_sibling);
+
+          gen_quad(EPILOG_Q, func_arg, NULL, NULL);
+
+          break;
+        }
 
       case CALL_N:
         // new temp t1 = new_temp()
@@ -445,21 +459,47 @@ quad_arg * CG(ast_node root) {
         // new temp t2 = CG(root->left_child) // Get function
         // GenQuad(PRECALL_Q, t2, -, -) // Specify function being called
         // GenQuad(POSTRET_Q, t2, -, -) // Specify function being called
-        break;
+        {
+          ast_node param = root->left_child->right_sibling->left_child;
+
+          while (param != NULL) {
+            quad_arg * param_arg = CG(param);
+            gen_quad(PARAM_Q, param_arg, NULL, NULL);
+
+            param = param->right_sibling;
+          }
+
+          quad_arg * func_arg = CG(root->left_child);
+          gen_quad(PRECALL_Q, func_arg, NULL, NULL);
+          gen_quad(POSTRET_Q, func_arg, NULL, NULL);
+
+          break;
+        }
 
       case PRINT_N:
         // new temp t1 = new_temp()
         // t1 = CG(root->left_child)
         // GenQuad -> save string / expression?
         // GenQuad(PRINT_Q, t1, -, -)
-        break;
+        {
+          quad_arg * arg1 = CG(root->left_child);
+          gen_quad(PRINT_Q, arg1, NULL, NULL);
+
+          break;
+        }
 
       case READ_N:
         // new temp t1 = new_temp()
         // t1 = CG(root->left_child)
         // GenQuad(READ_Q, t1, -, -)
-        break;
+        {
+          quad_arg * arg1 = CG(root->left_child);
+          gen_quad(READ_Q, arg1, NULL, NULL);
 
+          break;
+        }
+
+      case STRING_N:
       case ID_N:
         to_return = create_quad_arg(LABEL_Q_ARG);
         to_return->label = root->value_string;
@@ -515,7 +555,7 @@ quad_arg * CG_math_op(ast_node root, quad_op op) {
   quad_arg * arg2;
   if (root->left_child->right_sibling == NULL) {
 
-    if (op == NOT_Q) {
+    if (op == NOT_Q || op == NEG_Q) {
       // Special case for not
       gen_quad(op, arg1, NULL, NULL);
     } else {

@@ -25,6 +25,7 @@ typedef enum {
 	INC_Q,
 	DEC_Q,
 	NOT_Q,
+	NEG_Q,
 	ASSIGN_Q, 	
 
 	/* comparison operations */
@@ -49,6 +50,7 @@ typedef enum {
 	EPILOG_Q,
 	PRECALL_Q,
 	POSTRET_Q,
+	PARAM_Q,
 
 	/* constant creation operations */
 	STRING_Q,
@@ -67,6 +69,7 @@ static val_name_pair quad_op_table[] = {
 	{INC_Q, "increment"},
 	{DEC_Q, "decrement"},
 	{NOT_Q, "not"},
+	{NEG_Q, "negative"},
 	{ASSIGN_Q, "assign"}, 	
 
 	/* comparison operations */
@@ -91,6 +94,7 @@ static val_name_pair quad_op_table[] = {
 	{EPILOG_Q, "epilog"},
 	{PRECALL_Q, "precall"},
 	{POSTRET_Q, "post return"},
+	{PARAM_Q, "param"},
 
 	/* constant creation operations */
 	{STRING_Q, "save string"},
