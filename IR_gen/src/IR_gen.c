@@ -29,151 +29,58 @@ quad_arg * CG(ast_node root) {
         break;
 
       case OP_ASSIGN_N:
-        // new temp t1 = new_temp()
-        // new temp t2 = new_temp()
-        // new temp t3 = new_temp()
-        // t2 = CG(root->left_child->right_sibling)
-        // t3 = CG(root->left_child)
-        // GenQuad(ASSIGN_Q, t1, t2)
-        // GenQuad(ASSIGN_Q, t3, t1)
-        // return t3
         to_return = CG_assign_op(root);
         break;
 
       case OP_PLUS_N:
-        // new temp t1 = new_temp()
-        // new temp t2 = new_temp()
-        // new temp t3 = new_temp()
-        // t2 = CG(root->left_child->right_sibling)
-        // t3 = CG(root->left_child)
-        // GenQuad(ADD_Q, t1, t2, t3);
-        // return t1
         to_return = CG_math_op(root, ADD_Q);
         break;
 
       case OP_MINUS_N:
-        // new temp t1 = new_temp()
-        // new temp t2 = new_temp()
-        // new temp t3 = new_temp()
-        // GenQuad(SUB_Q, t1, t2, t3);
-        // return t1
         to_return = CG_math_op(root, SUB_Q);
         break;
 
       case OP_TIMES_N:
-        // new temp t1 = new_temp()
-        // new temp t2 = new_temp()
-        // new temp t3 = new_temp()
-        // t2 = CG(root->left_child->right_sibling)
-        // t3 = CG(root->left_child)
-        // GenQuad(MUL_Q, t1, t2, t3);
-        // return t1
         to_return = CG_math_op(root, MUL_Q);
         break;
 
       case OP_DIVIDE_N:
-        // new temp t1 = new_temp()
-        // new temp t2 = new_temp()
-        // new temp t3 = new_temp()
-        // t2 = CG(root->left_child->right_sibling)
-        // t3 = CG(root->left_child)
-        // GenQuad(DIV_Q, t1, t2, t3);
-        // return t1
         to_return = CG_math_op(root, DIV_Q);
         break;
 
       case OP_MOD_N:
-        // new temp t1 = new_temp()
-        // new temp t2 = new_temp()
-        // new temp t3 = new_temp()
-        // t2 = CG(root->left_child->right_sibling)
-        // t3 = CG(root->left_child)
-        // GenQuad(MOD_Q, t1, t2, t3);
-        // return t1
         to_return = CG_math_op(root, MOD_Q);
         break;
 
       case OP_INC_N:
-        // new temp t1 = new_temp()
-        // new temp t2 = new_temp()
-        // t1 = CG(root->left_child)
-        // GenQuad(ADD_Q, t2, t1, 1)
-        // return t2
         to_return = CG_math_op(root, INC_Q);
         break;
 
       case OP_DECR_N:
-        // new temp t1 = new_temp()
-        // new temp t2 = new_temp()
-        // t1 = CG(root->left_child)
-        // GenQuad(SUB_Q, t2, t1, 1)
-        // return t2
         to_return = CG_math_op(root, DEC_Q);
         break;
 
       case OP_EQ_N:
-        // new temp t1 = new_temp()
-        // new temp t2 = new_temp()
-        // new temp t3 = new_temp()
-        // t1 = CG(root->left_child)
-        // t2 = CG(root->left_child->right_sibling)
-        // GenQuad(EQ_Q, t3, t1, t2)
-        // return t3
         to_return = CG_math_op(root, EQ_Q);
         break;
 
       case OP_NE_N:
-        // new temp t1 = new_temp()
-        // new temp t2 = new_temp()
-        // new temp t3 = new_temp()
-        // t1 = CG(root->left_child)
-        // t2 = CG(root->left_child->right_sibling)
-        // GenQuad(NE_Q, t3, t1, t2)
-        // return t3
         to_return = CG_math_op(root, NE_Q);
         break;
 
       case OP_LT_N:
-        // new temp t1 = new_temp()
-        // new temp t2 = new_temp()
-        // new temp t3 = new_temp()
-        // t1 = CG(root->left_child)
-        // t2 = CG(root->left_child->right_sibling)
-        // GenQuad(LT_Q, t3, t1, t2)
-        // return t3
         to_return = CG_math_op(root, LT_Q);
         break;
 
       case OP_GT_N:
-        // new temp t1 = new_temp()
-        // new temp t2 = new_temp()
-        // new temp t3 = new_temp()
-        // t1 = CG(root->left_child)
-        // t2 = CG(root->left_child->right_sibling)
-        // GenQuad(GT_Q, t3, t1, t2)
-        // return t3
        to_return = CG_math_op(root, GT_Q);
        break;
 
       case OP_GTE_N:
-        // new temp t1 = new_temp()
-        // new temp t2 = new_temp()
-        // new temp t3 = new_temp()
-        // t1 = CG(root->left_child)
-        // t2 = CG(root->left_child->right_sibling)
-        // GenQuad(GTE_Q, t3, t1, t2)
-        // return t3
         to_return = CG_math_op(root, GTE_Q);
         break;
 
       case OP_LTE_N:
-        // new temp t1 = new_temp()
-        // new temp t2 = new_temp()
-        // new temp t3 = new_temp()
-        // t1 = CG(root->left_child)
-        // t2 = CG(root->left_child->right_sibling)
-        // GenQuad(LTE_Q, t3, t1, t2)
-        // return t3
         to_return = CG_math_op(root, LTE_Q);
         break;
 
@@ -239,17 +146,6 @@ quad_arg * CG(ast_node root) {
         }
 
       case FOR_STMT_N:
-        // new label L_FOR_TEST = new_label()
-        // new label L_FOR_EXIT = new_label()
-        // CG(root->left_child) // FOR HEADER INIT
-        // GenQuad(LABEL_Q, L_FOR_TEST, -, -)
-        // new temp t1 = new_temp()
-        // t1 = CG(root->left_child->right_sibling) // FOR HEADER TEST
-        // GenQuad(IFFALSE_Q, t1, L_FOR_EXIT, -)
-        // CG(root->left_child->right_sibling->right_sibling->right_sibling) // FOR BODY
-        // CG(root->left_child->right_sibling->right_sibling) // FOR HEADER INC or DEC
-        // GenQuad(GOTO_Q, L_FOR_TEST, -, -)
-        // GenQuad(LABEL_Q, L_FOR_EXIT, -, -)
         {
           char * label_test = new_label(root, "FOR_TEST");
           quad_arg * test_arg = create_quad_arg(LABEL_Q_ARG);
@@ -275,15 +171,6 @@ quad_arg * CG(ast_node root) {
         }
 
       case WHILE_N:
-        // new label L_WHILE_TEST = new_label()
-        // new label L_WHILE_EXIT = new_label()
-        // GenQuad(LABEL_Q, L_WHILE_TEST, -, -)
-        // new temp t1 = new_temp()
-        // t1 = CG(root->left_child)
-        // GenQuad(IFFALSE_Q, t1, L_WHILE_EXIT, -)
-        // CG(root->left_child->right_sibling)
-        // GenQuad(GOTO_Q, L_WHILE_TEST, -, -)
-        // GenQuad(LABEL_Q, L_WHILE_EXIT, -, -)
         {
           char * label_test = new_label(root, "WHILE_TEST");
           quad_arg * test_arg = create_quad_arg(LABEL_Q_ARG);
@@ -308,21 +195,6 @@ quad_arg * CG(ast_node root) {
         }
 
       case OP_AND_N:
-        // new temp t1 = new_temp()
-        // new temp t2 = new_temp()
-        // new temp t3 = new_temp()
-        // new label L_FALSE = new_label()
-        // new label L_DONE = new_label()
-        // t1 = CG(root->left_child)
-        // GenQuad(IFFALSE_Q, t1, L_FALSE, -)
-        // t2 = CG(root->left_child->right_sibling)
-        // GenQuad(IFFALSE_Q, t2, L_FALSE, -)
-        // GenQuad(ASSIGN_Q, t3, 1, -)
-        // GenQuad(GOTO_Q, L_DONE, -, -)
-        // GenQuad(LABEL_Q, L_FALSE, -, -)
-        // GenQuad(ASSIGN_Q, t3, 0, -)
-        // GenQuad(LABEL_Q, L_DONE, -, -)
-        // return t3
         {
           char * label_false = new_label(root, "FALSE");
           quad_arg * false_arg = create_quad_arg(LABEL_Q_ARG);
@@ -365,25 +237,6 @@ quad_arg * CG(ast_node root) {
         }
 
       case OP_OR_N:
-        // new temp t1 = new_temp()
-        // new temp t2 = new_temp()
-        // new temp t3 = new_temp()
-        // new label L_FALSE = new_label()
-        // new label L_ALL_FALSE = new_label()
-        // new label L_DONE = new_label()
-        // t1 = CG(root->left_child)
-        // GenQuad(IFFALSE_Q, t1, L_FALSE, -)
-        // GenQuad(ASSIGN_Q, t2, 1, -) // t1 was true, so skip RHS expr
-        // GenQuad(GOTO_Q, L_DONE, -, -) // Skip to finish
-        // GenQuad(LABEL_Q, L_FALSE, -, -)
-        // t3 = CG(root->left_child->right_sibling) // t1 was false, so evaluate RHS expr
-        // GenQuad(IFFALSE_Q, t3, L_ALL_FALSE, -)
-        // GenQuad(ASSIGN_Q, t2, 1, -) // t3 was True
-        // GenQuad(GOTO_Q, L_DONE, -, -)
-        // GenQuad(LABEL_Q, L_ALL_FALSE, -, -)
-        // GenQuad(ASSIGN_Q, t2, 0, -) // t1 and t3 both false
-        // GenQuad(LABEL_Q, L_DONE, -, -)
-        // return t2
         {
           char * label_false = new_label(root, "FALSE");
           quad_arg * false_arg = create_quad_arg(LABEL_Q_ARG);
@@ -474,15 +327,6 @@ quad_arg * CG(ast_node root) {
 
 
       case CALL_N:
-        // new temp t1 = new_temp()
-        // new temp t2 = new_temp()
-        // t1 = CG(root->left_child->right_sibling) // Get argument list
-        // for arg in t1:
-        //   new temp t = new_temp()
-        //   GenQuad(ASSIGN_Q, t, arg, -)
-        // new temp t2 = CG(root->left_child) // Get function
-        // GenQuad(PRECALL_Q, t2, -, -) // Specify function being called
-        // GenQuad(POSTRET_Q, t2, -, -) // Specify function being called
         {
           ast_node param = root->left_child->right_sibling->left_child;
 
@@ -505,10 +349,6 @@ quad_arg * CG(ast_node root) {
         }
 
       case PRINT_N:
-        // new temp t1 = new_temp()
-        // t1 = CG(root->left_child)
-        // GenQuad -> save string / expression?
-        // GenQuad(PRINT_Q, t1, -, -)
         {
           quad_arg * arg1 = CG(root->left_child);
           gen_quad(PRINT_Q, arg1, NULL, NULL);
@@ -517,9 +357,6 @@ quad_arg * CG(ast_node root) {
         }
 
       case READ_N:
-        // new temp t1 = new_temp()
-        // t1 = CG(root->left_child)
-        // GenQuad(READ_Q, t1, -, -)
         {
           quad_arg * arg1 = CG(root->left_child);
           gen_quad(READ_Q, arg1, NULL, NULL);
@@ -544,11 +381,32 @@ quad_arg * CG(ast_node root) {
           break;
         }
 
-      case STRING_N:
       case ID_N:
         to_return = create_quad_arg(LABEL_Q_ARG);
-        to_return->label = root->value_string;
+        to_return->label = root->value_string;        
         break;
+
+      case STRING_N:
+        // save string in memory with label and incorporate jumps around string
+        {
+          char * end_label = new_label(root,"END_STRING");
+          quad_arg * end_label_arg = create_quad_arg(LABEL_Q_ARG);
+          end_label_arg->label = end_label;
+
+          char * ascii_label = new_label(root,"DEF_STRING");
+          quad_arg * ascii_arg = create_quad_arg(LABEL_Q_ARG);
+          ascii_arg->label = ascii_label;
+          to_return = ascii_arg; // HAS LABEL ABOVE STRING!
+  
+          quad_arg * ascii = create_quad_arg(LABEL_Q_ARG);
+          ascii->label = root->value_string;
+  
+          gen_quad(GOTO_Q, end_label_arg, NULL, NULL);
+          gen_quad(LABEL_Q, ascii_arg, NULL, NULL);
+          gen_quad(STRING_Q, ascii, NULL, NULL);
+          gen_quad(LABEL_Q, end_label_arg, NULL, NULL);
+          break;
+        }
 
       case INT_LITERAL_N:
         to_return = create_quad_arg(INT_LITERAL_Q_ARG);
@@ -570,12 +428,8 @@ quad_arg * CG(ast_node root) {
 
           break;
         }
-
-    }
-
-    
+    } 
   }
-
   return to_return;
 }
 
@@ -642,6 +496,7 @@ char * new_label(ast_node root, char * name) {
   assert(label);
 
   sprintf(label,"L_N%d_%s",root->id, name);
+  //printf("label: %s\n",label);
 
   assert(label);
   return label;
