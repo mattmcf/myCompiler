@@ -541,7 +541,7 @@ void enter_scope(symboltable_t *symtab, ast_node node, char *name) {
     symtab->leaf->child->parent = symtab->leaf;
 
     // chain stacks together
-    symtab->leaf->child->local_base_offset = symtab->leaf->local_sp;
+    symtab->leaf->child->local_sp = symtab->leaf->local_sp;
 
     symtab->leaf = symtab->leaf->child;
 
@@ -561,7 +561,7 @@ void enter_scope(symboltable_t *symtab, ast_node node, char *name) {
     hashtable->rightsib->parent = symtab->leaf;
 
     // chain stacks together
-    hashtable->rightsib->local_base_offset = symtab->leaf->local_sp;
+    hashtable->rightsib->local_sp = symtab->leaf->local_sp;
 
     symtab->leaf = hashtable->rightsib;
   }

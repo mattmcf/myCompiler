@@ -31,8 +31,6 @@ temp_var * new_temp(ast_node root, type_specifier_t type) {
   symhashtable_t * symhashtab = root->scope_table;
   temp_list * t_list = symhashtab->t_list;
 
-  printf("creating new temp in scope %s\n",symhashtab->name);
-
   // get a new temp from the list
   temp_var * new_var = (temp_var *)malloc(sizeof(temp_var));
   assert(new_var);
@@ -42,20 +40,13 @@ temp_var * new_temp(ast_node root, type_specifier_t type) {
 
   // make new name
   char * name = make_temp_name(new_var->id);
-  printf("created temp with name %s\n",name);
 
   // calculate offset on local stack
   int fp_offset = symhashtab->local_sp;
   symhashtab->local_sp += TYPE_SIZE(type);
 
-  printf("incremented scope's local stack from %d to %d\n",symhashtab->local_sp - TYPE_SIZE(type), symhashtab->local_sp );
-
   // add that new temp to local table under the name
   symnode_t * new_node = insert_into_symhashtable(symhashtab,name);
-  if (!new_node) {
-    fprintf(stderr,"failed to add temporary variable %s to local scope\n",name);
-    exit(1);
-  }
 
   // attach temp to created symnode
   new_var->temp_symnode = new_node;

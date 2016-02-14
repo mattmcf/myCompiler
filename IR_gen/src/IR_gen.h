@@ -1,3 +1,4 @@
+
 /*
  * IR_gen.h
  *
@@ -17,93 +18,97 @@
 #define QUAD_ARG_NUM 3  /* MAGIC NUMBER !?!?! */
 
 typedef enum {
-  /* arithmatic operations */
-  ADD_Q,
-  SUB_Q,
-  MUL_Q,
-  DIV_Q,
-  MOD_Q,
-  ASSIGN_Q,   
+	/* arithmatic operations */
+	ADD_Q,
+	SUB_Q,
+	MUL_Q,
+	DIV_Q,
+	MOD_Q,
+	INC_Q,
+	DEC_Q,
+	NOT_Q,
+	NEG_Q,
+	ASSIGN_Q, 	
 
-  /* comparison operations */
-  LT_Q,
-  GT_Q,
-  LTE_Q,
-  GTE_Q,
-  NE_Q,
-  EQ_Q,
-  LDR_Q,
-  STR_Q,
+	/* comparison operations */
+	LT_Q,
+	GT_Q,
+	LTE_Q,
+	GTE_Q,
+	NE_Q,
+	EQ_Q,
+	LDR_Q,
+	STR_Q,
 
-  /* jump operations */
-  IFFALSE_Q,  
-  GOTO_Q,
+	/* jump operations */
+	IFFALSE_Q, 	
+	GOTO_Q,
 
-  PRINT_Q,
-  READ_Q,
+	PRINT_Q,
+	READ_Q,
 
-  /* function operations */
-  PROLOG_Q,
-  EPILOG_Q,
-  PRECALL_Q,
-  POSTRET_Q,
+	/* function operations */
+	PROLOG_Q,
+	EPILOG_Q,
+	PRECALL_Q,
+	POSTRET_Q,
+	PARAM_Q,
 
-  /* constant creation operations */
-  STRING_Q,
-  INT_LITERAL_Q,
+	/* constant creation operations */
+	STRING_Q,
+	INT_LITERAL_Q,
 
-  LABEL_Q
+	LABEL_Q
 } quad_op;
 
 static val_name_pair quad_op_table[] = {
-  /* arithmatic operations */
-  {ADD_Q, "add"},
-  {SUB_Q, "sub"},
-  {MUL_Q, "multiply"},
-  {DIV_Q, "divide"},
-  {MOD_Q, "mod divide"},
-  {ASSIGN_Q, "assign"},   
+	/* arithmatic operations */
+	{ADD_Q, "add"},
+	{SUB_Q, "sub"},
+	{MUL_Q, "multiply"},
+	{DIV_Q, "divide"},
+	{MOD_Q, "mod divide"},
+	{INC_Q, "increment"},
+	{DEC_Q, "decrement"},
+	{NOT_Q, "not"},
+	{NEG_Q, "negative"},
+	{ASSIGN_Q, "assign"}, 	
 
-  /* comparison operations */
-  {LT_Q, "less than"},
-  {GT_Q, "greater than"},
-  {LTE_Q, "less than or equal to"},
-  {GTE_Q, "greater than or equal to"},
-  {NE_Q, "not equal"},
-  {EQ_Q, "equal to"},
-  {LDR_Q, "load"},
-  {STR_Q, "store"},
+	/* comparison operations */
+	{LT_Q, "less than"},
+	{GT_Q, "greater than"},
+	{LTE_Q, "less than or equal to"},
+	{GTE_Q, "greater than or equal to"},
+	{NE_Q, "not equal"},
+	{EQ_Q, "equal to"},
+	{LDR_Q, "load"},
+	{STR_Q, "store"},
 
-  /* jump operations */
-  {IFFALSE_Q, "if false"},  
-  {GOTO_Q, "goto"},
+	/* jump operations */
+	{IFFALSE_Q, "if false"}, 	
+	{GOTO_Q, "goto"},
 
-  {PRINT_Q, "print"},
-  {READ_Q, "read"},
+	{PRINT_Q, "print"},
+	{READ_Q, "read"},
 
-  /* function operations */
-  {PROLOG_Q, "prolog"},
-  {EPILOG_Q, "epilog"},
-  {PRECALL_Q, "precall"},
-  {POSTRET_Q, "post return"},
+	/* function operations */
+	{PROLOG_Q, "prolog"},
+	{EPILOG_Q, "epilog"},
+	{PRECALL_Q, "precall"},
+	{POSTRET_Q, "post return"},
+	{PARAM_Q, "param"},
 
-  /* constant creation operations */
-  {STRING_Q, "save string"},
-  {INT_LITERAL_Q, "save constant"},
+	/* constant creation operations */
+	{STRING_Q, "save string"},
+	{INT_LITERAL_Q, "save constant"},
 
-  /* label generator */
-  {LABEL_Q, "make label"},
-  {0, NULL}
+	/* label generator */
+	{LABEL_Q, "make label"},
+  	{0, NULL}
 };
 
 #define QUAD_INDEX(X)    ( (X) - ADD_Q)
 #define QUAD_NAME(X)     ( quad_op_table[ QUAD_INDEX((X)) ].name)
-
-/*
- * Traverses AST to generate code
- * Should return array of quads. Dynamically sizing array or LL?
- */
-temp_var * CG(ast_node root);
 
 /*
  * returns label of form "L_N[#]_[NODE TYPE]"
@@ -153,6 +158,26 @@ typedef struct quad_arr {
   int size;       // max size
   int count;      // number of current entries (points at first unused entry)
 } quad_arr;
+
+/*
+ * Traverses AST to generate code
+ * Should return array of quads. Dynamically sizing array or LL?
+ */
+quad_arg * CG(ast_node root);
+
+quad_arg * CG_assign_op(ast_node root);
+quad_arg * CG_math_op(ast_node root, quad_op op);
+
+/*
+ * returns label of form "L_N[#]_[NODE TYPE]"
+ * should be free'd after done using
+ */
+char * new_label(ast_node root, char * name);
+
+/*
+ * calls make_label() on root and all of root's children
+ */
+void print_label(ast_node root);
 
 /*
  * initializes global "quad_list" quad_arr structure. GenQuad will fail until this is called.
