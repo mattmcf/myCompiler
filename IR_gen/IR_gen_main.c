@@ -54,18 +54,18 @@ int main(void) {
       return 1;
     }
 
-    printf("\n\n ----- PRETTY PRINTING AST TREE WITH TYPES -----\n");
-    print_ast(root,0);  
+    // printf("\n\n ----- PRETTY PRINTING AST TREE WITH TYPES -----\n");
+    // print_ast(root,0);  
 
     /* Start to generate quads */
     quad_list = init_quad_list();
     CG(root);
 
-    printf("\n\n ----- PRINTING QUAD LIST -----\n");
+    // mprintf("\n\n ----- PRINTING QUAD LIST -----\n");
     print_quad_list();
 
-    printf("\n\n ----- PRETTY PRINTING SYMBOLTABLE WITH TEMP VARIABLES -----\n");
-    print_symtab(symtab);
+    // printf("\n\n ----- PRETTY PRINTING SYMBOLTABLE WITH TEMP VARIABLES -----\n");
+    // print_symtab(symtab);
 
     // clean up
     destroy_quad_list();

@@ -2,6 +2,11 @@ int foo(int a) {
   return 1;
 }
 
+void emptyfunc() {
+  print "this is the empty function";
+  return;
+}
+
 int main(void) {
   int a = 10;
   int b;
@@ -22,6 +27,7 @@ int main(void) {
 
   for (b = 0; b < 10; ++b) {
   	print b;
+    emptyfunc();
   }
 
   return 0;

@@ -8,12 +8,11 @@
 #include "toktypes.h"
 #include "IR_gen.h"
 
+#define INIT_QUAD_LIST_SIZE 10
+#define PASS_WHOLE_ARRAY -1     // HACKY but it works
 #define MAX_LABEL_LENGTH 100 	// should be enough?
 
-extern temp_list * temps_list;
 extern quad_arr * quad_list;
-
-#define INIT_QUAD_LIST_SIZE 10
 
 quad_arg * CG(ast_node root) {
   quad_arg * to_return;
@@ -328,13 +327,15 @@ quad_arg * CG(ast_node root) {
 
       case CALL_N:
         {
-          ast_node param = root->left_child->right_sibling->left_child;
+          if (root->left_child->right_sibling != NULL) {
+            ast_node param = root->left_child->right_sibling->left_child;
 
-          while (param != NULL) {
-            quad_arg * param_arg = CG(param);
-            gen_quad(PARAM_Q, param_arg, NULL, NULL);     // when encountering PARAM_Q, push onto stack
+            while (param != NULL) {
+              quad_arg * param_arg = CG(param);
+              gen_quad(PARAM_Q, param_arg, NULL, NULL);     // when encountering PARAM_Q, push onto stack
 
-            param = param->right_sibling;
+              param = param->right_sibling;
+            }            
           }
 
           quad_arg * func_arg = CG(root->left_child);
@@ -367,7 +368,7 @@ quad_arg * CG(ast_node root) {
       case VAR_N:
         // check if accessing array or just a single variable
         {
-          if (root->mod == SINGLE_DT) {
+          if (root->left_child->right_sibling == NULL && root->mod == SINGLE_DT) {
             to_return = create_quad_arg(SYMBOL_VAR_Q_ARG);
             to_return->label = root->left_child->value_string;
           } else {
@@ -376,7 +377,9 @@ quad_arg * CG(ast_node root) {
 
             // check if accessing like an array
             if (root->left_child->right_sibling != NULL)
-              to_return->int_literal = root->left_child->right_sibling->left_child->value_int;     // get offset into array        
+              to_return->int_literal = root->left_child->right_sibling->left_child->value_int;     // get offset into array  
+            else
+              to_return->int_literal = PASS_WHOLE_ARRAY;       
           }
           break;
         }
@@ -554,10 +557,8 @@ quad_arg * create_quad_arg(quad_arg_discriminant type) {
  */
 int gen_quad(quad_op operation, quad_arg * a1, quad_arg * a2, quad_arg * a3) {
 
-  if (!quad_list) {
-    fprintf(stderr,"initialize the quad list first\n");
-    exit(1);
-  }
+  if (!quad_list) 
+    return 1;
 
   quad_list->arr[quad_list->count] = (quad *)calloc(1,sizeof(quad));
   quad_list->arr[quad_list->count]->op = operation;
