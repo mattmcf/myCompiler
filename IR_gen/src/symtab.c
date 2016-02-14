@@ -187,6 +187,7 @@ ast_node handle_func_decl_node(ast_node fdl, symboltable_t * symtab) {
         exit(1);
       }
 
+      /* to do -- this is incorrect because arguments should live above FP, not below */
       int fp_offset = symhashtab->local_sp;
       symhashtab->local_sp += TYPE_SIZE((&arg_arr[i])->type);
 

@@ -23,7 +23,7 @@ quad_arg * CG(ast_node root) {
       // Switch on node types to handle root
       case VAR_DECL_N:
         // Check if there is a RHS value
-        if (root->left_child->right_sibling != NULL) {
+        if (root->left_child->right_sibling != NULL && root->left_child->mod == SINGLE_DT) {
           to_return = CG_assign_op(root);
         }
         break;
@@ -444,10 +444,34 @@ quad_arg * CG(ast_node root) {
 
           CG(root->left_child->right_sibling->right_sibling->right_sibling);
 
+          char * epilog_label = new_label(root,"EPILOG");
+          quad_arg * epilog_arg = create_quad_arg(LABEL_Q_ARG);
+          epilog_arg->label = epilog_label;
+
+          gen_quad(LABEL_Q, epilog_arg, NULL, NULL);
           gen_quad(EPILOG_Q, func_arg, NULL, NULL);
 
           break;
         }
+
+      case RETURN_N:
+        // get value to return to caller
+        // move that into return location
+        // jump to epilog
+        {
+
+          ast_node pf = root->parent_function;
+          char * epilog_label = new_label(pf,"EPILOG");
+          quad_arg * epilog_arg = create_quad_arg(LABEL_Q_ARG);
+          epilog_arg->label = epilog_label;
+
+          quad_arg * function_return = CG(root->left_child);
+          gen_quad(RET_Q, function_return, NULL, NULL);
+          gen_quad(GOTO_Q, epilog_arg, NULL, NULL);
+
+          break;
+        }
+
 
       case CALL_N:
         // new temp t1 = new_temp()
@@ -464,7 +488,7 @@ quad_arg * CG(ast_node root) {
 
           while (param != NULL) {
             quad_arg * param_arg = CG(param);
-            gen_quad(PARAM_Q, param_arg, NULL, NULL);
+            gen_quad(PARAM_Q, param_arg, NULL, NULL);     // when encountering PARAM_Q, push onto stack
 
             param = param->right_sibling;
           }
@@ -475,6 +499,7 @@ quad_arg * CG(ast_node root) {
 
           // We should probably return a quad arg here that can be used
           // for assignment. But how do we get the return value?
+          to_return = create_quad_arg(RETURN_Q_ARG);
 
           break;
         }
@@ -502,6 +527,23 @@ quad_arg * CG(ast_node root) {
           break;
         }
 
+      case VAR_N:
+        // check if accessing array or just a single variable
+        {
+          if (root->mod == SINGLE_DT) {
+            to_return = create_quad_arg(SYMBOL_VAR_Q_ARG);
+            to_return->label = root->left_child->value_string;
+          } else {
+            to_return = create_quad_arg(SYMBOL_ARR_Q_ARG);
+            to_return->label = root->left_child->value_string;
+
+            // check if accessing like an array
+            if (root->left_child->right_sibling != NULL)
+              to_return->int_literal = root->left_child->right_sibling->left_child->value_int;     // get offset into array        
+          }
+          break;
+        }
+
       case STRING_N:
       case ID_N:
         to_return = create_quad_arg(LABEL_Q_ARG);
@@ -511,6 +553,10 @@ quad_arg * CG(ast_node root) {
       case INT_LITERAL_N:
         to_return = create_quad_arg(INT_LITERAL_Q_ARG);
         to_return->int_literal = root->value_int;
+        break;
+
+      case VOID_N:
+        to_return = NULL;
         break;
 
       default:
@@ -622,9 +668,9 @@ void print_label(ast_node root) {
 quad_arr * init_quad_list() {
 
   if(!quad_list) {
-    quad_list = (quad_arr *)malloc(sizeof(quad_arr));
+    quad_list = (quad_arr *)calloc(1,sizeof(quad_arr));
     assert(quad_list);
-    quad_list->arr = (quad **)malloc(sizeof(quad *) * INIT_QUAD_LIST_SIZE);
+    quad_list->arr = (quad **)calloc(INIT_QUAD_LIST_SIZE, sizeof(quad *));
     assert(quad_list->arr);
 
     quad_list->size = INIT_QUAD_LIST_SIZE;
@@ -636,7 +682,7 @@ quad_arr * init_quad_list() {
 
 // create a quad arg struct of type
 quad_arg * create_quad_arg(quad_arg_discriminant type) {
-  quad_arg * new_arg = (quad_arg *)malloc(sizeof(quad_arg));
+  quad_arg * new_arg = (quad_arg *)calloc(1,sizeof(quad_arg));
   assert(new_arg);
   new_arg->type = type;
   return new_arg;
@@ -658,7 +704,7 @@ int gen_quad(quad_op operation, quad_arg * a1, quad_arg * a2, quad_arg * a3) {
     exit(1);
   }
 
-  quad_list->arr[quad_list->count] = (quad *)malloc(sizeof(quad));
+  quad_list->arr[quad_list->count] = (quad *)calloc(1,sizeof(quad));
   quad_list->arr[quad_list->count]->op = operation;
   quad_list->arr[quad_list->count]->args[0] = a1;
   quad_list->arr[quad_list->count]->args[1] = a2;
@@ -667,7 +713,6 @@ int gen_quad(quad_op operation, quad_arg * a1, quad_arg * a2, quad_arg * a3) {
   (quad_list->count)++;
   /* double array size if full */
   if (quad_list->count == quad_list->size) {
-    printf("resizing quad_list to %d\n", 2 * quad_list->size);
     quad_list->size *= 2;
     quad_list->arr = realloc(quad_list->arr,sizeof(quad *) * quad_list->size);
     assert(quad_list->arr);
@@ -712,14 +757,24 @@ void print_quad(quad * q) {
         break;
 
       case TEMP_VAR_Q_ARG:
-        printf("Temp (ID: %d)",
+        printf("Temp %d",
          q->args[i]->temp->id);
-        //printf("Temp (ID: %d, INT_LITERAL: %d, VAR_ID: %s)",
-        //  q->args[i]->temp->id, q->args[i]->temp->int_literal, q->args[i]->temp->var_id);
+        break;
+
+      case SYMBOL_VAR_Q_ARG:
+        printf("Symbol: %s",q->args[i]->label);
+        break;
+
+      case SYMBOL_ARR_Q_ARG:
+        printf("Symbol: %s [offset: %d]",q->args[i]->label,q->args[i]->int_literal);
         break;
 
       case LABEL_Q_ARG:
         printf("Label: %s",q->args[i]->label);
+        break;
+
+      case RETURN_Q_ARG:
+        printf("Returned Value");
         break;
 
       default:  // null arg case

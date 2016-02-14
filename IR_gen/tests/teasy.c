@@ -47,6 +47,8 @@ int main(void) {
 	
 	a = foo(b, c);
 
+	a = foo(b+c, b-c);
+
 	while (a == 10) {
 		int a = 6;
 		int b = 10;

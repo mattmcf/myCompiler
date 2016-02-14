@@ -43,6 +43,7 @@ typedef enum {
 	/* jump operations */
 	IFFALSE_Q, 	
 	GOTO_Q,
+	RET_Q,
 
 	PRINT_Q,
 	READ_Q,
@@ -87,6 +88,7 @@ static val_name_pair quad_op_table[] = {
 	/* jump operations */
 	{IFFALSE_Q, "if false"}, 	
 	{GOTO_Q, "goto"},
+	{RET_Q, "return"},
 
 	{PRINT_Q, "print"},
 	{READ_Q, "read"},
@@ -125,7 +127,10 @@ typedef enum quad_arg_discriminant {
   NULL_ARG,   
   INT_LITERAL_Q_ARG,
   TEMP_VAR_Q_ARG,
-  LABEL_Q_ARG
+  SYMBOL_VAR_Q_ARG,
+  SYMBOL_ARR_Q_ARG,
+  LABEL_Q_ARG,
+  RETURN_Q_ARG 				// filler to build continuity
 } quad_arg_discriminant;
 
 /*
@@ -133,9 +138,9 @@ typedef enum quad_arg_discriminant {
  */
 typedef struct quad_arg {
   quad_arg_discriminant type;
-  int int_literal;
+  int int_literal; 			// holds array offset if SYMBOL_ARR_Q_ARG (0 for singles)
   temp_var * temp;
-  char * label;   // for variable ID's, function ID's and Label ID's
+  char * label;   	// for variable ID's, function ID's and Label ID's
 } quad_arg;
 
 /*
