@@ -18,48 +18,47 @@
 #define QUAD_ARG_NUM 3  /* MAGIC NUMBER !?!?! */
 
 typedef enum {
-	/* arithmatic operations */
-	ADD_Q,
-	SUB_Q,
-	MUL_Q,
-	DIV_Q,
-	MOD_Q,
-	INC_Q,
-	DEC_Q,
-	NOT_Q,
-	NEG_Q,
-	ASSIGN_Q, 	
+	/* arithmetic operations */
+	ADD_Q, // Add
+	SUB_Q, // Subtract
+	MUL_Q, // Multiply
+	DIV_Q, // Divide
+	MOD_Q, // Modulo
+	INC_Q, // Increment
+	DEC_Q, // Decrement
+	
+	NOT_Q, // Not - negation
+	NEG_Q, // Unary minus aka negative
+
+	ASSIGN_Q, // Assignment
 
 	/* comparison operations */
-	LT_Q,
-	GT_Q,
-	LTE_Q,
-	GTE_Q,
-	NE_Q,
-	EQ_Q,
-	LDR_Q,
-	STR_Q,
+	LT_Q, // Less than
+	GT_Q, // Greater than
+	LTE_Q, // Less than or equal to
+	GTE_Q, // Greater than or equal to
+	NE_Q, // Not equals
+	EQ_Q, // Equals
 
 	/* jump operations */
-	IFFALSE_Q, 	
-	GOTO_Q,
-	RET_Q,
+	IFFALSE_Q, // If false, jump to label
+	GOTO_Q, // Go to label
 
-	PRINT_Q,
-	READ_Q,
+	PRINT_Q, // Print
+	READ_Q, // Read
 
 	/* function operations */
-	PROLOG_Q,
-	EPILOG_Q,
-	PRECALL_Q,
-	POSTRET_Q,
-	PARAM_Q,
+	PROLOG_Q, // Function prologue
+	EPILOG_Q, // Function epilogue
+	PRECALL_Q, // Pre call
+	POSTRET_Q, // Post return
+	PARAM_Q, // Create function argument/parameter
+	RET_Q, // Function return
 
 	/* constant creation operations */
-	STRING_Q,
-	INT_LITERAL_Q,
+	STRING_Q, // Create string literal
 
-	LABEL_Q
+	LABEL_Q // Create label
 } quad_op;
 
 static val_name_pair quad_op_table[] = {
@@ -71,8 +70,10 @@ static val_name_pair quad_op_table[] = {
 	{MOD_Q, "mod divide"},
 	{INC_Q, "increment"},
 	{DEC_Q, "decrement"},
+
 	{NOT_Q, "not"},
 	{NEG_Q, "negative"},
+
 	{ASSIGN_Q, "assign"}, 	
 
 	/* comparison operations */
@@ -82,13 +83,10 @@ static val_name_pair quad_op_table[] = {
 	{GTE_Q, "greater than or equal to"},
 	{NE_Q, "not equal"},
 	{EQ_Q, "equal to"},
-	{LDR_Q, "load"},
-	{STR_Q, "store"},
 
 	/* jump operations */
 	{IFFALSE_Q, "if false"}, 	
 	{GOTO_Q, "goto"},
-	{RET_Q, "return"},
 
 	{PRINT_Q, "print"},
 	{READ_Q, "read"},
@@ -99,14 +97,14 @@ static val_name_pair quad_op_table[] = {
 	{PRECALL_Q, "precall"},
 	{POSTRET_Q, "post return"},
 	{PARAM_Q, "param"},
+	{RET_Q, "return"},
 
 	/* constant creation operations */
 	{STRING_Q, "save string"},
-	{INT_LITERAL_Q, "save constant"},
 
 	/* label generator */
 	{LABEL_Q, "make label"},
-  	{0, NULL}
+  {0, NULL}
 };
 
 #define QUAD_INDEX(X)    ( (X) - ADD_Q)

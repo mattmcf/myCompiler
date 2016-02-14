@@ -1,73 +1,82 @@
-# Check_Symbols Readme
+# IR_Gen Readme
 ## Matt McFarland and Yondon Fu - Delights (CS 57 - 16W)
 (For more enjoyable reading, please see https://github.com/MattRMcFarland/myCompiler/tree/master/check_symbols)
 
 ## General Overview
-The file structure our our symbol table generator is as follows:
+The file structure our our intermediate code generator is as follows:
 
 We added a source directory to manage the increasing number of source files we created:
 * `src/ast.h` and `src/ast.c` : contain functions and definitions for ast nodes. Note: we added several fields to ast_node for this part of the project.
+* `src/IR_gen.h` and `src/IR_gen.c` : contain CG (code generation) and label generation functions
+* `src/temp_list.h` and `src/temp_list.c` : contain the temp generation function and the temp_list structure for keeping track of temps within scopes
 * `src/check_sym.h` and `src/check_sym.c` : contain the set_type function and top-down type check handling.
 * `src/symtab.h` and `src/symtab.c` : contain the symbol table creation functions.
-* `src/types.h` : is our new struction declaration file. We had trouble with include dependencies and so we consolidated most of our symboltable structures in one file.
+* `src/types.h` : is our new struction declaration file. We had trouble with include dependencies and so we consolidated many of our structures in one file.
 * `src/toktypes.h` : legacy file for pretty printing token names.
 * `src/ast_stack.h` and `src/ast_stack.c` : contains implementation of ast_node stack (for symbol tables).
 
 Top - Level Files
-* `mytest.sh` : building and testing script for the top-down symbol checking.
-* `check_symbol_main.c` : executable for type checking testing.
-* `scan.l` : flex file from last week
+* `mytest.sh` : building and testing script for intermediate code generation.
+* `scan.l` : flex file.
 * `parser.y` : bison parsing file. A few changes made for type checking ease.
-* `Makefile` : this week's makefile. Includes several exectuable 
-* `symtab_main.c` : created symbol table (legacy from last week).
+* `Makefile` : this week's makefile. Includes several executable 
+* `check_symbols_main.c` : type checking testing file (legacy from last week).
+* `symtab_main.c` : created symbol table (legacy).
 * `parser_main.c` : create parse tree from tokens (legacy).
 
 Instructions for running tests:
 
-`cd check_symbols`
+`cd IR_gen`
 
 `./mytest.sh`
 
-Instructions for running tests and error reporting:
-
-`cd check_symbols`
-
-`make clean && make` (makes check_symbols executable by default)
-
-`./check_symbols < tests/tfunc.c`
-
-If any errors occur during the construction of the symbol table, the program will report the type for the error and exit. Errors include: 
-* Failure during parsing due to syntax
-* Failure to create symbol table due to duplicate symbols
-* Syntax errors found during type checking
-
-Instructions to make parser_print executable that builds ast tree and symboltable
-
-`cd check_symbols`
-
-`make clean && make symtab`
-
-`./symtab < ./tests/tscope.c`
-
-Instructions to make parser_print executable that builds ast tree and tests ast_stack
-
-`cd check_symbols`
-
-`make clean && make parser_print`
-
-`./parser_print < ./tests/tscope.c`
-
 ## Implementation Specifics
 
-We mirrored the same approach to type checking as we implemented during creation of the symbol table. The function `set_type()` is a called on the root node, and it gets recrusively called on root's children. Because this traversal needs to be bottom-up (parents synthesize their types from their children after checking their children for appropriate type matches), `set_type` is called on root's children before root can check the children type and set its own type. Once `set_type()` reaches a base case (a variable, a type specifier, or a constant), it can set root's type and return to the parent. (When variables are referenced, `set_type()` looks up the variable's type in the symboltable. The same occurs when functions are called for the functions return values and argument types.) 
+`quad` is a structure that holds a quad operation and at most 3 quad arguments. Quad arguments can hold an int literal, temp or a label. The int literal field can be used to hold an integer constant or an offset if the quad argument is being used for an array. The label field can be used for variable ids, function ids or label ids.
 
-### Handling Function Declaration Nodes
+We use a initialize a global quad list (dynamically resizing array) that is appended to during the CG traversal process.
 
-In order to verify a Function Declaration was correct, we needed to make sure that each return statement within the function returned the correct type. In order to do this, we fashioned another function called `find_return` that holds a target return type. This function searches all of the children nodes of the function declaration for return statements. Once one is found, the function compares it's payload (the intended return type) against the discovered return statement. It also increments a count of found return statements. Once all of the probes of this `find_return` function return (and return 0, the success status), the handle_function_declaration caller then examines the number of found return statements. If the function returns `void` and does not contain a return statement, then the caller manually adds a return void node to the end of the function's compound statement node (this will be helpful when we traverse the tree once more to build our intermediate representation code). Each return statement also gets pointed back to its parent function. If the function does not return void and there are no return statements, the `set_type()` function will report an error. 
+### Generating temps
 
-### Handling Expression and r-value nodes
+Temps are represented by the `temp_var` structure. `new_temp` generates a temp_var for the scope of the given AST node. We explicitly save list of temps in the symbol table for their particular scope.
 
-For expression statements and r-value (operation) nodes, the children must have matching types. Since we are not implementing type coercion or conversion right now, we don't need to worry about the complications of type coercion. So the children type and modifier fields must match for these nodes. If a mismatch occurs, the expression / r-value node's is set to a null value and an error is reported.
+### Generating labels
+
+Labels are represented by strings. `new_label` generates a string label using the provided AST node and a name string that is to be associated with the label.
+
+### Operations
+
+Quad operations are defined in `IR_gen.h`. See in line comments for descriptions of each operation.
+
+### CG
+
+`CG` recursively traverses the AST and uses a switch statement to handle quad generation for each case, some of which include control flow such as while loops and logical statements using `$$` and `||`.
+
+The base cases for the traversal are when we encounter an int literal, variable identifier or a string literal. The CG function will optionally pass up quad arguments with evaluated value of nested expressions.
+
+### Strings
+
+We save strings into memory. We generate an end string label quad and a definition label quad. We use a go to quad to jump straight to the end string label because we do not want to include the string defintion in the list of quad instructions, but we still want the string in memory so the quads for the string and definition label are still included even though they will never be executed.
+
+### Arrays
+
+When we access elements of an array we represent the element in a quad using the name of the array and an integer offset that is equal to the index. This offset will be used with the size of the element to grab the actual value in the array. If we are using an entire array we set this offset to -1 to signal that the quad argument contains an entire array.
+
+### Control Flow
+
+We handle the following control flow cases: for loops, while loops, if statements, if/else statements. We generate quads to reflect the evaluation process of each of them.
+
+### Logical Statements
+
+We handle the following logical operations: `$$`, `||` and `!`. We generate quads to reflect the evaluation process of each of them. 
+
+### Function Declarations
+
+We start function declarations with a prologue quad and end them with an epilogue quad. We generate an epilogue label that will be jumped to when we encounter a return. When we find a return we grab the return node's parent function and generate a go to quad to jump to the parent function's epilogue.
+
+### Function Calls
+
+We grab all the arguments and generate quads for them. We generate quads for the pre call and post return operations.
 
 ## Testing Files
 All test files live in the tests directory
