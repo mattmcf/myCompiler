@@ -72,16 +72,22 @@ For expression statements and r-value (operation) nodes, the children must have 
 ## Testing Files
 All test files live in the tests directory
 
-We manually generate our answer key files by first retrieving the output for a normal AST pretty printing operation on a given input file, which serves as the base tree structure for when we are filling in fields with our expected values. We know the base tree structure is correct based on our work on generating ASTs in assignments from previous weeks. Then we fill in the appropriate fields for each node with our expected values. When testing, we piped the output for a given input file into a .out file which we diffed with our key file to check if the actual output matched our expected output.
-
+### tops.c and tops_ans.txt
+This file includes every arithmetic operation. These tests ensure we are creating temporary varibles appropriately and are able to generate correct quads for the computation, assignment, and inequality testing operations. 
 
 ### tfunc.c and tfunc_ans.txt
-Sample C program with function calls. We can also test our program's capability to display errors by providing more arguments than needed in a function call or attempting to assign a function return value to a variable when the function's return type is void. In these cases, the program will display an error message explaining the cause and the line number that the error occurs on.
+tfunc.c includes a file with multiple functions called with varying number of arguments. The key case in this file is the void call of `f2` without any arguments. That was a tricky case for us to handle.
 
-### tscope.c and tscope_ans.txt
-Sample C program with multiple function scopes, as well as edge cases such as blocks with a single semi-colon, empty functions without any variable declarations. We do not reflect this in our key file, but we can also test for duplicate variable declarations by uncommenting line 21 in tscope.c. The output will be that a duplicate variable has been found and the symbol table program will stop running.
+### tloops.c and tloops_ans.txt
+tloops.c includes all of our control flow quads. These include for and while loops and conditional if-then-else testing. This file also highlights how return statements are handled. Which is to say that they prepare the return value in the return location and then jump to the function's epilog.
 
-### ttypecheck.c and ttypecheck_ans.txt
-Sample C program with a main function and two other functions. The function bar contains a nested function call to the function foo. We can test for error catching with undeclared variables by uncommenting line 17, which attempts to call the foo function with an undeclared variable z. We can also test for error catching with undeclared functions by uncommenting line 21, which attempts to call an undeclared function hello. We also handle edge cases that include passing arrays as parameters and accessing their contents as single variables via indexing.
+
+### tarr.c and tarr_ans.txt
+tarr.c demonstrates how quads for handling arr referencing and arr arguments should be demonstrated. The key case here is with the call of `array_f(a, a[0], b ,10)`. `a` is referenced in its array entirety and as a element. We had to hack our way to successfully handling these call options, but the quads distinguish between an array reference and an array in its entirety with the offset of `-1`.
+
+### test_simple.c and test_simple_ans.txt
+This file includes a variety of all the interesting parts mentioned before. This file also includes a print statement of a string, which shows how we include strings into the quad list (save them inline in the quad list).
+
+
 
 
