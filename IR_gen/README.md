@@ -38,7 +38,7 @@ We use a initialize a global quad list (dynamically resizing array) that is appe
 
 ### Generating temps
 
-Temps are represented by the `temp_var` structure. `new_temp` generates a temp_var for the scope of the given AST node.
+Temps are represented by the `temp_var` structure. `new_temp` generates a temp_var for the scope of the given AST node. We explicitly save list of temps in the symbol table for their particular scope.
 
 ### Generating labels
 
