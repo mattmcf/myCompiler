@@ -467,7 +467,12 @@ int find_return(type_specifier_t return_type, modifier_t mod_type, ast_node func
 
 int check_call(ast_node root) {
 	// Look up function in symtab using function identifier
-	symnode_t *func = lookup_symhashtable(((symhashtable_t *)root->scope_table)->parent, root->left_child->value_string, NOHASHSLOT);
+
+	/* get to global scope */
+	symhashtable_t * global_scope;
+	for (global_scope = root->scope_table; global_scope->parent != NULL; global_scope = global_scope->parent);
+
+	symnode_t *func = lookup_symhashtable(global_scope, root->left_child->value_string, NOHASHSLOT);
 
 	if (func == NULL) {
 		fprintf(stderr, "Undeclared function: \'%s\'\n", root->left_child->value_string);

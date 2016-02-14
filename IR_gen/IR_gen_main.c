@@ -21,7 +21,7 @@ int parseError = 0; 	      // global flag
 int type_error_count = 0;   // used to count type errors
 int node_count = 0;         // used to give unique node IDs
 quad_arr * quad_list = NULL;    // global quad list
-temp_list * temps_list = NULL; // global temp list
+//temp_list * temps_list = NULL; // global temp list
 
 
 int main(void) {
@@ -54,15 +54,11 @@ int main(void) {
       return 1;
     }
 
-    // printf("****** PRETTY PRINTING SYMBOLTABLE ******\n");
-    // print_symtab(symtab);
-
     printf("\n\n ----- PRETTY PRINTING AST TREE WITH TYPES -----\n");
     print_ast(root,0);  
 
     /* Start to generate quads */
     quad_list = init_quad_list();
-    temps_list = init_temp_list();
     CG(root);
 
     printf("\n\n ----- PRINTING QUAD LIST -----\n");
@@ -72,7 +68,6 @@ int main(void) {
     print_symtab(symtab);
 
     // clean up
-    destroy_temp_list(temps_list);
     destroy_quad_list();
 
   }
