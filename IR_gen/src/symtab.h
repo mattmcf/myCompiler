@@ -14,6 +14,7 @@
 
 #include "ast_stack.h"
 #include "types.h"
+#include "temp_list.h"
 
 #define NOHASHSLOT -1
 
@@ -33,6 +34,8 @@ typedef struct var_symbol {
   char * name;
   type_specifier_t type;
   modifier_t modifier;
+
+  int offset_of_frame_pointer;    // bytes to subtract from frame pointer to get to bottom most byte of variable
 } var_symbol;
 
 typedef struct func_symbol {
@@ -70,6 +73,11 @@ typedef struct symhashtable {
   struct symhashtable *parent, *child, *rightsib;
   struct ast_stack *scopeStack; /* Stack to keep track of traversed elements in scope */
 
+  /* memory tracking stuff */
+  int local_base_offset;        // number of bytes this local scope lives offset from the frame pointer
+  int local_sp;                 // number of bytes from local_base to top from to first unused spot on local stack
+  temp_list * t_list;           // tracks count of local temps
+
 } symhashtable_t;
 
 /* Symbol table for all levels of scope. */
@@ -97,7 +105,7 @@ void add_scope_to_children(ast_node root, symboltable_t * symtab);
  * makes a variable of type and with modifier 
  * returns variable on stack, should save elsewhere
  */
-var_symbol init_variable(char * name, type_specifier_t type, modifier_t mod);
+var_symbol init_variable(char * name, type_specifier_t type, modifier_t mod, int offset);
 
 /* 
  * get_type() : returns enumerated type_specifier (definied in symtab.h)
@@ -143,6 +151,10 @@ symnode_t *lookup_in_symboltable(symboltable_t *symtab, char *name);
 
 /* Lookup an entry in a symbol hash table. Returns NULL if symnode not found */
 symnode_t *lookup_symhashtable(symhashtable_t *hashtable, char *name, int slot);
+
+/* Insert a new entry into a symhashtable, but only if it is not
+   already present. */
+symnode_t *insert_into_symhashtable(symhashtable_t *hashtable, char *name);
 
 /* Enter a new scope. */
 void enter_scope(symboltable_t *symtab, ast_node node, char *name);

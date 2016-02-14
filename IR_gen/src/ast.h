@@ -115,7 +115,7 @@ static val_name_pair token_table[] = {
   { 0, NULL }
 };
 
-#define NODE_INDEX(X)    ( (X) - ROOT_N)
+#define NODE_INDEX(X)    ( (X) - ROOT_N) 
 #define NODE_NAME(X)     ( token_table[ NODE_INDEX((X)) ].name)
 
 
@@ -139,8 +139,8 @@ struct ast_node_struct {
   modifier_t mod;
 
   // as most one of these would be nonzero
-  char *value_string;		/* for ID */
-  int value_int;		    /* for INT_LITERAL */
+  char *value_string;   /* for ID */
+  int value_int;        /* for INT_LITERAL */
   
 };
 

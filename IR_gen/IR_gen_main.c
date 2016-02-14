@@ -47,16 +47,15 @@ int main(void) {
     /* fill symbol table up */
     traverse_ast_tree(root, symtab);
 
-    // printf("****** PRETTY PRINTING SYMBOLTABLE ******\n");
-    // print_symtab(symtab);
-
     /* check types */
     set_type(root);
-
     if (type_error_count != 0) {
       fprintf(stderr,"%d type errors found. Please fix before continuing.\n",type_error_count);
       return 1;
     }
+
+    printf("****** PRETTY PRINTING SYMBOLTABLE ******\n");
+    print_symtab(symtab);
 
     printf("\n\n ----- PRETTY PRINTING AST TREE WITH TYPES -----\n");
     print_ast(root,0);  
@@ -70,9 +69,13 @@ int main(void) {
     printf("\n\n ----- PRINTING QUAD LIST -----\n");
     print_quad_list();
 
+    printf("****** PRETTY PRINTING SYMBOLTABLE ******\n");
+    print_symtab(symtab);
+
     // clean up
     destroy_temp_list(temps_list);
     destroy_quad_list();
+
   }
 
   return 0;

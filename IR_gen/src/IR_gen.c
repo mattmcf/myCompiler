@@ -15,6 +15,7 @@ extern quad_arr * quad_list;
 
 #define INIT_QUAD_LIST_SIZE 10
 
+
 temp_var * CG(ast_node root) {
   temp_var * to_return;
 
@@ -28,7 +29,7 @@ temp_var * CG(ast_node root) {
           if (root->left_child->right_sibling != NULL) {
             temp_var * t1 = CG(root->left_child->right_sibling);
             temp_var * t2 = CG(root->left_child);
-            temp_var * t3 = new_temp(temps_list);
+            temp_var * t3 = new_temp(root, INT_TS);
             
             quad_arg * arg1 = (quad_arg *)malloc(sizeof(quad_arg));
             arg1->type = TEMP_VAR_Q_ARG;
@@ -45,776 +46,773 @@ temp_var * CG(ast_node root) {
             gen_quad(ASSIGN_Q, arg3, arg1, NULL);
             gen_quad(ASSIGN_Q, arg2, arg3, NULL);
 
-            t3->int_literal = t1->int_literal;
-
             to_return = t3;
           }
-
-          return to_return;
         }
-
-      case IF_STMT_N:
-        // new temp t1 = new_temp()
-        // new label L_FI = new_label()
-        // t1 = CG(root->left_child)
-        // GenQuad(IFFALSE_Q, t1, L_FI, -)
-        // CG(root->left_child->right_sibling)
-        // new label L_FI = new_label()
-        // GenQuad(LABEL_Q, L_FI, -, -)
-        {
-          temp_var * t1 = CG(root->left_child);
-          char * label_fi = new_label(root, "FI");
-
-          quad_arg * arg1 = (quad_arg *)malloc(sizeof(quad_arg));
-          arg1->type = TEMP_VAR_Q_ARG;
-          arg1->temp = t1;
-
-          quad_arg * arg2 = (quad_arg *)malloc(sizeof(quad_arg));
-          arg2->type = LABEL_Q_ARG;
-          arg2->label = label_fi;
-
-          gen_quad(IFFALSE_Q, arg1, arg2, NULL);
-
-          CG(root->left_child->right_sibling);
-
-          gen_quad(LABEL_Q, arg2, NULL, NULL);
-
-          return to_return;
-        }
-
-      case IF_ELSE_STMT_N:
-        // new temp t1 = new_temp()
-        // new label L_ELSE = new_label()
-        // t1 = CG(root->left_child)
-        // GenQuad(IFFALSE_Q, t1, L_ELSE, -)
-        // CG(root->left_child->right_sibling)
-        // new label L_FI = new_label()
-        // GenQuad(GOTO_Q, L_FI, -, -)
-        // GenQuad(LABEL_Q, L_ELSE, -, -)
-        // CG(root->left_child->right_sibling->right_sibling)
-        // GenQuad(LABEL_Q, L_FI, -, -)
-        {
-          temp_var * t1 = CG(root->left_child);
-          char * label_else = new_label(root, "ELSE");
-          char * label_fi = new_label(root, "FI");
-
-          quad_arg * arg1 = (quad_arg *)malloc(sizeof(quad_arg));
-          arg1->type = TEMP_VAR_Q_ARG;
-          arg1->temp = t1;
-
-          quad_arg * fi_arg = (quad_arg *)malloc(sizeof(quad_arg));
-          fi_arg->type = LABEL_Q_ARG;
-          fi_arg->label = label_fi;
-
-          quad_arg * else_arg = (quad_arg *)malloc(sizeof(quad_arg));
-          else_arg->type = LABEL_Q_ARG;
-          else_arg->label = label_else;
-
-          gen_quad(IFFALSE_Q, arg1, else_arg, NULL);
-
-          CG(root->left_child->right_sibling);
-
-          gen_quad(GOTO_Q, fi_arg, NULL, NULL);
-
-          gen_quad(LABEL_Q, else_arg, NULL, NULL);
-
-          CG(root->left_child->right_sibling->right_sibling);
-
-          gen_quad(LABEL_Q, fi_arg, NULL, NULL);
-
-          return to_return;
-        }
-
-      case FOR_STMT_N:
-        // new label L_FOR_TEST = new_label()
-        // new label L_FOR_EXIT = new_label()
-        // CG(root->left_child) // FOR HEADER INIT
-        // GenQuad(LABEL_Q, L_FOR_TEST, -, -)
-        // new temp t1 = new_temp()
-        // t1 = CG(root->left_child->right_sibling) // FOR HEADER TEST
-        // GenQuad(IFFALSE_Q, t1, L_FOR_EXIT, -)
-        // CG(root->left_child->right_sibling->right_sibling->right_sibling) // FOR BODY
-        // CG(root->left_child->right_sibling->right_sibling) // FOR HEADER INC or DEC
-        // GenQuad(GOTO_Q, L_FOR_TEST, -, -)
-        // GenQuad(LABEL_Q, L_FOR_EXIT, -, -)
         break;
 
-      case WHILE_N:
-        // new label L_WHILE_TEST = new_label()
-        // new label L_WHILE_EXIT = new_label()
-        // GenQuad(LABEL_Q, L_WHILE_TEST, -, -)
-        // new temp t1 = new_temp()
-        // t1 = CG(root->left_child)
-        // GenQuad(IFFALSE_Q, t1, L_WHILE_EXIT, -)
-        // CG(root->left_child->right_sibling)
-        // GenQuad(GOTO_Q, L_WHILE_TEST, -, -)
-        // GenQuad(LABEL_Q, L_WHILE_EXIT, -, -)
-        {
-          char * label_test = new_label(root, "WHILE_TEST");
-          char * label_exit = new_label(root, "WHILE_EXIT");
-
-          quad_arg * test_arg = (quad_arg *)malloc(sizeof(quad_arg));
-          test_arg->type = LABEL_Q_ARG;
-          test_arg->label = label_test;
-
-          quad_arg * exit_arg = (quad_arg *)malloc(sizeof(quad_arg));
-          exit_arg->type = LABEL_Q_ARG;
-          exit_arg->label = label_exit;
-
-          gen_quad(LABEL_Q, test_arg, NULL, NULL);
-
-          temp_var * t1 = CG(root->left_child);
-
-          quad_arg * arg1 = (quad_arg *)malloc(sizeof(quad_arg));
-          arg1->type = TEMP_VAR_Q_ARG;
-          arg1->temp = t1;
-
-          gen_quad(IFFALSE_Q, arg1, exit_arg, NULL);
-
-          CG(root->left_child->right_sibling);
-
-          gen_quad(GOTO_Q, test_arg, NULL, NULL);
-          gen_quad(LABEL_Q, exit_arg, NULL, NULL);
-
-          return to_return;
-        }
-
-      case OP_ASSIGN_N:
-        // new temp t1 = new_temp()
-        // new temp t2 = new_temp()
-        // new temp t3 = new_temp()
-        // t2 = CG(root->left_child->right_sibling)
-        // t3 = CG(root->left_child)
-        // GenQuad(ASSIGN_Q, t1, t2)
-        // GenQuad(ASSIGN_Q, t3, t1)
-        // return t3
-        {
-          printf("Found assign\n");
-
-          temp_var * t1 = CG(root->left_child->right_sibling);
-          temp_var * t2 = CG(root->left_child);
-          temp_var * t3 = new_temp(temps_list);
-
-          // quad_arg * arg1 = (quad_arg *)malloc(sizeof(quad_arg));
-          // arg1->type = TEMP_VAR_Q_ARG;
-          quad_arg * arg1 = create_quad_arg(TEMP_VAR_Q_ARG);
-          arg1->temp = t1;
-
-          // quad_arg * arg2 = (quad_arg *)malloc(sizeof(quad_arg));
-          // arg2->type = TEMP_VAR_Q_ARG;
-          quad_arg * arg2 = create_quad_arg(TEMP_VAR_Q_ARG);
-          arg2->temp = t2;
-
-          // quad_arg * arg3 = (quad_arg *)malloc(sizeof(quad_arg));
-          // arg3->type = TEMP_VAR_Q_ARG;
-          quad_arg * arg3 = create_quad_arg(TEMP_VAR_Q_ARG);
-          arg3->temp = t3;
-
-          gen_quad(ASSIGN_Q, arg3, arg1, NULL);
-          gen_quad(ASSIGN_Q, arg2, arg3, NULL);
-
-          t3->int_literal = t1->int_literal;
-
-          to_return = t3;
-
-          return to_return;
-        }
-
-      case OP_PLUS_N:
-        // new temp t1 = new_temp()
-        // new temp t2 = new_temp()
-        // new temp t3 = new_temp()
-        // t2 = CG(root->left_child->right_sibling)
-        // t3 = CG(root->left_child)
-        // GenQuad(ADD_Q, t1, t2, t3);
-        // return t1
-        {
-          printf("Found op plus\n");
-
-          temp_var * t1 = CG(root->left_child->right_sibling);
-          temp_var * t2 = CG(root->left_child);
-          temp_var * t3 = new_temp(temps_list);
-
-          // quad_arg * arg1 = (quad_arg *)malloc(sizeof(quad_arg));
-          // arg1->type = TEMP_VAR_Q_ARG;
-          quad_arg * arg1 = create_quad_arg(TEMP_VAR_Q_ARG);
-          arg1->temp = t1;
-
-          // quad_arg * arg2 = (quad_arg *)malloc(sizeof(quad_arg));
-          // arg2->type = TEMP_VAR_Q_ARG;
-          quad_arg * arg2 = create_quad_arg(TEMP_VAR_Q_ARG);
-          arg2->temp = t2;
-
-          // quad_arg * arg3 = (quad_arg *)malloc(sizeof(quad_arg));
-          // arg3->type = TEMP_VAR_Q_ARG;
-          quad_arg * arg3 = create_quad_arg(TEMP_VAR_Q_ARG);
-          arg3->temp = t3;
-
-          gen_quad(ADD_Q, arg3, arg1, arg2);
-
-          t3->int_literal = t1->int_literal + t2->int_literal;
-
-          to_return = t3;
-
-          return to_return;
-        }
-
-      case OP_MINUS_N:
-        // new temp t1 = new_temp()
-        // new temp t2 = new_temp()
-        // new temp t3 = new_temp()
-        // GenQuad(SUB_Q, t1, t2, t3);
-        // return t1
-        {
-          printf("Found op minus\n");
-
-          temp_var * t1 = CG(root->left_child->right_sibling);
-          temp_var * t2 = CG(root->left_child);
-          temp_var * t3 = new_temp(temps_list);
+  //     case IF_STMT_N:
+  //       // new temp t1 = new_temp()
+  //       // new label L_FI = new_label()
+  //       // t1 = CG(root->left_child)
+  //       // GenQuad(IFFALSE_Q, t1, L_FI, -)
+  //       // CG(root->left_child->right_sibling)
+  //       // new label L_FI = new_label()
+  //       // GenQuad(LABEL_Q, L_FI, -, -)
+  //       {
+  //         temp_var * t1 = CG(root->left_child);
+  //         char * label_fi = new_label(root, "FI");
+
+  //         quad_arg * arg1 = (quad_arg *)malloc(sizeof(quad_arg));
+  //         arg1->type = TEMP_VAR_Q_ARG;
+  //         arg1->temp = t1;
+
+  //         quad_arg * arg2 = (quad_arg *)malloc(sizeof(quad_arg));
+  //         arg2->type = LABEL_Q_ARG;
+  //         arg2->label = label_fi;
+
+  //         gen_quad(IFFALSE_Q, arg1, arg2, NULL);
+
+  //         CG(root->left_child->right_sibling);
+
+  //         gen_quad(LABEL_Q, arg2, NULL, NULL);
+
+  //         return to_return;
+  //       }
+
+  //     case IF_ELSE_STMT_N:
+  //       // new temp t1 = new_temp()
+  //       // new label L_ELSE = new_label()
+  //       // t1 = CG(root->left_child)
+  //       // GenQuad(IFFALSE_Q, t1, L_ELSE, -)
+  //       // CG(root->left_child->right_sibling)
+  //       // new label L_FI = new_label()
+  //       // GenQuad(GOTO_Q, L_FI, -, -)
+  //       // GenQuad(LABEL_Q, L_ELSE, -, -)
+  //       // CG(root->left_child->right_sibling->right_sibling)
+  //       // GenQuad(LABEL_Q, L_FI, -, -)
+  //       {
+  //         temp_var * t1 = CG(root->left_child);
+  //         char * label_else = new_label(root, "ELSE");
+  //         char * label_fi = new_label(root, "FI");
+
+  //         quad_arg * arg1 = (quad_arg *)malloc(sizeof(quad_arg));
+  //         arg1->type = TEMP_VAR_Q_ARG;
+  //         arg1->temp = t1;
+
+  //         quad_arg * fi_arg = (quad_arg *)malloc(sizeof(quad_arg));
+  //         fi_arg->type = LABEL_Q_ARG;
+  //         fi_arg->label = label_fi;
+
+  //         quad_arg * else_arg = (quad_arg *)malloc(sizeof(quad_arg));
+  //         else_arg->type = LABEL_Q_ARG;
+  //         else_arg->label = label_else;
+
+  //         gen_quad(IFFALSE_Q, arg1, else_arg, NULL);
+
+  //         CG(root->left_child->right_sibling);
+
+  //         gen_quad(GOTO_Q, fi_arg, NULL, NULL);
+
+  //         gen_quad(LABEL_Q, else_arg, NULL, NULL);
+
+  //         CG(root->left_child->right_sibling->right_sibling);
+
+  //         gen_quad(LABEL_Q, fi_arg, NULL, NULL);
+
+  //         return to_return;
+  //       }
+
+  //     case FOR_STMT_N:
+  //       // new label L_FOR_TEST = new_label()
+  //       // new label L_FOR_EXIT = new_label()
+  //       // CG(root->left_child) // FOR HEADER INIT
+  //       // GenQuad(LABEL_Q, L_FOR_TEST, -, -)
+  //       // new temp t1 = new_temp()
+  //       // t1 = CG(root->left_child->right_sibling) // FOR HEADER TEST
+  //       // GenQuad(IFFALSE_Q, t1, L_FOR_EXIT, -)
+  //       // CG(root->left_child->right_sibling->right_sibling->right_sibling) // FOR BODY
+  //       // CG(root->left_child->right_sibling->right_sibling) // FOR HEADER INC or DEC
+  //       // GenQuad(GOTO_Q, L_FOR_TEST, -, -)
+  //       // GenQuad(LABEL_Q, L_FOR_EXIT, -, -)
+  //       break;
+
+  //     case WHILE_N:
+  //       // new label L_WHILE_TEST = new_label()
+  //       // new label L_WHILE_EXIT = new_label()
+  //       // GenQuad(LABEL_Q, L_WHILE_TEST, -, -)
+  //       // new temp t1 = new_temp()
+  //       // t1 = CG(root->left_child)
+  //       // GenQuad(IFFALSE_Q, t1, L_WHILE_EXIT, -)
+  //       // CG(root->left_child->right_sibling)
+  //       // GenQuad(GOTO_Q, L_WHILE_TEST, -, -)
+  //       // GenQuad(LABEL_Q, L_WHILE_EXIT, -, -)
+  //       {
+  //         char * label_test = new_label(root, "WHILE_TEST");
+  //         char * label_exit = new_label(root, "WHILE_EXIT");
+
+  //         quad_arg * test_arg = (quad_arg *)malloc(sizeof(quad_arg));
+  //         test_arg->type = LABEL_Q_ARG;
+  //         test_arg->label = label_test;
 
-          // quad_arg * arg1 = (quad_arg *)malloc(sizeof(quad_arg));
-          // arg1->type = TEMP_VAR_Q_ARG;
-          quad_arg * arg1 = create_quad_arg(TEMP_VAR_Q_ARG);
-          arg1->temp = t1;
-
-          // quad_arg * arg2 = (quad_arg *)malloc(sizeof(quad_arg));
-          // arg2->type = TEMP_VAR_Q_ARG;
-          quad_arg * arg2 = create_quad_arg(TEMP_VAR_Q_ARG);
-          arg2->temp = t2;
-
-          // quad_arg * arg3 = (quad_arg *)malloc(sizeof(quad_arg));
-          // arg3->type = TEMP_VAR_Q_ARG;
-          quad_arg * arg3 = create_quad_arg(TEMP_VAR_Q_ARG);
-          arg3->temp = t3;
-
-          gen_quad(SUB_Q, arg3, arg1, arg2);
-
-          t3->int_literal = t1->int_literal - t2->int_literal;
-
-          to_return = t3;
-
-          return to_return;
-        }
-
-      case OP_TIMES_N:
-        // new temp t1 = new_temp()
-        // new temp t2 = new_temp()
-        // new temp t3 = new_temp()
-        // t2 = CG(root->left_child->right_sibling)
-        // t3 = CG(root->left_child)
-        // GenQuad(MUL_Q, t1, t2, t3);
-        // return t1
-        {
-          printf("Found op mult\n");
-
-          temp_var * t1 = CG(root->left_child->right_sibling);
-          temp_var * t2 = CG(root->left_child);
-          temp_var * t3 = new_temp(temps_list);
-
-          // quad_arg * arg1 = (quad_arg *)malloc(sizeof(quad_arg));
-          // arg1->type = TEMP_VAR_Q_ARG;
-          quad_arg * arg1 = create_quad_arg(TEMP_VAR_Q_ARG);
-          arg1->temp = t1;
-
-          // quad_arg * arg2 = (quad_arg *)malloc(sizeof(quad_arg));
-          // arg2->type = TEMP_VAR_Q_ARG;
-          quad_arg * arg2 = create_quad_arg(TEMP_VAR_Q_ARG);
-          arg2->temp = t2;
-
-          // quad_arg * arg3 = (quad_arg *)malloc(sizeof(quad_arg));
-          // arg3->type = TEMP_VAR_Q_ARG;
-          quad_arg * arg3 = create_quad_arg(TEMP_VAR_Q_ARG);
-          arg3->temp = t3;
-
-          gen_quad(MUL_Q, arg3, arg1, arg2);
-
-          t3->int_literal = t1->int_literal * t2->int_literal;
-
-          to_return = t3;
-
-          return to_return;
-        }
-
-      case OP_DIVIDE_N:
-        // new temp t1 = new_temp()
-        // new temp t2 = new_temp()
-        // new temp t3 = new_temp()
-        // t2 = CG(root->left_child->right_sibling)
-        // t3 = CG(root->left_child)
-        // GenQuad(DIV_Q, t1, t2, t3);
-        // return t1
-        {
-          printf("Found op divide\n");
-
-          temp_var * t1 = CG(root->left_child->right_sibling);
-          temp_var * t2 = CG(root->left_child);
-          temp_var * t3 = new_temp(temps_list);
-
-          // quad_arg * arg1 = (quad_arg *)malloc(sizeof(quad_arg));
-          // arg1->type = TEMP_VAR_Q_ARG;
-          quad_arg * arg1 = create_quad_arg(TEMP_VAR_Q_ARG);
-          arg1->temp = t1;
-
-          // quad_arg * arg2 = (quad_arg *)malloc(sizeof(quad_arg));
-          // arg2->type = TEMP_VAR_Q_ARG;
-          quad_arg * arg2 = create_quad_arg(TEMP_VAR_Q_ARG);
-          arg2->temp = t2;
-
-          // quad_arg * arg3 = (quad_arg *)malloc(sizeof(quad_arg));
-          // arg3->type = TEMP_VAR_Q_ARG;
-          quad_arg * arg3 = create_quad_arg(TEMP_VAR_Q_ARG);
-          arg3->temp = t3;
-
-          gen_quad(DIV_Q, arg3, arg1, arg2);
-
-          t3->int_literal = t1->int_literal / t2->int_literal;
-
-          to_return = t3;
-
-          return to_return;
-        }
-
-      case OP_MOD_N:
-        // new temp t1 = new_temp()
-        // new temp t2 = new_temp()
-        // new temp t3 = new_temp()
-        // t2 = CG(root->left_child->right_sibling)
-        // t3 = CG(root->left_child)
-        // GenQuad(MOD_Q, t1, t2, t3);
-        // return t1
-        {
-          printf("Found op mod\n");
-
-          temp_var * t1 = CG(root->left_child->right_sibling);
-          temp_var * t2 = CG(root->left_child);
-          temp_var * t3 = new_temp(temps_list);
-
-          // quad_arg * arg1 = (quad_arg *)malloc(sizeof(quad_arg));
-          // arg1->type = TEMP_VAR_Q_ARG;
-          quad_arg * arg1 = create_quad_arg(TEMP_VAR_Q_ARG);
-          arg1->temp = t1;
-
-          // quad_arg * arg2 = (quad_arg *)malloc(sizeof(quad_arg));
-          // arg2->type = TEMP_VAR_Q_ARG;
-          quad_arg * arg2 = create_quad_arg(TEMP_VAR_Q_ARG);
-          arg2->temp = t2;
-
-          // quad_arg * arg3 = (quad_arg *)malloc(sizeof(quad_arg));
-          // arg3->type = TEMP_VAR_Q_ARG;
-          quad_arg * arg3 = create_quad_arg(TEMP_VAR_Q_ARG);
-          arg3->temp = t3;
-
-          gen_quad(MOD_Q, arg3, arg1, arg2);
-
-          t3->int_literal = t1->int_literal % t2->int_literal;
-
-          to_return = t3;
-
-          return to_return;
-        }
-
-      case OP_INC_N:
-        // new temp t1 = new_temp()
-        // new temp t2 = new_temp()
-        // t1 = CG(root->left_child)
-        // GenQuad(ADD_Q, t2, t1, 1)
-        // return t2
-        {
-          printf("Found op increment\n");
-
-          temp_var * t1 = CG(root->left_child);
-          temp_var * t2 = new_temp(temps_list);
-
-          // quad_arg * arg1 = (quad_arg *)malloc(sizeof(quad_arg));
-          // arg1->type = TEMP_VAR_Q_ARG;
-          quad_arg * arg1 = create_quad_arg(TEMP_VAR_Q_ARG);
-          arg1->temp = t1;
-
-          // quad_arg * arg2 = (quad_arg *)malloc(sizeof(quad_arg));
-          // arg2->type = TEMP_VAR_Q_ARG;
-          quad_arg * arg2 = create_quad_arg(TEMP_VAR_Q_ARG);
-          arg2->temp = t2;
-
-          // quad_arg * arg3 = (quad_arg *)malloc(sizeof(quad_arg));
-          // arg3->type = INT_LITERAL_Q_ARG;
-          quad_arg * arg3 = create_quad_arg(INT_LITERAL_Q_ARG);
-          arg3->int_literal = 1;
-
-          gen_quad(ADD_Q, arg2, arg1, arg3);
-
-          break;
-        }
-
-      case OP_DECR_N:
-        // new temp t1 = new_temp()
-        // new temp t2 = new_temp()
-        // t1 = CG(root->left_child)
-        // GenQuad(SUB_Q, t2, t1, 1)
-        // return t2
-        {
-          printf("Found op decrement\n");
-
-          temp_var * t1 = CG(root->left_child);
-          temp_var * t2 = new_temp(temps_list);
-
-          // quad_arg * arg1 = (quad_arg *)malloc(sizeof(quad_arg));
-          // arg1->type = TEMP_VAR_Q_ARG;
-          quad_arg * arg1 = create_quad_arg(TEMP_VAR_Q_ARG);
-          arg1->temp = t1;
-
-          // quad_arg * arg2 = (quad_arg *)malloc(sizeof(quad_arg));
-          // arg2->type = TEMP_VAR_Q_ARG;
-          quad_arg * arg2 = create_quad_arg(TEMP_VAR_Q_ARG);
-          arg2->temp = t2;
-
-          // quad_arg * arg3 = (quad_arg *)malloc(sizeof(quad_arg));
-          // arg3->type = INT_LITERAL_Q_ARG;
-          quad_arg * arg3 = create_quad_arg(INT_LITERAL_Q_ARG);
-          arg3->int_literal = 1;
-
-          gen_quad(SUB_Q, arg2, arg1, arg3);
+  //         quad_arg * exit_arg = (quad_arg *)malloc(sizeof(quad_arg));
+  //         exit_arg->type = LABEL_Q_ARG;
+  //         exit_arg->label = label_exit;
+
+  //         gen_quad(LABEL_Q, test_arg, NULL, NULL);
+
+  //         temp_var * t1 = CG(root->left_child);
+
+  //         quad_arg * arg1 = (quad_arg *)malloc(sizeof(quad_arg));
+  //         arg1->type = TEMP_VAR_Q_ARG;
+  //         arg1->temp = t1;
+
+  //         gen_quad(IFFALSE_Q, arg1, exit_arg, NULL);
+
+  //         CG(root->left_child->right_sibling);
+
+  //         gen_quad(GOTO_Q, test_arg, NULL, NULL);
+  //         gen_quad(LABEL_Q, exit_arg, NULL, NULL);
+
+  //         return to_return;
+  //       }
+
+  //     case OP_ASSIGN_N:
+  //       // new temp t1 = new_temp()
+  //       // new temp t2 = new_temp()
+  //       // new temp t3 = new_temp()
+  //       // t2 = CG(root->left_child->right_sibling)
+  //       // t3 = CG(root->left_child)
+  //       // GenQuad(ASSIGN_Q, t1, t2)
+  //       // GenQuad(ASSIGN_Q, t3, t1)
+  //       // return t3
+  //       {
+  //         printf("Found assign\n");
+
+  //         temp_var * t1 = CG(root->left_child->right_sibling);
+  //         temp_var * t2 = CG(root->left_child);
+  //         temp_var * t3 = new_temp(temps_list);
+
+  //         // quad_arg * arg1 = (quad_arg *)malloc(sizeof(quad_arg));
+  //         // arg1->type = TEMP_VAR_Q_ARG;
+  //         quad_arg * arg1 = create_quad_arg(TEMP_VAR_Q_ARG);
+  //         arg1->temp = t1;
+
+  //         // quad_arg * arg2 = (quad_arg *)malloc(sizeof(quad_arg));
+  //         // arg2->type = TEMP_VAR_Q_ARG;
+  //         quad_arg * arg2 = create_quad_arg(TEMP_VAR_Q_ARG);
+  //         arg2->temp = t2;
+
+  //         // quad_arg * arg3 = (quad_arg *)malloc(sizeof(quad_arg));
+  //         // arg3->type = TEMP_VAR_Q_ARG;
+  //         quad_arg * arg3 = create_quad_arg(TEMP_VAR_Q_ARG);
+  //         arg3->temp = t3;
+
+  //         gen_quad(ASSIGN_Q, arg3, arg1, NULL);
+  //         gen_quad(ASSIGN_Q, arg2, arg3, NULL);
+
+  //         t3->int_literal = t1->int_literal;
+
+  //         to_return = t3;
+
+  //         return to_return;
+  //       }
+
+  //     case OP_PLUS_N:
+  //       // new temp t1 = new_temp()
+  //       // new temp t2 = new_temp()
+  //       // new temp t3 = new_temp()
+  //       // t2 = CG(root->left_child->right_sibling)
+  //       // t3 = CG(root->left_child)
+  //       // GenQuad(ADD_Q, t1, t2, t3);
+  //       // return t1
+  //       {
+  //         printf("Found op plus\n");
+
+  //         temp_var * t1 = CG(root->left_child->right_sibling);
+  //         temp_var * t2 = CG(root->left_child);
+  //         temp_var * t3 = new_temp(temps_list);
+
+  //         // quad_arg * arg1 = (quad_arg *)malloc(sizeof(quad_arg));
+  //         // arg1->type = TEMP_VAR_Q_ARG;
+  //         quad_arg * arg1 = create_quad_arg(TEMP_VAR_Q_ARG);
+  //         arg1->temp = t1;
+
+  //         // quad_arg * arg2 = (quad_arg *)malloc(sizeof(quad_arg));
+  //         // arg2->type = TEMP_VAR_Q_ARG;
+  //         quad_arg * arg2 = create_quad_arg(TEMP_VAR_Q_ARG);
+  //         arg2->temp = t2;
+
+  //         // quad_arg * arg3 = (quad_arg *)malloc(sizeof(quad_arg));
+  //         // arg3->type = TEMP_VAR_Q_ARG;
+  //         quad_arg * arg3 = create_quad_arg(TEMP_VAR_Q_ARG);
+  //         arg3->temp = t3;
+
+  //         gen_quad(ADD_Q, arg3, arg1, arg2);
+
+  //         t3->int_literal = t1->int_literal + t2->int_literal;
+
+  //         to_return = t3;
+
+  //         return to_return;
+  //       }
+
+  //     case OP_MINUS_N:
+  //       // new temp t1 = new_temp()
+  //       // new temp t2 = new_temp()
+  //       // new temp t3 = new_temp()
+  //       // GenQuad(SUB_Q, t1, t2, t3);
+  //       // return t1
+  //       {
+  //         printf("Found op minus\n");
+
+  //         temp_var * t1 = CG(root->left_child->right_sibling);
+  //         temp_var * t2 = CG(root->left_child);
+  //         temp_var * t3 = new_temp(temps_list);
+
+  //         // quad_arg * arg1 = (quad_arg *)malloc(sizeof(quad_arg));
+  //         // arg1->type = TEMP_VAR_Q_ARG;
+  //         quad_arg * arg1 = create_quad_arg(TEMP_VAR_Q_ARG);
+  //         arg1->temp = t1;
+
+  //         // quad_arg * arg2 = (quad_arg *)malloc(sizeof(quad_arg));
+  //         // arg2->type = TEMP_VAR_Q_ARG;
+  //         quad_arg * arg2 = create_quad_arg(TEMP_VAR_Q_ARG);
+  //         arg2->temp = t2;
+
+  //         // quad_arg * arg3 = (quad_arg *)malloc(sizeof(quad_arg));
+  //         // arg3->type = TEMP_VAR_Q_ARG;
+  //         quad_arg * arg3 = create_quad_arg(TEMP_VAR_Q_ARG);
+  //         arg3->temp = t3;
+
+  //         gen_quad(SUB_Q, arg3, arg1, arg2);
+
+  //         t3->int_literal = t1->int_literal - t2->int_literal;
+
+  //         to_return = t3;
+
+  //         return to_return;
+  //       }
+
+  //     case OP_TIMES_N:
+  //       // new temp t1 = new_temp()
+  //       // new temp t2 = new_temp()
+  //       // new temp t3 = new_temp()
+  //       // t2 = CG(root->left_child->right_sibling)
+  //       // t3 = CG(root->left_child)
+  //       // GenQuad(MUL_Q, t1, t2, t3);
+  //       // return t1
+  //       {
+  //         printf("Found op mult\n");
+
+  //         temp_var * t1 = CG(root->left_child->right_sibling);
+  //         temp_var * t2 = CG(root->left_child);
+  //         temp_var * t3 = new_temp(temps_list);
+
+  //         // quad_arg * arg1 = (quad_arg *)malloc(sizeof(quad_arg));
+  //         // arg1->type = TEMP_VAR_Q_ARG;
+  //         quad_arg * arg1 = create_quad_arg(TEMP_VAR_Q_ARG);
+  //         arg1->temp = t1;
+
+  //         // quad_arg * arg2 = (quad_arg *)malloc(sizeof(quad_arg));
+  //         // arg2->type = TEMP_VAR_Q_ARG;
+  //         quad_arg * arg2 = create_quad_arg(TEMP_VAR_Q_ARG);
+  //         arg2->temp = t2;
+
+  //         // quad_arg * arg3 = (quad_arg *)malloc(sizeof(quad_arg));
+  //         // arg3->type = TEMP_VAR_Q_ARG;
+  //         quad_arg * arg3 = create_quad_arg(TEMP_VAR_Q_ARG);
+  //         arg3->temp = t3;
+
+  //         gen_quad(MUL_Q, arg3, arg1, arg2);
+
+  //         t3->int_literal = t1->int_literal * t2->int_literal;
+
+  //         to_return = t3;
+
+  //         return to_return;
+  //       }
+
+  //     case OP_DIVIDE_N:
+  //       // new temp t1 = new_temp()
+  //       // new temp t2 = new_temp()
+  //       // new temp t3 = new_temp()
+  //       // t2 = CG(root->left_child->right_sibling)
+  //       // t3 = CG(root->left_child)
+  //       // GenQuad(DIV_Q, t1, t2, t3);
+  //       // return t1
+  //       {
+  //         printf("Found op divide\n");
+
+  //         temp_var * t1 = CG(root->left_child->right_sibling);
+  //         temp_var * t2 = CG(root->left_child);
+  //         temp_var * t3 = new_temp(temps_list);
+
+  //         // quad_arg * arg1 = (quad_arg *)malloc(sizeof(quad_arg));
+  //         // arg1->type = TEMP_VAR_Q_ARG;
+  //         quad_arg * arg1 = create_quad_arg(TEMP_VAR_Q_ARG);
+  //         arg1->temp = t1;
+
+  //         // quad_arg * arg2 = (quad_arg *)malloc(sizeof(quad_arg));
+  //         // arg2->type = TEMP_VAR_Q_ARG;
+  //         quad_arg * arg2 = create_quad_arg(TEMP_VAR_Q_ARG);
+  //         arg2->temp = t2;
+
+  //         // quad_arg * arg3 = (quad_arg *)malloc(sizeof(quad_arg));
+  //         // arg3->type = TEMP_VAR_Q_ARG;
+  //         quad_arg * arg3 = create_quad_arg(TEMP_VAR_Q_ARG);
+  //         arg3->temp = t3;
+
+  //         gen_quad(DIV_Q, arg3, arg1, arg2);
+
+  //         t3->int_literal = t1->int_literal / t2->int_literal;
+
+  //         to_return = t3;
+
+  //         return to_return;
+  //       }
+
+  //     case OP_MOD_N:
+  //       // new temp t1 = new_temp()
+  //       // new temp t2 = new_temp()
+  //       // new temp t3 = new_temp()
+  //       // t2 = CG(root->left_child->right_sibling)
+  //       // t3 = CG(root->left_child)
+  //       // GenQuad(MOD_Q, t1, t2, t3);
+  //       // return t1
+  //       {
+  //         printf("Found op mod\n");
+
+  //         temp_var * t1 = CG(root->left_child->right_sibling);
+  //         temp_var * t2 = CG(root->left_child);
+  //         temp_var * t3 = new_temp(temps_list);
+
+  //         // quad_arg * arg1 = (quad_arg *)malloc(sizeof(quad_arg));
+  //         // arg1->type = TEMP_VAR_Q_ARG;
+  //         quad_arg * arg1 = create_quad_arg(TEMP_VAR_Q_ARG);
+  //         arg1->temp = t1;
+
+  //         // quad_arg * arg2 = (quad_arg *)malloc(sizeof(quad_arg));
+  //         // arg2->type = TEMP_VAR_Q_ARG;
+  //         quad_arg * arg2 = create_quad_arg(TEMP_VAR_Q_ARG);
+  //         arg2->temp = t2;
+
+  //         // quad_arg * arg3 = (quad_arg *)malloc(sizeof(quad_arg));
+  //         // arg3->type = TEMP_VAR_Q_ARG;
+  //         quad_arg * arg3 = create_quad_arg(TEMP_VAR_Q_ARG);
+  //         arg3->temp = t3;
+
+  //         gen_quad(MOD_Q, arg3, arg1, arg2);
+
+  //         t3->int_literal = t1->int_literal % t2->int_literal;
+
+  //         to_return = t3;
+
+  //         return to_return;
+  //       }
+
+  //     case OP_INC_N:
+  //       // new temp t1 = new_temp()
+  //       // new temp t2 = new_temp()
+  //       // t1 = CG(root->left_child)
+  //       // GenQuad(ADD_Q, t2, t1, 1)
+  //       // return t2
+  //       {
+  //         printf("Found op increment\n");
+
+  //         temp_var * t1 = CG(root->left_child);
+  //         temp_var * t2 = new_temp(temps_list);
+
+  //         // quad_arg * arg1 = (quad_arg *)malloc(sizeof(quad_arg));
+  //         // arg1->type = TEMP_VAR_Q_ARG;
+  //         quad_arg * arg1 = create_quad_arg(TEMP_VAR_Q_ARG);
+  //         arg1->temp = t1;
+
+  //         // quad_arg * arg2 = (quad_arg *)malloc(sizeof(quad_arg));
+  //         // arg2->type = TEMP_VAR_Q_ARG;
+  //         quad_arg * arg2 = create_quad_arg(TEMP_VAR_Q_ARG);
+  //         arg2->temp = t2;
+
+  //         // quad_arg * arg3 = (quad_arg *)malloc(sizeof(quad_arg));
+  //         // arg3->type = INT_LITERAL_Q_ARG;
+  //         quad_arg * arg3 = create_quad_arg(INT_LITERAL_Q_ARG);
+  //         arg3->int_literal = 1;
+
+  //         gen_quad(ADD_Q, arg2, arg1, arg3);
+
+  //         break;
+  //       }
+
+  //     case OP_DECR_N:
+  //       // new temp t1 = new_temp()
+  //       // new temp t2 = new_temp()
+  //       // t1 = CG(root->left_child)
+  //       // GenQuad(SUB_Q, t2, t1, 1)
+  //       // return t2
+  //       {
+  //         printf("Found op decrement\n");
+
+  //         temp_var * t1 = CG(root->left_child);
+  //         temp_var * t2 = new_temp(temps_list);
+
+  //         // quad_arg * arg1 = (quad_arg *)malloc(sizeof(quad_arg));
+  //         // arg1->type = TEMP_VAR_Q_ARG;
+  //         quad_arg * arg1 = create_quad_arg(TEMP_VAR_Q_ARG);
+  //         arg1->temp = t1;
+
+  //         // quad_arg * arg2 = (quad_arg *)malloc(sizeof(quad_arg));
+  //         // arg2->type = TEMP_VAR_Q_ARG;
+  //         quad_arg * arg2 = create_quad_arg(TEMP_VAR_Q_ARG);
+  //         arg2->temp = t2;
+
+  //         // quad_arg * arg3 = (quad_arg *)malloc(sizeof(quad_arg));
+  //         // arg3->type = INT_LITERAL_Q_ARG;
+  //         quad_arg * arg3 = create_quad_arg(INT_LITERAL_Q_ARG);
+  //         arg3->int_literal = 1;
+
+  //         gen_quad(SUB_Q, arg2, arg1, arg3);
           
-          break;
-        }
+  //         break;
+  //       }
 
-      case OP_EQ_N:
-        // new temp t1 = new_temp()
-        // new temp t2 = new_temp()
-        // new temp t3 = new_temp()
-        // t1 = CG(root->left_child)
-        // t2 = CG(root->left_child->right_sibling)
-        // GenQuad(EQ_Q, t3, t1, t2)
-        // return t3
-        {
+  //     case OP_EQ_N:
+  //       // new temp t1 = new_temp()
+  //       // new temp t2 = new_temp()
+  //       // new temp t3 = new_temp()
+  //       // t1 = CG(root->left_child)
+  //       // t2 = CG(root->left_child->right_sibling)
+  //       // GenQuad(EQ_Q, t3, t1, t2)
+  //       // return t3
+  //       {
      
-          printf("Found op equals\n");
+  //         printf("Found op equals\n");
 
-          temp_var * t1 = CG(root->left_child->right_sibling);
-          temp_var * t2 = CG(root->left_child);
-          temp_var * t3 = new_temp(temps_list);
+  //         temp_var * t1 = CG(root->left_child->right_sibling);
+  //         temp_var * t2 = CG(root->left_child);
+  //         temp_var * t3 = new_temp(temps_list);
 
-          // quad_arg * arg1 = (quad_arg *)malloc(sizeof(quad_arg));
-          // arg1->type = TEMP_VAR_Q_ARG;
-          quad_arg * arg1 = create_quad_arg(TEMP_VAR_Q_ARG);
-          arg1->temp = t1;
+  //         // quad_arg * arg1 = (quad_arg *)malloc(sizeof(quad_arg));
+  //         // arg1->type = TEMP_VAR_Q_ARG;
+  //         quad_arg * arg1 = create_quad_arg(TEMP_VAR_Q_ARG);
+  //         arg1->temp = t1;
 
-          // quad_arg * arg2 = (quad_arg *)malloc(sizeof(quad_arg));
-          // arg2->type = TEMP_VAR_Q_ARG;
-          quad_arg * arg2 = create_quad_arg(TEMP_VAR_Q_ARG);
-          arg2->temp = t2;
+  //         // quad_arg * arg2 = (quad_arg *)malloc(sizeof(quad_arg));
+  //         // arg2->type = TEMP_VAR_Q_ARG;
+  //         quad_arg * arg2 = create_quad_arg(TEMP_VAR_Q_ARG);
+  //         arg2->temp = t2;
 
-          // quad_arg * arg3 = (quad_arg *)malloc(sizeof(quad_arg));
-          // arg3->type = TEMP_VAR_Q_ARG;
-          quad_arg * arg3 = create_quad_arg(TEMP_VAR_Q_ARG);
-          arg3->temp = t3;
+  //         // quad_arg * arg3 = (quad_arg *)malloc(sizeof(quad_arg));
+  //         // arg3->type = TEMP_VAR_Q_ARG;
+  //         quad_arg * arg3 = create_quad_arg(TEMP_VAR_Q_ARG);
+  //         arg3->temp = t3;
 
-          gen_quad(EQ_Q, arg3, arg1, arg2);
+  //         gen_quad(EQ_Q, arg3, arg1, arg2);
 
-          /* ? */
-          if (t1->int_literal == t2->int_literal) {
-            t3->int_literal = 1;
-          } else {
-            t3->int_literal = 0;
-          }
+  //         /* ? */
+  //         if (t1->int_literal == t2->int_literal) {
+  //           t3->int_literal = 1;
+  //         } else {
+  //           t3->int_literal = 0;
+  //         }
 
-          to_return = t3;
+  //         to_return = t3;
 
-          return to_return;
-        }
+  //         return to_return;
+  //       }
 
-      case OP_NE_N:
-        // new temp t1 = new_temp()
-        // new temp t2 = new_temp()
-        // new temp t3 = new_temp()
-        // t1 = CG(root->left_child)
-        // t2 = CG(root->left_child->right_sibling)
-        // GenQuad(NE_Q, t3, t1, t2)
-        // return t3
-        {
+  //     case OP_NE_N:
+  //       // new temp t1 = new_temp()
+  //       // new temp t2 = new_temp()
+  //       // new temp t3 = new_temp()
+  //       // t1 = CG(root->left_child)
+  //       // t2 = CG(root->left_child->right_sibling)
+  //       // GenQuad(NE_Q, t3, t1, t2)
+  //       // return t3
+  //       {
      
-          printf("Found op not equals\n");
+  //         printf("Found op not equals\n");
 
-          temp_var * t1 = CG(root->left_child->right_sibling);
-          temp_var * t2 = CG(root->left_child);
-          temp_var * t3 = new_temp(temps_list);
+  //         temp_var * t1 = CG(root->left_child->right_sibling);
+  //         temp_var * t2 = CG(root->left_child);
+  //         temp_var * t3 = new_temp(temps_list);
 
-          quad_arg * arg1 = (quad_arg *)malloc(sizeof(quad_arg));
-          arg1->type = TEMP_VAR_Q_ARG;
-          arg1->temp = t1;
+  //         quad_arg * arg1 = (quad_arg *)malloc(sizeof(quad_arg));
+  //         arg1->type = TEMP_VAR_Q_ARG;
+  //         arg1->temp = t1;
 
-          quad_arg * arg2 = (quad_arg *)malloc(sizeof(quad_arg));
-          arg2->type = TEMP_VAR_Q_ARG;
-          arg2->temp = t2;
+  //         quad_arg * arg2 = (quad_arg *)malloc(sizeof(quad_arg));
+  //         arg2->type = TEMP_VAR_Q_ARG;
+  //         arg2->temp = t2;
 
-          quad_arg * arg3 = (quad_arg *)malloc(sizeof(quad_arg));
-          arg3->type = TEMP_VAR_Q_ARG;
-          arg3->temp = t3;
+  //         quad_arg * arg3 = (quad_arg *)malloc(sizeof(quad_arg));
+  //         arg3->type = TEMP_VAR_Q_ARG;
+  //         arg3->temp = t3;
 
-          gen_quad(NE_Q, arg3, arg1, arg2);
+  //         gen_quad(NE_Q, arg3, arg1, arg2);
 
-          if (t1->int_literal != t2->int_literal) {
-            t3->int_literal = 1;
-          } else {
-            t3->int_literal = 0;
-          }
+  //         if (t1->int_literal != t2->int_literal) {
+  //           t3->int_literal = 1;
+  //         } else {
+  //           t3->int_literal = 0;
+  //         }
 
-          to_return = t3;
+  //         to_return = t3;
 
-          return to_return;
-        }
+  //         return to_return;
+  //       }
 
-      case OP_LT_N:
-        // new temp t1 = new_temp()
-        // new temp t2 = new_temp()
-        // new temp t3 = new_temp()
-        // t1 = CG(root->left_child)
-        // t2 = CG(root->left_child->right_sibling)
-        // GenQuad(LT_Q, t3, t1, t2)
-        // return t3
-        {
+  //     case OP_LT_N:
+  //       // new temp t1 = new_temp()
+  //       // new temp t2 = new_temp()
+  //       // new temp t3 = new_temp()
+  //       // t1 = CG(root->left_child)
+  //       // t2 = CG(root->left_child->right_sibling)
+  //       // GenQuad(LT_Q, t3, t1, t2)
+  //       // return t3
+  //       {
      
-          printf("Found op less than\n");
+  //         printf("Found op less than\n");
 
-          temp_var * t1 = CG(root->left_child->right_sibling);
-          printf("RHS Val: %d\n", t1->int_literal);
-          temp_var * t2 = CG(root->left_child);
-          printf("LHS Val: %s\n", t2->var_id);
-          temp_var * t3 = new_temp(temps_list);
+  //         temp_var * t1 = CG(root->left_child->right_sibling);
+  //         printf("RHS Val: %d\n", t1->int_literal);
+  //         temp_var * t2 = CG(root->left_child);
+  //         printf("LHS Val: %s\n", t2->var_id);
+  //         temp_var * t3 = new_temp(temps_list);
 
-          quad_arg * arg1 = (quad_arg *)malloc(sizeof(quad_arg));
-          arg1->type = TEMP_VAR_Q_ARG;
-          arg1->temp = t1;
+  //         quad_arg * arg1 = (quad_arg *)malloc(sizeof(quad_arg));
+  //         arg1->type = TEMP_VAR_Q_ARG;
+  //         arg1->temp = t1;
 
-          quad_arg * arg2 = (quad_arg *)malloc(sizeof(quad_arg));
-          arg2->type = TEMP_VAR_Q_ARG;
-          arg2->temp = t2;
+  //         quad_arg * arg2 = (quad_arg *)malloc(sizeof(quad_arg));
+  //         arg2->type = TEMP_VAR_Q_ARG;
+  //         arg2->temp = t2;
 
-          quad_arg * arg3 = (quad_arg *)malloc(sizeof(quad_arg));
-          arg3->type = TEMP_VAR_Q_ARG;
-          arg3->temp = t3;
+  //         quad_arg * arg3 = (quad_arg *)malloc(sizeof(quad_arg));
+  //         arg3->type = TEMP_VAR_Q_ARG;
+  //         arg3->temp = t3;
 
-          gen_quad(LT_Q, arg3, arg1, arg2);
+  //         gen_quad(LT_Q, arg3, arg1, arg2);
 
-          if (t1->int_literal < t2->int_literal) {
-            t3->int_literal = 1;
-          } else {
-            t3->int_literal = 0;
-          }
+  //         if (t1->int_literal < t2->int_literal) {
+  //           t3->int_literal = 1;
+  //         } else {
+  //           t3->int_literal = 0;
+  //         }
 
-          to_return = t3;
+  //         to_return = t3;
 
-          return to_return;
-        }
+  //         return to_return;
+  //       }
 
-      case OP_GT_N:
-        // new temp t1 = new_temp()
-        // new temp t2 = new_temp()
-        // new temp t3 = new_temp()
-        // t1 = CG(root->left_child)
-        // t2 = CG(root->left_child->right_sibling)
-        // GenQuad(GT_Q, t3, t1, t2)
-        // return t3
-       {
+  //     case OP_GT_N:
+  //       // new temp t1 = new_temp()
+  //       // new temp t2 = new_temp()
+  //       // new temp t3 = new_temp()
+  //       // t1 = CG(root->left_child)
+  //       // t2 = CG(root->left_child->right_sibling)
+  //       // GenQuad(GT_Q, t3, t1, t2)
+  //       // return t3
+  //      {
      
-          printf("Found op greater than\n");
+  //         printf("Found op greater than\n");
 
-          temp_var * t1 = CG(root->left_child->right_sibling);
-          temp_var * t2 = CG(root->left_child);
-          temp_var * t3 = new_temp(temps_list);
+  //         temp_var * t1 = CG(root->left_child->right_sibling);
+  //         temp_var * t2 = CG(root->left_child);
+  //         temp_var * t3 = new_temp(temps_list);
 
-          quad_arg * arg1 = (quad_arg *)malloc(sizeof(quad_arg));
-          arg1->type = TEMP_VAR_Q_ARG;
-          arg1->temp = t1;
+  //         quad_arg * arg1 = (quad_arg *)malloc(sizeof(quad_arg));
+  //         arg1->type = TEMP_VAR_Q_ARG;
+  //         arg1->temp = t1;
 
-          quad_arg * arg2 = (quad_arg *)malloc(sizeof(quad_arg));
-          arg2->type = TEMP_VAR_Q_ARG;
-          arg2->temp = t2;
+  //         quad_arg * arg2 = (quad_arg *)malloc(sizeof(quad_arg));
+  //         arg2->type = TEMP_VAR_Q_ARG;
+  //         arg2->temp = t2;
 
-          quad_arg * arg3 = (quad_arg *)malloc(sizeof(quad_arg));
-          arg3->type = TEMP_VAR_Q_ARG;
-          arg3->temp = t3;
+  //         quad_arg * arg3 = (quad_arg *)malloc(sizeof(quad_arg));
+  //         arg3->type = TEMP_VAR_Q_ARG;
+  //         arg3->temp = t3;
 
-          gen_quad(GT_Q, arg3, arg1, arg2);
+  //         gen_quad(GT_Q, arg3, arg1, arg2);
 
-          if (t1->int_literal > t2->int_literal) {
-            t3->int_literal = 1;
-          } else {
-            t3->int_literal = 0;
-          }
+  //         if (t1->int_literal > t2->int_literal) {
+  //           t3->int_literal = 1;
+  //         } else {
+  //           t3->int_literal = 0;
+  //         }
 
-          to_return = t3;
+  //         to_return = t3;
 
-          return to_return;
-        }
+  //         return to_return;
+  //       }
 
-      case OP_GTE_N:
-        // new temp t1 = new_temp()
-        // new temp t2 = new_temp()
-        // new temp t3 = new_temp()
-        // t1 = CG(root->left_child)
-        // t2 = CG(root->left_child->right_sibling)
-        // GenQuad(GTE_Q, t3, t1, t2)
-        // return t3
-        {
+  //     case OP_GTE_N:
+  //       // new temp t1 = new_temp()
+  //       // new temp t2 = new_temp()
+  //       // new temp t3 = new_temp()
+  //       // t1 = CG(root->left_child)
+  //       // t2 = CG(root->left_child->right_sibling)
+  //       // GenQuad(GTE_Q, t3, t1, t2)
+  //       // return t3
+  //       {
      
-          printf("Found op greater than or equal to\n");
+  //         printf("Found op greater than or equal to\n");
 
-          temp_var * t1 = CG(root->left_child->right_sibling);
-          temp_var * t2 = CG(root->left_child);
-          temp_var * t3 = new_temp(temps_list);
+  //         temp_var * t1 = CG(root->left_child->right_sibling);
+  //         temp_var * t2 = CG(root->left_child);
+  //         temp_var * t3 = new_temp(temps_list);
 
-          quad_arg * arg1 = (quad_arg *)malloc(sizeof(quad_arg));
-          arg1->type = TEMP_VAR_Q_ARG;
-          arg1->temp = t1;
+  //         quad_arg * arg1 = (quad_arg *)malloc(sizeof(quad_arg));
+  //         arg1->type = TEMP_VAR_Q_ARG;
+  //         arg1->temp = t1;
 
-          quad_arg * arg2 = (quad_arg *)malloc(sizeof(quad_arg));
-          arg2->type = TEMP_VAR_Q_ARG;
-          arg2->temp = t2;
+  //         quad_arg * arg2 = (quad_arg *)malloc(sizeof(quad_arg));
+  //         arg2->type = TEMP_VAR_Q_ARG;
+  //         arg2->temp = t2;
 
-          quad_arg * arg3 = (quad_arg *)malloc(sizeof(quad_arg));
-          arg3->type = TEMP_VAR_Q_ARG;
-          arg3->temp = t3;
+  //         quad_arg * arg3 = (quad_arg *)malloc(sizeof(quad_arg));
+  //         arg3->type = TEMP_VAR_Q_ARG;
+  //         arg3->temp = t3;
 
-          gen_quad(GTE_Q, arg3, arg1, arg2);
+  //         gen_quad(GTE_Q, arg3, arg1, arg2);
 
-          if (t1->int_literal >= t2->int_literal) {
-            t3->int_literal = 1;
-          } else {
-            t3->int_literal = 0;
-          }
+  //         if (t1->int_literal >= t2->int_literal) {
+  //           t3->int_literal = 1;
+  //         } else {
+  //           t3->int_literal = 0;
+  //         }
 
-          to_return = t3;
+  //         to_return = t3;
 
-          return to_return;
-        }
+  //         return to_return;
+  //       }
 
-      case OP_LTE_N:
-        // new temp t1 = new_temp()
-        // new temp t2 = new_temp()
-        // new temp t3 = new_temp()
-        // t1 = CG(root->left_child)
-        // t2 = CG(root->left_child->right_sibling)
-        // GenQuad(LTE_Q, t3, t1, t2)
-        // return t3
-        {
+  //     case OP_LTE_N:
+  //       // new temp t1 = new_temp()
+  //       // new temp t2 = new_temp()
+  //       // new temp t3 = new_temp()
+  //       // t1 = CG(root->left_child)
+  //       // t2 = CG(root->left_child->right_sibling)
+  //       // GenQuad(LTE_Q, t3, t1, t2)
+  //       // return t3
+  //       {
      
-          printf("Found op less than or equal to\n");
+  //         printf("Found op less than or equal to\n");
 
-          temp_var * t1 = CG(root->left_child->right_sibling);
-          temp_var * t2 = CG(root->left_child);
-          temp_var * t3 = new_temp(temps_list);
+  //         temp_var * t1 = CG(root->left_child->right_sibling);
+  //         temp_var * t2 = CG(root->left_child);
+  //         temp_var * t3 = new_temp(temps_list);
 
-          quad_arg * arg1 = (quad_arg *)malloc(sizeof(quad_arg));
-          arg1->type = TEMP_VAR_Q_ARG;
-          arg1->temp = t1;
+  //         quad_arg * arg1 = (quad_arg *)malloc(sizeof(quad_arg));
+  //         arg1->type = TEMP_VAR_Q_ARG;
+  //         arg1->temp = t1;
 
-          quad_arg * arg2 = (quad_arg *)malloc(sizeof(quad_arg));
-          arg2->type = TEMP_VAR_Q_ARG;
-          arg2->temp = t2;
+  //         quad_arg * arg2 = (quad_arg *)malloc(sizeof(quad_arg));
+  //         arg2->type = TEMP_VAR_Q_ARG;
+  //         arg2->temp = t2;
 
-          quad_arg * arg3 = (quad_arg *)malloc(sizeof(quad_arg));
-          arg3->type = TEMP_VAR_Q_ARG;
-          arg3->temp = t3;
+  //         quad_arg * arg3 = (quad_arg *)malloc(sizeof(quad_arg));
+  //         arg3->type = TEMP_VAR_Q_ARG;
+  //         arg3->temp = t3;
 
-          gen_quad(LTE_Q, arg3, arg1, arg2);
+  //         gen_quad(LTE_Q, arg3, arg1, arg2);
 
-          if (t1->int_literal <= t2->int_literal) {
-            t3->int_literal = 1;
-          } else {
-            t3->int_literal = 0;
-          }
+  //         if (t1->int_literal <= t2->int_literal) {
+  //           t3->int_literal = 1;
+  //         } else {
+  //           t3->int_literal = 0;
+  //         }
 
-          to_return = t3;
+  //         to_return = t3;
 
-          return to_return;
-        }
+  //         return to_return;
+  //       }
 
-      case OP_AND_N:
-        // new temp t1 = new_temp()
-        // new temp t2 = new_temp()
-        // new temp t3 = new_temp()
-        // new label L_FALSE = new_label()
-        // new label L_DONE = new_label()
-        // t1 = CG(root->left_child)
-        // GenQuad(IFFALSE_Q, t1, L_FALSE, -)
-        // t2 = CG(root->left_child->right_sibling)
-        // GenQuad(IFFALSE_Q, t2, L_FALSE, -)
-        // GenQuad(ASSIGN_Q, t3, 1, -)
-        // GenQuad(GOTO_Q, L_DONE, -, -)
-        // GenQuad(LABEL_Q, L_FALSE, -, -)
-        // GenQuad(ASSIGN_Q, t3, 0, -)
-        // GenQuad(LABEL_Q, L_DONE, -, -)
-        // return t3
-        break;
+  //     case OP_AND_N:
+  //       // new temp t1 = new_temp()
+  //       // new temp t2 = new_temp()
+  //       // new temp t3 = new_temp()
+  //       // new label L_FALSE = new_label()
+  //       // new label L_DONE = new_label()
+  //       // t1 = CG(root->left_child)
+  //       // GenQuad(IFFALSE_Q, t1, L_FALSE, -)
+  //       // t2 = CG(root->left_child->right_sibling)
+  //       // GenQuad(IFFALSE_Q, t2, L_FALSE, -)
+  //       // GenQuad(ASSIGN_Q, t3, 1, -)
+  //       // GenQuad(GOTO_Q, L_DONE, -, -)
+  //       // GenQuad(LABEL_Q, L_FALSE, -, -)
+  //       // GenQuad(ASSIGN_Q, t3, 0, -)
+  //       // GenQuad(LABEL_Q, L_DONE, -, -)
+  //       // return t3
+  //       break;
 
-      case OP_OR_N:
-        // new temp t1 = new_temp()
-        // new temp t2 = new_temp()
-        // new temp t3 = new_temp()
-        // new label L_FALSE = new_label()
-        // new label L_ALL_FALSE = new_label()
-        // new label L_DONE = new_label()
-        // t1 = CG(root->left_child)
-        // GenQuad(IFFALSE_Q, t1, L_FALSE, -)
-        // GenQuad(ASSIGN_Q, t2, 1, -) // t1 was true, so skip RHS expr
-        // GenQuad(GOTO_Q, L_DONE, -, -) // Skip to finish
-        // GenQuad(LABEL_Q, L_FALSE, -, -)
-        // t3 = CG(root->left_child->right_sibling) // t1 was false, so evaluate RHS expr
-        // GenQuad(IFFALSE_Q, t3, L_ALL_FALSE, -)
-        // GenQuad(ASSIGN_Q, t2, 1, -) // t3 was True
-        // GenQuad(GOTO_Q, L_DONE, -, -)
-        // GenQuad(LABEL_Q, L_ALL_FALSE, -, -)
-        // GenQuad(ASSIGN_Q, t2, 0, -) // t1 and t3 both false
-        // GenQuad(LABEL_Q, L_DONE, -, -)
-        // return t2
-        break;
+  //     case OP_OR_N:
+  //       // new temp t1 = new_temp()
+  //       // new temp t2 = new_temp()
+  //       // new temp t3 = new_temp()
+  //       // new label L_FALSE = new_label()
+  //       // new label L_ALL_FALSE = new_label()
+  //       // new label L_DONE = new_label()
+  //       // t1 = CG(root->left_child)
+  //       // GenQuad(IFFALSE_Q, t1, L_FALSE, -)
+  //       // GenQuad(ASSIGN_Q, t2, 1, -) // t1 was true, so skip RHS expr
+  //       // GenQuad(GOTO_Q, L_DONE, -, -) // Skip to finish
+  //       // GenQuad(LABEL_Q, L_FALSE, -, -)
+  //       // t3 = CG(root->left_child->right_sibling) // t1 was false, so evaluate RHS expr
+  //       // GenQuad(IFFALSE_Q, t3, L_ALL_FALSE, -)
+  //       // GenQuad(ASSIGN_Q, t2, 1, -) // t3 was True
+  //       // GenQuad(GOTO_Q, L_DONE, -, -)
+  //       // GenQuad(LABEL_Q, L_ALL_FALSE, -, -)
+  //       // GenQuad(ASSIGN_Q, t2, 0, -) // t1 and t3 both false
+  //       // GenQuad(LABEL_Q, L_DONE, -, -)
+  //       // return t2
+  //       break;
 
-      case OP_NEG_N:
-        // ??
-        break;
+  //     case OP_NEG_N:
+  //       // ??
+  //       break;
 
-      case CALL_N:
-        // new temp t1 = new_temp()
-        // new temp t2 = new_temp()
-        // t1 = CG(root->left_child->right_sibling) // Get argument list
-        // for arg in t1:
-        //   new temp t = new_temp()
-        //   GenQuad(ASSIGN_Q, t, arg, -)
-        // new temp t2 = CG(root->left_child) // Get function
-        // GenQuad(PRECALL_Q, t2, -, -) // Specify function being called
-        // GenQuad(POSTRET_Q, t2, -, -) // Specify function being called
-        break;
+  //     case CALL_N:
+  //       // new temp t1 = new_temp()
+  //       // new temp t2 = new_temp()
+  //       // t1 = CG(root->left_child->right_sibling) // Get argument list
+  //       // for arg in t1:
+  //       //   new temp t = new_temp()
+  //       //   GenQuad(ASSIGN_Q, t, arg, -)
+  //       // new temp t2 = CG(root->left_child) // Get function
+  //       // GenQuad(PRECALL_Q, t2, -, -) // Specify function being called
+  //       // GenQuad(POSTRET_Q, t2, -, -) // Specify function being called
+  //       break;
 
-      case PRINT_N:
-        // new temp t1 = new_temp()
-        // t1 = CG(root->left_child)
-        // GenQuad -> save string / expression?
-        // GenQuad(PRINT_Q, t1, -, -)
-        break;
+  //     case PRINT_N:
+  //       // new temp t1 = new_temp()
+  //       // t1 = CG(root->left_child)
+  //       // GenQuad -> save string / expression?
+  //       // GenQuad(PRINT_Q, t1, -, -)
+  //       break;
 
-      case READ_N:
-        // new temp t1 = new_temp()
-        // t1 = CG(root->left_child)
-        // GenQuad(READ_Q, t1, -, -)
-        break;
+  //     case READ_N:
+  //       // new temp t1 = new_temp()
+  //       // t1 = CG(root->left_child)
+  //       // GenQuad(READ_Q, t1, -, -)
+  //       break;
 
-      case VAR_N:
-        // look up id
-        // load id to temp (location)
-        // return temp
-        break;
+  //     case VAR_N:
+  //       // look up id
+  //       // load id to temp (location)
+  //       // return temp
+  //       break;
 
-      case ID_N:
-        to_return = new_temp(temps_list);
-        to_return->var_id = root->value_string;
-        //return to_return;
-        break;
+  //     case ID_N:
+  //       to_return = new_temp(temps_list);
+  //       to_return->var_id = root->value_string;
+  //       //return to_return;
+  //       break;
 
-      case INT_LITERAL_N:
-        to_return = new_temp(temps_list);
-        to_return->int_literal = root->value_int;
-        //return to_return;
-        break;
+  //     case INT_LITERAL_N:
+  //       to_return = new_temp(temps_list);
+  //       to_return->int_literal = root->value_int;
+  //       //return to_return;
+  //       break;
 
       default:
         {
@@ -864,42 +862,6 @@ void print_label(ast_node root) {
 
   for (ast_node child = root->left_child; child != NULL; child = child->right_sibling)
     new_label(child, NODE_NAME(child->node_type));
-}
-
-/*
- * Temp List functions
- */
-
-// initialize global list
-temp_list * init_temp_list() {
-  temp_list * lst = (temp_list *)malloc(sizeof(temp_list));
-  assert(lst);
-  lst->count = 0;
-  return lst;
-}
-
-// get new temp
-temp_var * new_temp(temp_list * lst) {
-  if (!lst)
-    return NULL;
-
-  temp_var * new_var = (temp_var *)malloc(sizeof(temp_var));
-  assert(new_var);
-  new_var->id = lst->count++;          // give unique id
-
-  return new_var;
-}
-
-// destroy temp variable
-void destroy_temp_var(temp_var * v) {
-  if (v != NULL)
-    free(v);
-}
-
-// destroy whole temp list
-void destroy_temp_list(temp_list * lst){
-  if (lst != NULL)
-    free(lst);
 }
 
 /*

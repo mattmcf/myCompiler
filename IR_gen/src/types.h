@@ -14,6 +14,7 @@
  * ----- TYPE ENUMERATIONS -----
  */
 
+
 typedef struct {
         int val;
         char *name;
@@ -40,6 +41,21 @@ static val_name_pair type_table[] = {
 
 #define TYPE_INDEX(X) ( (X) - NULL_TS )
 #define TYPE_NAME(X) ( type_table[ TYPE_INDEX((X)) ].name)
+
+typedef struct {
+  type_specifier_t type;
+  int size;     // in bytes
+} type_size_pair;
+
+static type_size_pair size_table[] = {
+  {NULL_TS,   0},
+  {INT_TS,    4},
+  {VOID_TS,   0},
+  {FUNC_TS,   0},
+  {0, 0}
+};
+
+#define TYPE_SIZE(X) ( size_table[ TYPE_INDEX((X)) ].size)
 
 /*
  * modifies a datatype to include
