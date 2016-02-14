@@ -1,6 +1,6 @@
 # IR_Gen Readme
 ## Matt McFarland and Yondon Fu - Delights (CS 57 - 16W)
-(For more enjoyable reading, please see https://github.com/MattRMcFarland/myCompiler/tree/master/check_symbols)
+(For more enjoyable reading, please see https://github.com/MattRMcFarland/myCompiler/tree/master/IR_gen)
 
 ## General Overview
 The file structure our our intermediate code generator is as follows:
@@ -19,7 +19,8 @@ Top - Level Files
 * `mytest.sh` : building and testing script for intermediate code generation.
 * `scan.l` : flex file.
 * `parser.y` : bison parsing file. A few changes made for type checking ease.
-* `Makefile` : this week's makefile. Includes several executable 
+* `Makefile` : this week's makefile. Includes several executable recipes
+* `IR_gen_main.c` : generates a quad list for an executable
 * `check_symbols_main.c` : type checking testing file (legacy from last week).
 * `symtab_main.c` : created symbol table (legacy).
 * `parser_main.c` : create parse tree from tokens (legacy).
@@ -38,7 +39,7 @@ We use a initialize a global quad list (dynamically resizing array) that is appe
 
 ### Generating temps
 
-Temps are represented by the `temp_var` structure. `new_temp` generates a temp_var for the scope of the given AST node. We explicitly save list of temps in the symbol table for their particular scope.
+Temps are represented by the `temp_var` structure. `new_temp` generates a temp_var for the scope of the given AST node. We explicitly save list of temps in the symbol table for their particular scope. If you wish to see these temporary symbols, you can uncomment the printing of the symboltable in the IR_gen_main.c function. (These temps also include some preliminary memory assignment work.)
 
 ### Generating labels
 
@@ -50,9 +51,12 @@ Quad operations are defined in `IR_gen.h`. See in line comments for descriptions
 
 ### CG
 
-`CG` recursively traverses the AST and uses a switch statement to handle quad generation for each case, some of which include control flow such as while loops and logical statements using `$$` and `||`.
+`CG` recursively traverses the AST and uses a switch statement to handle quad generation for each case, some of which include control flow such as while loops and logical statements using `&&` and `||`.
 
 The base cases for the traversal are when we encounter an int literal, variable identifier or a string literal. The CG function will optionally pass up quad arguments with evaluated value of nested expressions.
+
+### gen_quad
+This is the function that adds a quad to the global list of quads. Each quad includes an `op` that we will use to generate target code for the y86.
 
 ### Strings
 
@@ -68,7 +72,7 @@ We handle the following control flow cases: for loops, while loops, if statement
 
 ### Logical Statements
 
-We handle the following logical operations: `$$`, `||` and `!`. We generate quads to reflect the evaluation process of each of them. 
+We handle the following logical operations: `&&`, `||` and `!`. We generate quads to reflect the evaluation process of each of them. 
 
 ### Function Declarations
 
