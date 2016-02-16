@@ -14,8 +14,8 @@ OBJ_FILES = $(SRC_FILES:.c=.o)
 .cc.o:
 	$(CC) $(CFLAGS) -c $<
 
-gen_target_code : lex.yy.o parser.tab.o Target_Code_main.o $(OBJ_FILES)
-	$(CC) -o $@ $(CFLAGS) lex.yy.o parser.tab.o Target_Code_main.o $(OBJ_FILES) $(FLEXFLAGS)	
+gen_target_code : lex.yy.o parser.tab.o y86_code_main.o $(OBJ_FILES)
+	$(CC) -o $@ $(CFLAGS) lex.yy.o parser.tab.o y86_code_main.o $(OBJ_FILES) $(FLEXFLAGS)	
 
 lex.yy.o : lex.yy.c
 	$(CC) -c $(CFLAGS) $<
@@ -40,6 +40,6 @@ clean :
 	&& rm -rf results
 
 depend :
-	makedepend -- $(CFLAGS) -- IR_gen_main.c
+	makedepend -- $(CFLAGS) -- y86_code_main.c
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
