@@ -36,8 +36,9 @@
 # TAR files
 *.gz
 *.tar
+*.taz
 
-
+sim2/*
 *yy.lex*
 lexical_analyzer/results/
 *.tab*

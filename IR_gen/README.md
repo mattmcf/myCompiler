@@ -6,7 +6,7 @@
 The file structure our our intermediate code generator is as follows:
 
 We added a source directory to manage the increasing number of source files we created:
-* `src/ast.h` and `src/ast.c` : contain functions and definitions for ast nodes. Note: we added several fields to ast_node for this part of the project.
+* `src/ast.h` and `src/ast.c` : contain functions and definitions for ast nodes.
 * `src/IR_gen.h` and `src/IR_gen.c` : contain CG (code generation) and label generation functions
 * `src/temp_list.h` and `src/temp_list.c` : contain the temp generation function and the temp_list structure for keeping track of temps within scopes
 * `src/check_sym.h` and `src/check_sym.c` : contain the set_type function and top-down type check handling.

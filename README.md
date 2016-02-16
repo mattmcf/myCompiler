@@ -9,3 +9,4 @@ Directories:
 * symbol_table : construction of the symbol table (week 3)
 * check_symbols : commence type checking (week 4)
 * IR_gen : build a list of quads for a source file (week 5)
+* Target_Code : generate the .ys! (week 6)
