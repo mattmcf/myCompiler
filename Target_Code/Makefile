@@ -8,7 +8,7 @@ FLEXFLAGS = -ll
 .SUFFIXES: .c
 
 SRC_DIR = src/
-SRC_FILES = $(SRC_DIR)ast.c $(SRC_DIR)ast_stack.c $(SRC_DIR)symtab.c $(SRC_DIR)check_sym.c $(SRC_DIR)IR_gen.c $(SRC_DIR)temp_list.c
+SRC_FILES = $(SRC_DIR)ast.c $(SRC_DIR)ast_stack.c $(SRC_DIR)symtab.c $(SRC_DIR)check_sym.c $(SRC_DIR)IR_gen.c $(SRC_DIR)temp_list.c $(SRC_DIR)y86_code_gen.c
 OBJ_FILES = $(SRC_FILES:.c=.o)
 
 .cc.o:
