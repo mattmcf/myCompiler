@@ -129,6 +129,7 @@ ast_node handle_func_decl_node(ast_node fdl, symboltable_t * symtab) {
     modifier_t mod;
     char * name;
 
+    int param_offset = TYPE_SIZE(INT_TS);
     int argument_offset = 0;
     while (arg != NULL) {
 
@@ -143,6 +144,9 @@ ast_node handle_func_decl_node(ast_node fdl, symboltable_t * symtab) {
 
       // calculate change in stack pointer -- note: push down to avoid inserting now
       arg_arr[arg_count] = init_variable(name, type, mod, PARAMETER_VAR);   // static variable on stack
+      arg_arr[arg_count].offset_of_frame_pointer = param_offset;            // need to push offsets now b/c order matters
+      param_offset += TYPE_SIZE(type);                                      // keep going
+
       arg_count++;
 
       /* resize type array */
@@ -180,6 +184,7 @@ ast_node handle_func_decl_node(ast_node fdl, symboltable_t * symtab) {
 
     /* add function parameters to this new scope symbol table */
     for (int i = 0; i < arg_count; i++) {
+
       // Insert var node in leaf symhashtable
       symnode_t *var_node = insert_into_symboltable(symtab, (&arg_arr[i])->name, fdl);
 
@@ -190,6 +195,9 @@ ast_node handle_func_decl_node(ast_node fdl, symboltable_t * symtab) {
 
       set_node_type(var_node, VAR_SYM);
       set_node_var(var_node, &arg_arr[i]);
+
+      /* set offset */
+      var_node->s.v.offset_of_frame_pointer = (&arg_arr[i])->offset_of_frame_pointer;
     }
 
     /* return next node to start traverse on */

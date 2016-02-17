@@ -249,7 +249,7 @@ void * set_variable_memory_locations(symboltable_t * symtab) {
 						/* put array on top of global list */
 						sym->s.v.offset_of_frame_pointer = globals_size;
 						sym->s.v.specie = GLOBAL_VAR;
-						int bytes = sym->origin->right_sibling->value_int * TYPE_SIZE(sym->s.v.type);
+						int bytes = sym->origin->left_child->right_sibling->value_int * TYPE_SIZE(sym->s.v.type);
 						globals_size += bytes;
 					}
 
@@ -288,8 +288,9 @@ void set_fp_offsets(symhashtable_t * symhash, int local_bytes, int param_bytes) 
 					// get specie
 					switch (sym->s.v.specie) {
 						case PARAMETER_VAR:
-							sym->s.v.offset_of_frame_pointer = param_bytes;
-							param_bytes += TYPE_SIZE(sym->s.v.type);
+							/* this was done during the creation of the parameter symbols */
+							// sym->s.v.offset_of_frame_pointer = param_bytes;
+							// param_bytes += TYPE_SIZE(sym->s.v.type);
 							break;
 
 						/* treat locals and locals the same */
@@ -304,7 +305,7 @@ void set_fp_offsets(symhashtable_t * symhash, int local_bytes, int param_bytes) 
 							} else {
 
 								/* put array on stack */
-								local_bytes -= sym->origin->right_sibling->value_int * TYPE_SIZE(sym->s.v.type);
+								local_bytes -= sym->origin->left_child->right_sibling->value_int * TYPE_SIZE(sym->s.v.type);
 								sym->s.v.offset_of_frame_pointer = local_bytes;
 							}	
 							break;
