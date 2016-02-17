@@ -3,26 +3,72 @@
 #include <limits.h>
 #include <assert.h>
 #include <string.h>
-#include "symtab.h"
+#include <math.h>
 
+#include "symtab.h"
 #include "y86_code_gen.h"
 
 void print_code(quad * to_translate, FILE * ys_file_ptr) {
 	switch (to_translate->op) {
 		case ADD_Q:
-			break;
+			{
+				char * t1 = handle_quad_arg(to_translate->args[1]);
+				char * t2 = handle_quad_arg(to_translate->args[2]);
+				char * t3 = handle_quad_arg(to_translate->args[0]);
+				fprintf(ys_file_ptr, "mrmovl %s(%%ebp), %%eax\n", t1);
+				fprintf(ys_file_ptr, "mrmovl %s(%%ebp), %%ebx\n", t2);
+				fprintf(ys_file_ptr, "addl %%ebx, %%eax\n");
+				fprintf(ys_file_ptr, "rmmovl %%eax, %s(%%ebp)\n", t3);
+				break;
+			}
 
 		case SUB_Q:
-			break;
+			{
+				char * t1 = handle_quad_arg(to_translate->args[1]);
+				char * t2 = handle_quad_arg(to_translate->args[2]);
+				char * t3 = handle_quad_arg(to_translate->args[0]);
+				fprintf(ys_file_ptr, "mrmovl %s(%%ebp), %%eax\n", t1);
+				fprintf(ys_file_ptr, "mrmovl %s(%%ebp), %%ebx\n", t2);
+				fprintf(ys_file_ptr, "subl %%ebx, %%eax\n");
+				fprintf(ys_file_ptr, "rmmovl %%eax, %s(%%ebp)\n", t3);
+				break;
+			}
 
 		case MUL_Q:
-			break;
+			{
+				char * t1 = handle_quad_arg(to_translate->args[1]);
+				char * t2 = handle_quad_arg(to_translate->args[2]);
+				char * t3 = handle_quad_arg(to_translate->args[0]);
+				fprintf(ys_file_ptr, "mrmovl %s(%%ebp), %%eax\n", t1);
+				fprintf(ys_file_ptr, "mrmovl %s(%%ebp), %%ebx\n", t2);
+				fprintf(ys_file_ptr, "mull %%ebx, %%eax\n");
+				fprintf(ys_file_ptr, "rmmovl %%eax, %s(%%ebp)\n", t3);
+				break;
+			}
 
 		case DIV_Q:
-			break;
+			{
+				char * t1 = handle_quad_arg(to_translate->args[1]);
+				char * t2 = handle_quad_arg(to_translate->args[2]);
+				char * t3 = handle_quad_arg(to_translate->args[0]);
+				fprintf(ys_file_ptr, "mrmovl %s(%%ebp), %%eax\n", t1);
+				fprintf(ys_file_ptr, "mrmovl %s(%%ebp), %%ebx\n", t2);
+				fprintf(ys_file_ptr, "divl %%ebx, %%eax\n");
+				fprintf(ys_file_ptr, "rmmovl %%eax, %s(%%ebp)\n", t3);
+				break;
+			}
 
 		case MOD_Q:
-			break;
+			{
+				char * t1 = handle_quad_arg(to_translate->args[1]);
+				char * t2 = handle_quad_arg(to_translate->args[2]);
+				char * t3 = handle_quad_arg(to_translate->args[0]);
+				fprintf(ys_file_ptr, "mrmovl %s(%%ebp), %%eax\n", t1);
+				fprintf(ys_file_ptr, "mrmovl %s(%%ebp), %%ebx\n", t2);
+				fprintf(ys_file_ptr, "modl %%ebx, %%eax\n");
+				fprintf(ys_file_ptr, "rmmovl %%eax, %s(%%ebp)\n", t3);
+				break;
+			}
 
 		case INC_Q:
 			break;
@@ -98,12 +144,10 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 char * handle_quad_arg(quad_arg * arg) {
 	char * to_return;
 	switch (arg->type) {
-		case NULL_ARG:
-			break;
-
 		case INT_LITERAL_Q_ARG:
 			{
-				char int_str[INT_MAX + 2];
+				int len = floor(log10(abs(INT_MAX))) + 2;
+				char int_str[len];
 				sprintf(int_str, "%d", arg->int_literal);
 				to_return = strdup(int_str);
 				break;
@@ -111,26 +155,54 @@ char * handle_quad_arg(quad_arg * arg) {
 
 		case TEMP_VAR_Q_ARG:
 			{
-				// int fp_offset = arg->temp->temp_symnode->s.v.offset_of_frame_pointer;
 				int fp_offset = ((symnode_t *) arg->temp->temp_symnode)->s.v.offset_of_frame_pointer;
 
-				char int_str[INT_MAX + 2];
+				int len = floor(log10(abs(INT_MAX))) + 2;
+				char int_str[len];
 				sprintf(int_str, "%d", fp_offset);
 				to_return = strdup(int_str);
 				break;
 			}
 
 		case SYMBOL_VAR_Q_ARG:
-			break;
+			{
+				int fp_offset = arg->symnode->s.v.offset_of_frame_pointer;
+
+				int len = floor(log10(abs(INT_MAX))) + 2;
+				char int_str[len];
+				sprintf(int_str, "%d", fp_offset);
+				to_return = strdup(int_str);
+				break;
+			}
 
 		case SYMBOL_ARR_Q_ARG:
-			break;
+			{
+				int offset = arg->symnode->s.v.offset_of_frame_pointer;
+
+				if (arg->int_literal >= 0) {
+					if (arg->symnode->s.v.type == INT_TS) {
+						offset += arg->int_literal * sizeof(int);
+					} else {
+						printf("Array elements not integers, unknown type.\n");
+					}
+				} 
+
+				int len = floor(log10(abs(INT_MAX))) + 2;
+				char int_str[len];
+				sprintf(int_str, "%d", offset);
+				to_return = strdup(int_str);
+				break;
+			}
 
 		case LABEL_Q_ARG:
 			to_return = arg->label;
 			break;
 
 		case RETURN_Q_ARG:
+			to_return = strdup("%eax");
+			break;
+
+		case NULL_ARG:
 			break;
 
 		default:
