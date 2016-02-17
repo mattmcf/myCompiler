@@ -171,6 +171,9 @@ ast_node handle_func_decl_node(ast_node fdl, symboltable_t * symtab) {
     /* enter new scope -- skipping CS node */
     enter_scope(symtab, compound_stmt->left_child, fdl_node->name);
 
+    /* give function body a new temp list */
+    symtab->leaf->t_list = init_temp_list();
+
     /* add scope to all argument parameter children */
     add_scope_to_children(arg_params, symtab);
     symhashtable_t * symhashtab = symtab->leaf;
@@ -390,8 +393,8 @@ symhashtable_t *create_symhashtable(int entries)    // modified function call
   hashtable->scopeStack = InitASTStack(INIT_STK_SIZE);
   assert(hashtable->scopeStack);
 
-  // Initialize temporary variable list
-  hashtable->t_list = init_temp_list();
+  // Initialize temporary variable list -- no, just do that for a function
+  // hashtable->t_list = init_temp_list();
   // hashtable->local_base_offset = 0;
   // hashtable->local_sp = 0;
 
@@ -529,9 +532,12 @@ void enter_scope(symboltable_t *symtab, ast_node node, char *name) {
     symtab->leaf->child->sibno = 0;
     symtab->leaf->child->parent = symtab->leaf;
 
-    // chain temp lists together
-    //symtab->leaf->child->local_sp = symtab->leaf->local_sp;
-    symtab->leaf->child->t_list->count = symtab->leaf->t_list->count;
+    // pass temp list to child
+    symtab->leaf->child->t_list = symtab->leaf->t_list;
+    // if (node->node_type == FUNC_DECLARATION_N)
+    //   symtab->leaf->child->t_list =  init_temp_list();
+    // else
+    //   symtab->leaf->child->t_list = symtab->leaf->t_list;
 
     symtab->leaf = symtab->leaf->child;
 
@@ -550,8 +556,12 @@ void enter_scope(symboltable_t *symtab, ast_node node, char *name) {
     hashtable->rightsib->sibno = hashtable->sibno + 1;
     hashtable->rightsib->parent = symtab->leaf;
 
-    // // chain temp lists together
-    hashtable->rightsib->t_list->count = symtab->leaf->t_list->count;
+    // pass temp list for function
+    hashtable->rightsib->t_list = symtab->leaf->t_list;
+    // if (node->node_type == FUNC_DECLARATION_N)
+    //   hashtable->rightsib->t_list =  init_temp_list();
+    // else
+    //   hashtable->rightsib->t_list = symtab->leaf->t_list;
 
     symtab->leaf = hashtable->rightsib;
   }

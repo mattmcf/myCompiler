@@ -1,8 +1,15 @@
 int a = 100;
 int b = 200;
-int c[a+b];
 
 int foo(int a) {
+  int c = 10;
+
+  c = c + c * c / c % c || c && c;
+  {
+    a = c + a;
+  }
+  c = c + c * c / c % c || c && c;
+
   return 1;
 }
 
@@ -23,6 +30,19 @@ int main(void) {
   	print 7;
   } else {
   	print 0;
+  }
+
+  {
+    a = a + 1;
+    {
+      int a = 10;
+      {
+        a = a + 10;
+        {
+          a = a + 10;
+        }
+      }
+    }
   }
 
   while (a == 7) {

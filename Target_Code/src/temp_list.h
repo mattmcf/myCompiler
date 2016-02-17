@@ -14,20 +14,22 @@
 //#include "symtab.h" 		// double included
 
 /*
- * simplest temporary variable structure
- * each temporary will be given out once (so it's read once only)
- */
-typedef struct temp_list {
-  int count;
-} temp_list;
-
-/*
  * temporary variable structure
  */
 typedef struct temp_var {
   int id;
   void * temp_symnode; 	// because compiler issue
 } temp_var;
+
+/*
+ * simplest temporary variable structure
+ * each temporary will be given out once (so it's read once only)
+ */
+typedef struct temp_list {
+  int count;
+  int size;
+  temp_var ** list;
+} temp_list;
 
 /*
  * init_temp_list()
@@ -41,7 +43,7 @@ temp_list * init_temp_list();
  *
  * returns a new temp or NULL on failure
  */
- temp_var * new_temp(ast_node root, type_specifier_t type);
+ temp_var * new_temp(ast_node root);
 
 /*
  * destroys a temporary variable struct

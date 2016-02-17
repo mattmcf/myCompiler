@@ -12,6 +12,7 @@
 #include "src/symtab.h"
 #include "src/check_sym.h"
 #include "src/IR_gen.h"
+#include "src/y86_code_gen.h"
 
 extern int yyparse(); 
 extern int yydebug; 
@@ -62,6 +63,9 @@ int main(void) {
 
     printf("\n\n ----- PRINTING QUAD LIST -----\n");
     print_quad_list();
+
+    void * stk_start = set_variable_memory_locations(symtab);
+    printf("Stack starts at : %p\n",stk_start);
 
     printf("\n\n ----- PRETTY PRINTING SYMBOLTABLE WITH TEMP VARIABLES -----\n");
     print_symtab(symtab);
