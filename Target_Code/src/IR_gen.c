@@ -9,7 +9,7 @@
 #include "IR_gen.h"
 
 #define INIT_QUAD_LIST_SIZE 10
-#define PASS_WHOLE_ARRAY -1     // HACKY but it works
+#define PASS_ARR_POINTER -1     // HACKY but it works
 #define MAX_LABEL_LENGTH 100 	// should be enough?
 
 extern quad_arr * quad_list;
@@ -379,7 +379,7 @@ quad_arg * CG(ast_node root) {
             if (root->left_child->right_sibling != NULL)
               to_return->int_literal = root->left_child->right_sibling->left_child->value_int;     // get offset into array  
             else
-              to_return->int_literal = PASS_WHOLE_ARRAY;       
+              to_return->int_literal = PASS_ARR_POINTER;       
           }
           break;
         }

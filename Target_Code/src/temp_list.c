@@ -46,7 +46,7 @@ temp_var * new_temp(ast_node root, type_specifier_t type) {
   // symhashtab->local_sp += TYPE_SIZE(type);
 
   // add that new temp to local table under the name
-  symnode_t * new_node = insert_into_symhashtable(symhashtab,name);
+  symnode_t * new_node = insert_into_symhashtable(symhashtab,name, NULL);
 
   // attach temp to created symnode
   new_var->temp_symnode = new_node;

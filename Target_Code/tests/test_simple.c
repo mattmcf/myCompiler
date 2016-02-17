@@ -1,4 +1,6 @@
-int a, b, c;
+int a = 100;
+int b = 200;
+int c[a+b];
 
 int foo(int a) {
   return 1;

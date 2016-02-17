@@ -15,6 +15,7 @@
 #include "ast_stack.h"
 #include "types.h"
 #include "temp_list.h"
+#include "ast.h"
 
 #define NOHASHSLOT -1
 
@@ -59,6 +60,8 @@ typedef struct symnode {
   struct symnode  *next;	       /* next symnode in list */
   struct symhashtable *parent;
 
+  ast_node origin;
+
   /* Other attributes go here. */
   declaration_specifier_t sym_type;   // enum FUNC_SYM or VAR_SYM - says which union symbol is
   symbol s;       // union of func_symbol and var_symbol
@@ -68,7 +71,6 @@ typedef struct symnode {
 /* Hash table for a given scope in a symbol table. */
 typedef struct symhashtable {
   char *name;
-  // symtab_type  type;   -- don't use
   int size;      /* size of hash table */
   symnode_t **table;    /* hash table */
   int level;      /* level of scope, 0 is outermost */
@@ -119,7 +121,7 @@ var_symbol init_variable(char * name, type_specifier_t type, modifier_t mod, var
 type_specifier_t get_datatype(ast_node n);
 
 /* Create an empty symnode */
-symnode_t * create_symnode(symhashtable_t *hashtable, char *name);
+symnode_t * create_symnode(symhashtable_t *hashtable, char *name, ast_node origin);
 
 /* Set the nsame in this node. */
 void set_node_name(symnode_t *node, char *name);
@@ -144,7 +146,7 @@ symboltable_t *create_symboltable();
 /* Insert an entry into the innermost scope of symbol table.  First
    make sure it's not already in that scope.  Return a pointer to the
    entry. */
-symnode_t *insert_into_symboltable(symboltable_t *symtab, char *name);
+symnode_t *insert_into_symboltable(symboltable_t *symtab, char *name, ast_node origin);
 
 /* Lookup an entry in a symbol table.  If found return a pointer to it.
    Otherwise, return NULL */
@@ -155,7 +157,7 @@ symnode_t *lookup_symhashtable(symhashtable_t *hashtable, char *name, int slot);
 
 /* Insert a new entry into a symhashtable, but only if it is not
    already present. */
-symnode_t *insert_into_symhashtable(symhashtable_t *hashtable, char *name);
+symnode_t *insert_into_symhashtable(symhashtable_t *hashtable, char *name, ast_node origin);
 
 /* Enter a new scope. */
 void enter_scope(symboltable_t *symtab, ast_node node, char *name);

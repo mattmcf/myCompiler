@@ -89,19 +89,18 @@ ast_node handle_func_decl_node(ast_node fdl, symboltable_t * symtab) {
   assert(symtab);
 
   // Insert symnode for function into leaf symhashtable
-  symnode_t *fdl_node = insert_into_symboltable(symtab, fdl->left_child->right_sibling->value_string);
+  symnode_t *fdl_node = insert_into_symboltable(symtab, fdl->left_child->right_sibling->value_string, fdl);
+  if (fdl_node == NULL) {
+    /* duplicate symbol in scope */
+    fprintf(stderr, "error: duplicate symbol \'%s\' found. Please fix before continuing.\n", fdl->left_child->right_sibling->value_string);
+    exit(1);
+  }
 
   // add scope to all current scope children -- type specifer and ID_T and compound statement
   // formal params should be added to new scope which is done after enter_new scope is called
   add_scope_to_children(fdl->left_child, symtab);
   add_scope_to_children(fdl->left_child->right_sibling, symtab);
   fdl->left_child->right_sibling->right_sibling->right_sibling->scope_table = symtab->leaf;
-
-  if (fdl_node == NULL) {
-    /* duplicate symbol in scope */
-    fprintf(stderr, "error: duplicate symbol \'%s\' found. Please fix before continuing.\n", fdl->left_child->right_sibling->value_string);
-    exit(1);
-  }
 
   // Set symnode as a func node
   set_node_type(fdl_node, FUNC_SYM);
@@ -179,7 +178,7 @@ ast_node handle_func_decl_node(ast_node fdl, symboltable_t * symtab) {
     /* add function parameters to this new scope symbol table */
     for (int i = 0; i < arg_count; i++) {
       // Insert var node in leaf symhashtable
-      symnode_t *var_node = insert_into_symboltable(symtab, (&arg_arr[i])->name);
+      symnode_t *var_node = insert_into_symboltable(symtab, (&arg_arr[i])->name, fdl);
 
       if (var_node == NULL) {
         fprintf(stderr, "error: duplicate variable symbol \'%s\' found. Please fix before continuing.\n", (&arg_arr[i])->name);
@@ -222,7 +221,7 @@ void handle_var_decl_line_node(ast_node vdl, symboltable_t * symtab) {
     }
 
     // Insert symnode for variable
-    symnode_t *var_node = insert_into_symboltable(symtab, name);
+    symnode_t *var_node = insert_into_symboltable(symtab, name, child);
 
     if (var_node == NULL) {
       fprintf(stderr, "error: duplicate variable symbol \'%s\' found. Please fix before continuing.\n", name);
@@ -311,7 +310,7 @@ type_specifier_t get_datatype(ast_node n) {
  * Functions for symnodes.
  */
 
-symnode_t * create_symnode(symhashtable_t *hashtable, char *name) {
+symnode_t * create_symnode(symhashtable_t *hashtable, char *name, ast_node origin) {
   assert(hashtable);
   assert(name);
 
@@ -319,6 +318,7 @@ symnode_t * create_symnode(symhashtable_t *hashtable, char *name) {
   assert(node);
   node->name = name;
   node->parent = hashtable;
+  node->origin = origin;
 
   return node;
 }
@@ -435,7 +435,7 @@ symnode_t *lookup_symhashtable(symhashtable_t *hashtable, char *name,
 
 /* Insert a new entry into a symhashtable, but only if it is not
    already present. */
-symnode_t *insert_into_symhashtable(symhashtable_t *hashtable, char *name) {
+symnode_t *insert_into_symhashtable(symhashtable_t *hashtable, char *name, ast_node origin) {
 
   assert(hashtable);
 
@@ -445,7 +445,7 @@ symnode_t *insert_into_symhashtable(symhashtable_t *hashtable, char *name) {
   /* error check if node already existed! */
 
   if (node == NULL) {
-    node = create_symnode(hashtable, name);
+    node = create_symnode(hashtable, name, origin);
     node->next = hashtable->table[slot];
     hashtable->table[slot] = node;
   } 
@@ -476,7 +476,7 @@ symboltable_t  *create_symboltable() {
 /* Insert an entry into the innermost scope of symbol table.  First
    make sure it's not already in that scope.  Return a pointer to the
    entry. */
-symnode_t *insert_into_symboltable(symboltable_t *symtab, char *name) {
+symnode_t *insert_into_symboltable(symboltable_t *symtab, char *name, ast_node origin) {
 
   assert(symtab);
   assert(symtab->leaf);
@@ -486,7 +486,7 @@ symnode_t *insert_into_symboltable(symboltable_t *symtab, char *name) {
   /* error check!! */
   
   if (node == NULL) {
-    node = insert_into_symhashtable(symtab->leaf, name);
+    node = insert_into_symhashtable(symtab->leaf, name, origin);
     return node;
   } else {
     return NULL;

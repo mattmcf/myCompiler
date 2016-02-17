@@ -139,3 +139,80 @@ char * handle_quad_arg(quad_arg * arg) {
 
 	return to_return;
 }
+
+/*
+ * before generating code, set all your frame pointer offsets for variables
+ *
+ * call this on root with `set_fp_offsets(root,0);`
+ */
+void set_variable_memory_locations(symboltable_t * symtab, int offset_to_set) {
+	if (!symtab) {
+		fprintf("cannot set memory locations when symboltable is null!\n");
+		return;
+	}
+
+	symhashtable_t * global_scope = symtab->root;
+
+	/* set all global variable symbols */
+
+	int globals_size = 0;
+	symnode_t * sym;
+	for (int i = 0; i < global_scope->size; i++) {
+		if (global_scope->table[i] != NULL) {
+			sym = global_scope->table[i];
+			while (sym != NULL) {
+
+				/* for all global variables */
+				if (sym->sym_type == VAR_SYM) {
+					if (sym->s.v.mod == SINGLE_DT) {
+
+						/* put single variable top of global list */
+						sym->s.v.offset_of_frame_pointer = global_size;
+						sym->s.v.specie = GLOBAL_VAR;						
+						globals_size += TYPE_SIZE(sym->s.v.type);						
+					} else {
+
+						/* put array on top of global list */
+						sym->s.v.offset_of_frame_pointer = globals_size;
+						sym->s.v.specie = GLOBAL_VAR;
+						int bytes = sym->origin->right_sibling->int_val * TYPE_SIZE(sym->s.v.type);
+						globals_size += bytes;
+					}
+
+				}
+				sym = sym->next; 	// get next global variable				
+			}
+		}
+	}
+
+	int stack_start = STK_TOP - globals_size;
+	return stack_start;
+}
+
+/*
+ * called ONCE on the function scope table and then it explores down and sets variables
+ */
+void set_fp_offsets(symhashtable_t * symhash, int seen_locals, int seen_params) {
+
+}
+
+/*
+ * if at the end of the symbolhashtable, returns NULL
+ */
+symnode_t * get_next_symbol(symhashtable_t * symhash, int last_slot, synmode_t * last_seen) {
+	// if(!symhash)
+	// 	return NULL;
+
+	// symnode_t * next_node = NULL;
+
+	// // FIRST CASE -- IS LAST SEEN NOT NULL?
+	// if (last_seen != NULL) {
+	// 	if (last_seen->next != NULL) { 			// not done with linked list
+	// 		next_node = last_seen->next;
+	// 	} else { 								// get to next bucket
+	// 		for (int i = slot)
+	// 	}
+	// }
+
+	return NULL;
+}
