@@ -143,8 +143,7 @@ ast_node handle_func_decl_node(ast_node fdl, symboltable_t * symtab) {
       name = arg->left_child->right_sibling->value_string;
 
       // calculate change in stack pointer -- note: push down to avoid inserting now
-      arg_arr[arg_count] = init_variable(name, type, mod, argument_offset);  // static variable struct on stack 
-      argument_offset += TYPE_SIZE(type);
+      arg_arr[arg_count] = init_variable(name, type, mod, PARAMETER_VAR);   // static variable on stack
       arg_count++;
 
       /* resize type array */
@@ -186,10 +185,6 @@ ast_node handle_func_decl_node(ast_node fdl, symboltable_t * symtab) {
         fprintf(stderr, "error: duplicate variable symbol \'%s\' found. Please fix before continuing.\n", (&arg_arr[i])->name);
         exit(1);
       }
-
-      /* to do -- this is incorrect because arguments should live above FP, not below */
-      int fp_offset = symhashtab->local_sp;
-      symhashtab->local_sp += TYPE_SIZE((&arg_arr[i])->type);
 
       set_node_type(var_node, VAR_SYM);
       set_node_var(var_node, &arg_arr[i]);
@@ -238,11 +233,9 @@ void handle_var_decl_line_node(ast_node vdl, symboltable_t * symtab) {
 
     // calculate change in stack pointer
     symhashtable_t * symhashtab = vdl->scope_table;
-    int fp_offset = symhashtab->local_sp;
-    symhashtab->local_sp += TYPE_SIZE(this_type);
 
     // Initialize variable
-    var_symbol new_var = init_variable(name, this_type, mod, fp_offset);
+    var_symbol new_var = init_variable(name, this_type, mod, LOCAL_VAR);
 
     // Set variable field in symnode
     set_node_var(var_node, &new_var);
@@ -275,14 +268,14 @@ void add_scope_to_children(ast_node root, symboltable_t * symtab) {
  * Inits a new varable struct and returns the structure on stack
  * Note: need to copy returned struct into dynamically allocated memory
  */
-var_symbol init_variable(char * name, type_specifier_t type, modifier_t mod, int offset) {
+var_symbol init_variable(char * name, type_specifier_t type, modifier_t mod, variable_specie_t specie) {
 
   var_symbol new_var;
 
   new_var.name = name;     // note, name needs to be saved somewhere else
   new_var.type = type;
   new_var.modifier = mod;
-  new_var.offset_of_frame_pointer = offset;
+  new_var.specie = specie;
 
   return new_var;
 }
@@ -327,11 +320,6 @@ symnode_t * create_symnode(symhashtable_t *hashtable, char *name) {
   node->name = name;
   node->parent = hashtable;
 
-  /* problem here is -> once you've created a symnode, 
-  how much do you incremented the parent table stack pointer by? 
-  And how do you even get to the parent's stack pointer? 
-  Maybe you can pass the buck down to set_node_type -> and then increment. Still... */
-
   return node;
 }
   
@@ -356,7 +344,8 @@ void set_node_var(symnode_t *node, var_symbol *var) {
   node->s.v.modifier = var->modifier;
 
   //ode->s.v.m = SINGLE_DT;
-  node->s.v.offset_of_frame_pointer = var->offset_of_frame_pointer;
+  node->s.v.specie = var->specie;
+  //node->s.v.offset_of_frame_pointer = var->offset_of_frame_pointer;
 
 }
 
@@ -403,8 +392,8 @@ symhashtable_t *create_symhashtable(int entries)    // modified function call
 
   // Initialize temporary variable list
   hashtable->t_list = init_temp_list();
-  hashtable->local_base_offset = 0;
-  hashtable->local_sp = 0;
+  // hashtable->local_base_offset = 0;
+  // hashtable->local_sp = 0;
 
   return hashtable;
 }
@@ -510,7 +499,6 @@ symnode_t *lookup_in_symboltable(symboltable_t  *symtab, char *name) {
   symnode_t *node;
   symhashtable_t *hashtable;
 
-
   assert(symtab);
 
   for (node = NULL, hashtable = symtab->leaf;
@@ -541,8 +529,9 @@ void enter_scope(symboltable_t *symtab, ast_node node, char *name) {
     symtab->leaf->child->sibno = 0;
     symtab->leaf->child->parent = symtab->leaf;
 
-    // chain stacks together
-    symtab->leaf->child->local_sp = symtab->leaf->local_sp;
+    // chain temp lists together
+    //symtab->leaf->child->local_sp = symtab->leaf->local_sp;
+    symtab->leaf->child->t_list->count = symtab->leaf->t_list->count;
 
     symtab->leaf = symtab->leaf->child;
 
@@ -561,8 +550,8 @@ void enter_scope(symboltable_t *symtab, ast_node node, char *name) {
     hashtable->rightsib->sibno = hashtable->sibno + 1;
     hashtable->rightsib->parent = symtab->leaf;
 
-    // chain stacks together
-    hashtable->rightsib->local_sp = symtab->leaf->local_sp;
+    // // chain temp lists together
+    hashtable->rightsib->t_list->count = symtab->leaf->t_list->count;
 
     symtab->leaf = hashtable->rightsib;
   }
@@ -611,7 +600,8 @@ void print_symhash(symhashtable_t *hashtable) {
         case VAR_SYM:
           printf("VAR_TYPE: %s, ", TYPE_NAME(node->s.v.type));
           printf("MODIFIER: %s, ", MODIFIER_NAME(node->s.v.modifier));
-          printf("[FP offset: %d]", node->s.v.offset_of_frame_pointer);
+          printf("SPECIE: %s ", VAR_SPECIE_NAME(node->s.v.specie));
+          printf("[offset %d]", node->s.v.offset_of_frame_pointer);
           break;
 
         case FUNC_SYM:

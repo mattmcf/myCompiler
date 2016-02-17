@@ -79,4 +79,25 @@ static val_name_pair modifier_table[] = {
 #define MODIFIER_INDEX(X) ( (X) - NULL_DT )
 #define MODIFIER_NAME(X) ( modifier_table[ MODIFIER_INDEX((X)) ].name)
 
+/*
+ * Variable specie marking
+ */
+
+typedef enum {
+  GLOBAL_VAR,
+  PARAMETER_VAR,
+  LOCAL_VAR,
+  TEMP_VAR
+} variable_specie_t;
+
+static val_name_pair variable_specie_table[] = {
+  {GLOBAL_VAR, "global"},
+  {PARAMETER_VAR, "parameter"},
+  {LOCAL_VAR, "local"},
+  {TEMP_VAR, "temp"}
+};
+
+#define VAR_SPECIE_INDEX(X)    ( (X) - GLOBAL_VAR)
+#define VAR_SPECIE_NAME(X)     ( variable_specie_table[ VAR_SPECIE_INDEX((X)) ].name)
+
 #endif 	// _TYPES_H

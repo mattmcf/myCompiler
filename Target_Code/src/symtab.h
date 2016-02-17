@@ -26,6 +26,8 @@ typedef enum {
   FUNC_SYM
 } declaration_specifier_t;
 
+
+
 /*
  * ----- STRUCTS -----
  */
@@ -35,6 +37,7 @@ typedef struct var_symbol {
   type_specifier_t type;
   modifier_t modifier;
 
+  variable_specie_t specie;       // used to indicate where this thing should live in reference to the FP
   int offset_of_frame_pointer;    // bytes to subtract from frame pointer to get to bottom most byte of variable
 } var_symbol;
 
@@ -74,8 +77,8 @@ typedef struct symhashtable {
   struct ast_stack *scopeStack; /* Stack to keep track of traversed elements in scope */
 
   /* memory tracking stuff */
-  int local_base_offset;        // number of bytes this local scope lives offset from the frame pointer
-  int local_sp;                 // number of bytes from local_base to top from to first unused spot on local stack
+  //int local_base_offset;        // number of bytes this local scope lives offset from the frame pointer
+  //int local_sp;                 // number of bytes from local_base to top from to first unused spot on local stack
   temp_list * t_list;           // tracks count of local temps
 
 } symhashtable_t;
@@ -105,7 +108,7 @@ void add_scope_to_children(ast_node root, symboltable_t * symtab);
  * makes a variable of type and with modifier 
  * returns variable on stack, should save elsewhere
  */
-var_symbol init_variable(char * name, type_specifier_t type, modifier_t mod, int offset);
+var_symbol init_variable(char * name, type_specifier_t type, modifier_t mod, variable_specie_t specie);
 
 /* 
  * get_type() : returns enumerated type_specifier (definied in symtab.h)
@@ -132,8 +135,6 @@ void set_node_func(symnode_t *node, char * name, type_specifier_t type, int arg_
 
 /* Does the identifier in this node equal name? */
 int name_is_equal(symnode_t *node, char *name);
-
-
 
 
 /* Create an empty symbol table. */

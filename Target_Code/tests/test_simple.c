@@ -1,9 +1,11 @@
+int a, b, c;
+
 int foo(int a) {
   return 1;
 }
 
 void emptyfunc() {
-  print "this is the empty function";
+  print "this is the empty function\n";
   return;
 }
 

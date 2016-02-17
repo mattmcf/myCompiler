@@ -32,7 +32,7 @@ temp_var * new_temp(ast_node root, type_specifier_t type) {
   temp_list * t_list = symhashtab->t_list;
 
   // get a new temp from the list
-  temp_var * new_var = (temp_var *)malloc(sizeof(temp_var));
+  temp_var * new_var = (temp_var *)calloc(1,sizeof(temp_var));
   assert(new_var);
 
   // give unique id
@@ -42,8 +42,8 @@ temp_var * new_temp(ast_node root, type_specifier_t type) {
   char * name = make_temp_name(new_var->id);
 
   // calculate offset on local stack
-  int fp_offset = symhashtab->local_sp;
-  symhashtab->local_sp += TYPE_SIZE(type);
+  // int fp_offset = symhashtab->local_sp;
+  // symhashtab->local_sp += TYPE_SIZE(type);
 
   // add that new temp to local table under the name
   symnode_t * new_node = insert_into_symhashtable(symhashtab,name);
@@ -59,7 +59,8 @@ temp_var * new_temp(ast_node root, type_specifier_t type) {
   node_model.name = name;
   node_model.type = type;
   node_model.modifier = SINGLE_DT;
-  node_model.offset_of_frame_pointer = fp_offset;
+  node_model.specie = TEMP_VAR;
+  //node_model.offset_of_frame_pointer = fp_offset;
 
   // save to symbol table 
   set_node_var(new_node, &node_model);

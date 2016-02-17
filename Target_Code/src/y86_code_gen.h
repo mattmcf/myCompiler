@@ -30,6 +30,11 @@ int get_variable_address_off_fp(quad_arg * var);
 int get_global_address(quad_arg * global_var);
 
 
-
+/*
+ * before generating code, set all your frame pointer offsets for variables
+ *
+ * call this on root
+ */
+void set_fp_offsets(ast_node root);
 
 #endif 	// _TARGET_CODE_H

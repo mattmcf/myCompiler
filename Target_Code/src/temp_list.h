@@ -25,10 +25,7 @@ typedef struct temp_list {
  * temporary variable structure
  */
 typedef struct temp_var {
-  //char * name;
   int id;
-  //int fp_offset;    // # of bytes offset from frame pointer
-
   void * temp_symnode; 	// because compiler issue
 } temp_var;
 
