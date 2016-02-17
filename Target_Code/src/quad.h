@@ -10,6 +10,7 @@
 
 #include "types.h" 	// for val-name pair struct
 #include "temp_list.h"
+#include "symtab.h"
 
 #define QUAD_ARG_NUM 3   // MAGIC NUMBER !?!?! 
 
@@ -124,6 +125,7 @@ typedef struct quad_arg {
   int int_literal; 			// holds array offset if SYMBOL_ARR_Q_ARG (0 for singles)
   temp_var * temp;
   char * label;   			// for variable ID's, function ID's and Label ID's
+  symnode_t * symnode;
 } quad_arg;
 
 /*
