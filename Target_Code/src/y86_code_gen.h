@@ -19,7 +19,7 @@ void print_code(quad * to_translate, FILE * ys_file_ptr);
 /*
  * returns argument string to put in y86 assembly?
  */
-char * handle_quad_arg(quad_arg *);
+char * handle_quad_arg(quad_arg * arg);
 
 /*
  * Given that a variable can be a temp, local, parameter or global,
