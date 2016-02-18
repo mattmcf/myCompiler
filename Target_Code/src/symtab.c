@@ -19,6 +19,7 @@
 #include <stdio.h>
 
 #define INIT_STK_SIZE 10
+#define ACTIVATION_OFFSET 8
 
 static const int HASHSIZE = 211;
 
@@ -144,8 +145,8 @@ ast_node handle_func_decl_node(ast_node fdl, symboltable_t * symtab) {
 
       // calculate change in stack pointer -- note: push down to avoid inserting now
       arg_arr[arg_count] = init_variable(name, type, mod, PARAMETER_VAR);   // static variable on stack
-      arg_arr[arg_count].offset_of_frame_pointer = param_offset;            // need to push offsets now b/c order matters
-      param_offset += TYPE_SIZE(type);                                      // keep going
+      //arg_arr[arg_count].offset_of_frame_pointer = param_offset;            // need to push offsets now b/c order matters
+      //param_offset += TYPE_SIZE(type);                                      // keep going
 
       arg_count++;
 
@@ -159,6 +160,13 @@ ast_node handle_func_decl_node(ast_node fdl, symboltable_t * symtab) {
       /* move to next argument */
       arg = arg->right_sibling;
     }
+  }
+
+  /* set parameter offsets of frame pointer. First parameter needs to be highest off of FP */
+  int param_offset = ACTIVATION_OFFSET;
+  for (int i = arg_count - 1; i >= 0; i--) {
+    arg_arr[i].offset_of_frame_pointer = param_offset;
+    param_offset += TYPE_SIZE(arg_arr[i].type);
   }
 
   /* add function symbol to current (global) scope */

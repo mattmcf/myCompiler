@@ -325,23 +325,4 @@ void set_fp_offsets(symhashtable_t * symhash, int local_bytes, int param_bytes) 
 	return;
 }
 
-/*
- * if at the end of the symbolhashtable, returns NULL
- */
-// symnode_t * get_next_symbol(symhashtable_t * symhash, int last_slot, symnode_t * last_seen) {
-// 	// if(!symhash)
-// 	// 	return NULL;
 
-// 	// symnode_t * next_node = NULL;
-
-// 	// // FIRST CASE -- IS LAST SEEN NOT NULL?
-// 	// if (last_seen != NULL) {
-// 	// 	if (last_seen->next != NULL) { 			// not done with linked list
-// 	// 		next_node = last_seen->next;
-// 	// 	} else { 								// get to next bucket
-// 	// 		for (int i = slot)
-// 	// 	}
-// 	// }
-
-// 	return NULL;
-// }
