@@ -9,7 +9,7 @@
 #include "IR_gen.h"
 
 #define INIT_QUAD_LIST_SIZE 10
-#define PASS_WHOLE_ARRAY -1     // HACKY but it works
+#define PASS_ARR_POINTER -1     // HACKY but it works
 #define MAX_LABEL_LENGTH 100 	// should be enough?
 
 extern quad_arr * quad_list;
@@ -203,7 +203,7 @@ quad_arg * CG(ast_node root) {
           quad_arg * done_arg = create_quad_arg(LABEL_Q_ARG);
           done_arg->label = label_done;
 
-          temp_var * t1 = new_temp(root, INT_TS);
+          temp_var * t1 = new_temp(root);
 
           quad_arg * arg1 = create_quad_arg(TEMP_VAR_Q_ARG);
           arg1->temp = t1;
@@ -255,7 +255,7 @@ quad_arg * CG(ast_node root) {
           quad_arg * res_false = create_quad_arg(INT_LITERAL_Q_ARG);
           res_false->int_literal = 0;
 
-          temp_var * t1 = new_temp(root, INT_TS);
+          temp_var * t1 = new_temp(root);
           quad_arg * arg1 = create_quad_arg(TEMP_VAR_Q_ARG);
           arg1->temp = t1;
 
@@ -379,7 +379,7 @@ quad_arg * CG(ast_node root) {
             if (root->left_child->right_sibling != NULL)
               to_return->int_literal = root->left_child->right_sibling->left_child->value_int;     // get offset into array  
             else
-              to_return->int_literal = PASS_WHOLE_ARRAY;       
+              to_return->int_literal = PASS_ARR_POINTER;       
           }
           break;
         }
@@ -443,7 +443,7 @@ quad_arg * CG_assign_op(ast_node root) {
   if (arg1->type == TEMP_VAR_Q_ARG) {
     gen_quad(ASSIGN_Q, arg2, arg1, NULL);
   } else {
-    temp_var * t3 = new_temp(root,INT_TS);
+    temp_var * t3 = new_temp(root);
 
     quad_arg * arg3 = create_quad_arg(TEMP_VAR_Q_ARG);
     arg3->temp = t3;
@@ -477,7 +477,7 @@ quad_arg * CG_math_op(ast_node root, quad_op op) {
     arg2 = CG(root->left_child->right_sibling);
   }
 
-  temp_var * t3 = new_temp(root,INT_TS);
+  temp_var * t3 = new_temp(root);
 
   quad_arg * arg3 = create_quad_arg(TEMP_VAR_Q_ARG);
   arg3->temp = t3;

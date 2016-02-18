@@ -11,6 +11,8 @@
 #include "quad.h" 		// for quad struct
 #include <stdio.h>
 
+#define STK_TOP 0x0000FFFF
+
 /*
  * given a quad, print that quad's code to the ys_file
  */
@@ -30,6 +32,18 @@ int get_variable_address_off_fp(quad_arg * var);
 int get_global_address(quad_arg * global_var);
 
 
+/*
+ * before generating code, set all your frame pointer offsets for variables
+ *
+ * call this on root with `set_fp_offsets(root,0);`
+ *
+ * returns address of stack start
+ */
+void * set_variable_memory_locations(symboltable_t * symtab);
 
+/*
+ * called ONCE on the function scope table and then it explores down and sets variables
+ */
+void set_fp_offsets(symhashtable_t * symhash, int local_bytes, int param_bytes);
 
 #endif 	// _TARGET_CODE_H

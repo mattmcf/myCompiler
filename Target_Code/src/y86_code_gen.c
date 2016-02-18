@@ -7,6 +7,7 @@
 
 #include "symtab.h"
 #include "y86_code_gen.h"
+#include "types.h"
 
 /**
  * http://stackoverflow.com/questions/1021935/assembly-y86-stack-and-call-pushl-popl-and-ret-instructions
@@ -227,3 +228,136 @@ char * handle_quad_arg(quad_arg * arg) {
 
 	return to_return;
 }
+
+/*
+ * before generating code, set all your frame pointer offsets for variables
+ *
+ * call this on root with `set_fp_offsets(symtab,0);`
+ *
+ * returns the address where the stack pointer should be set before execution
+ */
+void * set_variable_memory_locations(symboltable_t * symtab) {
+	if (!symtab) {
+		fprintf(stderr,"cannot set memory locations when symboltable is null!\n");
+		return NULL;
+	}
+
+	symhashtable_t * global_scope = symtab->root;
+
+	/* set all global variable symbols */
+	int globals_size = 0;
+	symnode_t * sym;
+	for (int i = 0; i < global_scope->size; i++) {
+		if (global_scope->table[i] != NULL) {
+			sym = global_scope->table[i];
+			while (sym != NULL) {
+
+				/* for all global variables */
+				if (sym->sym_type == VAR_SYM) {
+					if (sym->s.v.modifier == SINGLE_DT) {
+
+						/* put single variable top of global list */
+						sym->s.v.offset_of_frame_pointer = globals_size;
+						sym->s.v.specie = GLOBAL_VAR;						
+						globals_size += TYPE_SIZE(sym->s.v.type);						
+					} else {
+
+						/* put array on top of global list */
+						sym->s.v.offset_of_frame_pointer = globals_size;
+						sym->s.v.specie = GLOBAL_VAR;
+						int bytes = sym->origin->left_child->right_sibling->value_int * TYPE_SIZE(sym->s.v.type);
+						globals_size += bytes;
+					}
+
+				}
+				sym = sym->next; 	// get next global variable				
+			}
+		}
+	}
+
+	/* for each function scope, set parameters, locals and temps locations in reference to the FP */
+	for (symhashtable_t * child = symtab->root->child; child != NULL; child = child->rightsib) {
+		set_fp_offsets(child, 0, TYPE_SIZE(INT_TS));
+	}
+
+	void * stack_start = (void *) ((void *)STK_TOP - (void *)globals_size);
+	return stack_start;
+}
+
+/*
+ * called ONCE on the function scope table and then it explores down and sets variables
+ */
+void set_fp_offsets(symhashtable_t * symhash, int local_bytes, int param_bytes) {
+	if (!symhash)
+		return;
+
+	symnode_t * sym;
+	for (int i = 0; i < symhash->size; i++) {
+		if (symhash->table[i] != NULL) {
+
+			sym = symhash->table[i];
+			while (sym != NULL) {
+
+				/* for all variables in scope */
+				if (sym->sym_type == VAR_SYM) {
+
+					// get specie
+					switch (sym->s.v.specie) {
+						case PARAMETER_VAR:
+							/* this was done during the creation of the parameter symbols */
+							// sym->s.v.offset_of_frame_pointer = param_bytes;
+							// param_bytes += TYPE_SIZE(sym->s.v.type);
+							break;
+
+						/* treat locals and locals the same */
+						case TEMP_VAR:
+						case LOCAL_VAR:
+
+							if (sym->s.v.modifier == SINGLE_DT) {
+
+								/* put single variable on stack*/
+								local_bytes -= TYPE_SIZE(sym->s.v.type);
+								sym->s.v.offset_of_frame_pointer = local_bytes;														
+							} else {
+
+								/* put array on stack */
+								local_bytes -= sym->origin->left_child->right_sibling->value_int * TYPE_SIZE(sym->s.v.type);
+								sym->s.v.offset_of_frame_pointer = local_bytes;
+							}	
+							break;
+
+						default:
+							break;
+					}
+				}
+				sym = sym->next; 	// get next global variable				
+			}
+		}
+	}
+
+	for (symhashtable_t * sub_scope = symhash->child; sub_scope != NULL; sub_scope = sub_scope->rightsib)
+		set_fp_offsets(sub_scope, local_bytes, param_bytes);
+
+	return;
+}
+
+/*
+ * if at the end of the symbolhashtable, returns NULL
+ */
+// symnode_t * get_next_symbol(symhashtable_t * symhash, int last_slot, symnode_t * last_seen) {
+// 	// if(!symhash)
+// 	// 	return NULL;
+
+// 	// symnode_t * next_node = NULL;
+
+// 	// // FIRST CASE -- IS LAST SEEN NOT NULL?
+// 	// if (last_seen != NULL) {
+// 	// 	if (last_seen->next != NULL) { 			// not done with linked list
+// 	// 		next_node = last_seen->next;
+// 	// 	} else { 								// get to next bucket
+// 	// 		for (int i = slot)
+// 	// 	}
+// 	// }
+
+// 	return NULL;
+// }

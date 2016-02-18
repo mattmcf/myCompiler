@@ -12,6 +12,7 @@
 #include "src/symtab.h"
 #include "src/check_sym.h"
 #include "src/IR_gen.h"
+#include "src/y86_code_gen.h"
 
 extern int yyparse(); 
 extern int yydebug; 
@@ -53,18 +54,21 @@ int main(void) {
       return 1;
     }
 
-    // printf("\n\n ----- PRETTY PRINTING AST TREE WITH TYPES -----\n");
-    // print_ast(root,0);  
+    printf("\n\n ----- PRETTY PRINTING AST TREE WITH TYPES -----\n");
+    print_ast(root,0);  
 
     /* Start to generate quads */
     quad_list = init_quad_list();
     CG(root);
 
-    // mprintf("\n\n ----- PRINTING QUAD LIST -----\n");
+    printf("\n\n ----- PRINTING QUAD LIST -----\n");
     print_quad_list();
 
-    // printf("\n\n ----- PRETTY PRINTING SYMBOLTABLE WITH TEMP VARIABLES -----\n");
-    // print_symtab(symtab);
+    void * stk_start = set_variable_memory_locations(symtab);
+    printf("Stack starts at : %p\n",stk_start);
+
+    printf("\n\n ----- PRETTY PRINTING SYMBOLTABLE WITH TEMP VARIABLES -----\n");
+    print_symtab(symtab);
 
     // clean up
     destroy_quad_list();
