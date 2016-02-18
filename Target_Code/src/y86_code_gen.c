@@ -13,6 +13,12 @@
 
 extern symboltable_t * symtab; 	// for global lookups of symbols
 
+#define DSTR_reg 0x00FFFE10 		// DISPLAY STRING DATA REGISTER
+#define DHXR_reg 0x00FFFE14			// DISPLAY HEX REGISTER
+#define KHXR_reg 0x00FFFE14 		// KEYBOARD HEX REGISTER (BLOCKING)
+#define KSTR_reg 0x00FFFE18 		// KEYBOARD STRING REGISTER (BLOCKING) -- SEE DOCUMENTATION
+#define KBDR_reg 0x00FFFE04 		// KEYBAORD DATA REGISTER 
+
 /**
  * http://stackoverflow.com/questions/1021935/assembly-y86-stack-and-call-pushl-popl-and-ret-instructions
  * Pushing and popping from stack for function calls
@@ -124,6 +130,8 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 
 		case PROLOG_Q:
 			{
+				print_nop_comment(ys_file_ptr, "function prolog\n");
+
 				fprintf(ys_file_ptr, "pushl %%ebp\n");			
 				fprintf(ys_file_ptr, "rrmovl %%esp, %%ebp\n"); 		// move esp to ebp
 
@@ -146,12 +154,14 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 			break;
 
 		case EPILOG_Q:
+			print_nop_comment(ys_file_ptr, "function epilog");
 			fprintf(ys_file_ptr, "rrmovl %%ebp, %%esp\n");
 			fprintf(ys_file_ptr, "popl %%ebp\n"); 						// return to old frame pointer
 			break;
 
 		case PRECALL_Q:
 			{
+				print_nop_comment(ys_file_ptr, "function epilog");
 				char * func_label = handle_quad_arg(to_translate->args[0]); 	// get function label	
 				fprintf(ys_file_ptr, "call %s\n",func_label); 								// pushes ret addr on stack				
 			}
@@ -161,6 +171,7 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 			// return value is in %eax
 			// pop each argument? or just move esp back to the offset of the function {}		
 			{
+				print_nop_comment(ys_file_ptr, "post return");
 				char * t1 = handle_quad_arg(to_translate->args[0]); 										// get function string for symboltable lookup
 				symnode_t * func_sym = lookup_in_symboltable(symtab, t1);		
 				fprintf(ys_file_ptr, "irmovl $%d, %%ebx\n",func_sym->s.f.stk_offset); 	// %ebx b/c return lives in %eax
@@ -192,9 +203,14 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 			break;
 
 		case STRING_Q:
+			// write label string into memory byte by byte
 			break;
 
 		case LABEL_Q:
+			{
+				char * t1 = handle_quad_arg(to_translate->args[0]); 			// get string for label
+				fprintf(stderr,"%s:\n",t1);
+			}
 			break;
 
 		default:
@@ -395,4 +411,10 @@ int set_fp_offsets(symhashtable_t * symhash, int local_bytes, int param_bytes) {
 	return lowest_offset_seen;
 }
 
+void print_nop_comment(FILE * ys_ptr, char * msg) {
+	if (!msg || !ys_ptr)
+		return;
 
+	fprintf(ys_ptr, "nop # %s\n",msg);
+	return;
+}

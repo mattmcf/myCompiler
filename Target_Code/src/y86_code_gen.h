@@ -48,4 +48,9 @@ int set_variable_memory_locations(symboltable_t * symtab);
  */
 int set_fp_offsets(symhashtable_t * symhash, int local_bytes, int param_bytes);
 
+/*
+ * prints comment line in ys
+ */
+void print_nop_comment(FILE * ys_ptr, char * msg);
+
 #endif 	// _TARGET_CODE_H
