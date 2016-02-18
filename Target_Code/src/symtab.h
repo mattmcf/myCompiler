@@ -47,7 +47,7 @@ typedef struct func_symbol {
   int arg_count;
   var_symbol * arg_arr;     // array to handle dynamically sized argument parameters
 
-  // what else?
+  int stk_offset;           // where to place esp so it's below all the locals
 } func_symbol;
 
 typedef union symbol {
@@ -78,10 +78,13 @@ typedef struct symhashtable {
   struct symhashtable *parent, *child, *rightsib;
   struct ast_stack *scopeStack; /* Stack to keep track of traversed elements in scope */
 
+  /* function symbol that owns scope */
+  symnode_t * function_owner;
+
   /* memory tracking stuff */
   //int local_base_offset;        // number of bytes this local scope lives offset from the frame pointer
   //int local_sp;                 // number of bytes from local_base to top from to first unused spot on local stack
-  temp_list * t_list;           // tracks count of local temps
+  temp_list * t_list;             // tracks count of local temps
 
 } symhashtable_t;
 

@@ -183,6 +183,9 @@ ast_node handle_func_decl_node(ast_node fdl, symboltable_t * symtab) {
     /* enter new scope -- skipping CS node */
     enter_scope(symtab, compound_stmt->left_child, fdl_node->name);
 
+    /* set function node as owner of scope and all subscopes */
+    symtab->leaf->function_owner = fdl_node;
+
     /* give function body a new temp list */
     symtab->leaf->t_list = init_temp_list();
 
@@ -550,11 +553,11 @@ void enter_scope(symboltable_t *symtab, ast_node node, char *name) {
 
     // pass temp list to child
     symtab->leaf->child->t_list = symtab->leaf->t_list;
-    // if (node->node_type == FUNC_DECLARATION_N)
-    //   symtab->leaf->child->t_list =  init_temp_list();
-    // else
-    //   symtab->leaf->child->t_list = symtab->leaf->t_list;
 
+    // pass scope owner (function)
+    symtab->leaf->child->function_owner = symtab->leaf->function_owner;
+
+    // move leaf to new scope
     symtab->leaf = symtab->leaf->child;
 
   } else {
@@ -574,11 +577,11 @@ void enter_scope(symboltable_t *symtab, ast_node node, char *name) {
 
     // pass temp list for function
     hashtable->rightsib->t_list = symtab->leaf->t_list;
-    // if (node->node_type == FUNC_DECLARATION_N)
-    //   hashtable->rightsib->t_list =  init_temp_list();
-    // else
-    //   hashtable->rightsib->t_list = symtab->leaf->t_list;
 
+    // pass scope owner (function)
+    hashtable->rightsib->function_owner = symtab->leaf->function_owner;
+
+    // move leaf to new scope
     symtab->leaf = hashtable->rightsib;
   }
 

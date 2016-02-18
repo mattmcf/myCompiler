@@ -39,11 +39,13 @@ int get_global_address(quad_arg * global_var);
  *
  * returns address of stack start
  */
-void * set_variable_memory_locations(symboltable_t * symtab);
+int set_variable_memory_locations(symboltable_t * symtab);
 
 /*
  * called ONCE on the function scope table and then it explores down and sets variables
+ * 
+ * returns lowest offset seen in function locals / temps
  */
-void set_fp_offsets(symhashtable_t * symhash, int local_bytes, int param_bytes);
+int set_fp_offsets(symhashtable_t * symhash, int local_bytes, int param_bytes);
 
 #endif 	// _TARGET_CODE_H

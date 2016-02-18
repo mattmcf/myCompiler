@@ -113,6 +113,7 @@ typedef enum quad_arg_discriminant {
   TEMP_VAR_Q_ARG,
   SYMBOL_VAR_Q_ARG,
   SYMBOL_ARR_Q_ARG,
+  SYMBOL_FUNC_Q_ARG,
   LABEL_Q_ARG,
   RETURN_Q_ARG 				// filler to build continuity
 } quad_arg_discriminant;
@@ -125,7 +126,7 @@ typedef struct quad_arg {
   int int_literal; 			// holds array offset if SYMBOL_ARR_Q_ARG (0 for singles)
   temp_var * temp;
   char * label;   			// for variable ID's, function ID's and Label ID's
-  symnode_t * symnode;
+  symnode_t * symnode; 		// function node for function labels
 } quad_arg;
 
 /*

@@ -9,6 +9,8 @@
 #include "y86_code_gen.h"
 #include "types.h"
 
+extern symboltable_t * symtab; 	// for global lookups of symbols
+
 /**
  * http://stackoverflow.com/questions/1021935/assembly-y86-stack-and-call-pushl-popl-and-ret-instructions
  * Pushing and popping from stack for function calls
@@ -119,32 +121,63 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 			break;
 
 		case PROLOG_Q:
-			fprintf(ys_file_ptr, "rrmovl %%esp, %%ebp\n");
-			// ...
+			{
+				fprintf(ys_file_ptr, "pushl %%ebp\n");			
+				fprintf(ys_file_ptr, "rrmovl %%esp, %%ebp\n"); 		// move esp to ebp
+				
+				/* 
+				 * --- set esp to bottom of local and temp space --- 
+				 * esp should be set to symnode->s.f.stk_offset for function's symbol
+				 */
+				char * t1 = handle_quad_arg(to_translate->args[0]);
+				symnode_t * func_sym = lookup_in_symboltable(symtab, t1);
+
+				// error check
+				if (!func_sym) {
+					fprintf(stderr,"error during code generation: couldn't find function symbol %s\n", t1);
+					exit(1);
+				}
+
+				fprintf(ys_file_ptr, "irmovl $%d, %%eax\n",func_sym->s.f.stk_offset);
+				fprintf(ys_file_ptr, "subl %%eax, %%esp");				
+			}
 			break;
 
 		case EPILOG_Q:
+			fprintf(ys_file_ptr, "rrmovl %%ebp, %%esp\n");
+			fprintf(ys_file_ptr, "popl %%ebp\n"); 						// return to old frame pointer
 			break;
 
 		case PRECALL_Q:
-			fprintf(ys_file_ptr, "pushl %%ebp\n");
-
+			{
+				char * func_label = handle_quad_arg(to_translate->args[0]); 	// get function label	
+				fprintf(ys_file_ptr, "call %s\n",func_label); 								// pushes ret addr on stack				
+			}
 			break;
 
 		case POSTRET_Q:
+			// return value is in %eax
 			break;
 
 		case PARAM_Q:
 			{
-				char * t1 = handle_quad_arg(to_translate[0]);
-
+				char * t1 = handle_quad_arg(to_translate->args[0]);
 				fprintf(ys_file_ptr, "mrmovl %s(%%ebp), %%eax\n", t1);
 				fprintf(ys_file_ptr, "pushl %%eax\n");
-
 				break;
 			}
 
 		case RET_Q:
+			if (to_translate->args[0] == NULL) {
+				fprintf(ys_file_ptr, "irmovl $0, %%eax\n"); 	// clear return value for void
+
+			} else if (to_translate->args[0]->type == INT_LITERAL_Q_ARG) {
+				fprintf(ys_file_ptr, "irmovl $%s, %%eax\n", handle_quad_arg(to_translate->args[0]));
+
+			} else {
+				fprintf(ys_file_ptr, "mrmovl %s(%%ebx), %%eax\n", handle_quad_arg(to_translate->args[0]));
+
+			}
 			break;
 
 		case STRING_Q:
@@ -198,7 +231,7 @@ char * handle_quad_arg(quad_arg * arg) {
 
 				if (arg->int_literal >= 0) {
 					if (arg->symnode->s.v.type == INT_TS) {
-						offset += arg->int_literal * sizeof(int);
+						offset += arg->int_literal * TYPE_SIZE(INT_TS);
 					} else {
 						printf("Array elements not integers, unknown type.\n");
 					}
@@ -236,10 +269,10 @@ char * handle_quad_arg(quad_arg * arg) {
  *
  * returns the address where the stack pointer should be set before execution
  */
-void * set_variable_memory_locations(symboltable_t * symtab) {
+int set_variable_memory_locations(symboltable_t * symtab) {
 	if (!symtab) {
 		fprintf(stderr,"cannot set memory locations when symboltable is null!\n");
-		return NULL;
+		return -1;
 	}
 
 	symhashtable_t * global_scope = symtab->root;
@@ -276,20 +309,24 @@ void * set_variable_memory_locations(symboltable_t * symtab) {
 	}
 
 	/* for each function scope, set parameters, locals and temps locations in reference to the FP */
+	int function_stk_offset;
 	for (symhashtable_t * child = symtab->root->child; child != NULL; child = child->rightsib) {
-		set_fp_offsets(child, 0, TYPE_SIZE(INT_TS));
+		function_stk_offset = set_fp_offsets(child, 0, TYPE_SIZE(INT_TS));
+		child->function_owner->s.f.stk_offset = function_stk_offset;
 	}
 
-	void * stack_start = (void *) ((void *)STK_TOP - (void *)globals_size);
+	int stack_start = (STK_TOP - globals_size);
 	return stack_start;
 }
 
 /*
  * called ONCE on the function scope table and then it explores down and sets variables
+ *
+ * returns lowest offset used
  */
-void set_fp_offsets(symhashtable_t * symhash, int local_bytes, int param_bytes) {
+int set_fp_offsets(symhashtable_t * symhash, int local_bytes, int param_bytes) {
 	if (!symhash)
-		return;
+		return local_bytes;
 
 	symnode_t * sym;
 	for (int i = 0; i < symhash->size; i++) {
@@ -335,10 +372,16 @@ void set_fp_offsets(symhashtable_t * symhash, int local_bytes, int param_bytes) 
 		}
 	}
 
-	for (symhashtable_t * sub_scope = symhash->child; sub_scope != NULL; sub_scope = sub_scope->rightsib)
-		set_fp_offsets(sub_scope, local_bytes, param_bytes);
+	int lowest_offset_seen = local_bytes;
 
-	return;
+	int new_offset;
+	for (symhashtable_t * sub_scope = symhash->child; sub_scope != NULL; sub_scope = sub_scope->rightsib) {
+		new_offset = set_fp_offsets(sub_scope, local_bytes, param_bytes);
+		if (new_offset < lowest_offset_seen)
+			lowest_offset_seen = new_offset;
+	}
+	
+	return lowest_offset_seen;
 }
 
 

@@ -311,7 +311,6 @@ quad_arg * CG(ast_node root) {
         // move that into return location
         // jump to epilog
         {
-
           ast_node pf = root->parent_function;
           char * epilog_label = new_label(pf,"EPILOG");
           quad_arg * epilog_arg = create_quad_arg(LABEL_Q_ARG);
@@ -339,6 +338,9 @@ quad_arg * CG(ast_node root) {
           }
 
           quad_arg * func_arg = CG(root->left_child);
+          // quad_arg * func_arg = create_quad_arg(SYMBOL_FUNC_Q_ARG);
+          // func_arg->symnode = root;
+          // func_arg->label = root->left_child->value_string;
           gen_quad(PRECALL_Q, func_arg, NULL, NULL);
           gen_quad(POSTRET_Q, func_arg, NULL, NULL);
 
@@ -623,6 +625,10 @@ void print_quad(quad * q) {
 
       case SYMBOL_ARR_Q_ARG:
         printf("Symbol: %s [offset: %d]",q->args[i]->label,q->args[i]->int_literal);
+        break;
+
+      case SYMBOL_FUNC_Q_ARG:
+        printf("Function Symbol: %s",q->args[i]->symnode->name);
         break;
 
       case LABEL_Q_ARG:

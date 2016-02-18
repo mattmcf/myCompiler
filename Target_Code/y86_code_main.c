@@ -22,11 +22,10 @@ int parseError = 0; 	      // global flag
 int type_error_count = 0;   // used to count type errors
 int node_count = 0;         // used to give unique node IDs
 quad_arr * quad_list = NULL;    // global quad list
-
+symboltable_t * symtab;
 
 int main(void) {
   int noRoot = 0;		/* 0 means we will have a root */
-  symboltable_t * symtab;
 
   //yydebug = 1;
   noRoot = yyparse();
@@ -64,8 +63,8 @@ int main(void) {
     printf("\n\n ----- PRINTING QUAD LIST -----\n");
     print_quad_list();
 
-    void * stk_start = set_variable_memory_locations(symtab);
-    printf("Stack starts at : %p\n",stk_start);
+    int stk_start = set_variable_memory_locations(symtab);
+    printf("Stack starts at : %x\n",stk_start);
 
     printf("\n\n ----- PRETTY PRINTING SYMBOLTABLE WITH TEMP VARIABLES -----\n");
     print_symtab(symtab);
