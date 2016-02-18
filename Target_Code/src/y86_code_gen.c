@@ -8,6 +8,11 @@
 #include "symtab.h"
 #include "y86_code_gen.h"
 
+/**
+ * http://stackoverflow.com/questions/1021935/assembly-y86-stack-and-call-pushl-popl-and-ret-instructions
+ * Pushing and popping from stack for function calls
+ */
+
 void print_code(quad * to_translate, FILE * ys_file_ptr) {
 	switch (to_translate->op) {
 		case ADD_Q:
@@ -113,19 +118,30 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 			break;
 
 		case PROLOG_Q:
+			fprintf(ys_file_ptr, "rrmovl %%esp, %%ebp\n");
+			// ...
 			break;
 
 		case EPILOG_Q:
 			break;
 
 		case PRECALL_Q:
+			fprintf(ys_file_ptr, "pushl %%ebp\n");
+
 			break;
 
 		case POSTRET_Q:
 			break;
 
 		case PARAM_Q:
-			break;
+			{
+				char * t1 = handle_quad_arg(to_translate[0]);
+
+				fprintf(ys_file_ptr, "mrmovl %s(%%ebp), %%eax\n", t1);
+				fprintf(ys_file_ptr, "pushl %%eax\n");
+
+				break;
+			}
 
 		case RET_Q:
 			break;
