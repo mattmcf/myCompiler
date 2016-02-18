@@ -9,6 +9,8 @@
 #include "y86_code_gen.h"
 #include "types.h"
 
+#define MAX_ARG_LEN 	50
+
 extern symboltable_t * symtab; 	// for global lookups of symbols
 
 /**
@@ -23,10 +25,10 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 				char * t1 = handle_quad_arg(to_translate->args[1]);
 				char * t2 = handle_quad_arg(to_translate->args[2]);
 				char * t3 = handle_quad_arg(to_translate->args[0]);
-				fprintf(ys_file_ptr, "mrmovl %s(%%ebp), %%eax\n", t1);
-				fprintf(ys_file_ptr, "mrmovl %s(%%ebp), %%ebx\n", t2);
+				fprintf(ys_file_ptr, "mrmovl %s, %%eax\n", t1);
+				fprintf(ys_file_ptr, "mrmovl %s, %%ebx\n", t2);
 				fprintf(ys_file_ptr, "addl %%ebx, %%eax\n");
-				fprintf(ys_file_ptr, "rmmovl %%eax, %s(%%ebp)\n", t3);
+				fprintf(ys_file_ptr, "rmmovl %%eax, %s\n", t3);
 				break;
 			}
 
@@ -35,10 +37,10 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 				char * t1 = handle_quad_arg(to_translate->args[1]);
 				char * t2 = handle_quad_arg(to_translate->args[2]);
 				char * t3 = handle_quad_arg(to_translate->args[0]);
-				fprintf(ys_file_ptr, "mrmovl %s(%%ebp), %%eax\n", t1);
-				fprintf(ys_file_ptr, "mrmovl %s(%%ebp), %%ebx\n", t2);
+				fprintf(ys_file_ptr, "mrmovl %s, %%eax\n", t1);
+				fprintf(ys_file_ptr, "mrmovl %s, %%ebx\n", t2);
 				fprintf(ys_file_ptr, "subl %%ebx, %%eax\n");
-				fprintf(ys_file_ptr, "rmmovl %%eax, %s(%%ebp)\n", t3);
+				fprintf(ys_file_ptr, "rmmovl %%eax, %s\n", t3);
 				break;
 			}
 
@@ -47,10 +49,10 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 				char * t1 = handle_quad_arg(to_translate->args[1]);
 				char * t2 = handle_quad_arg(to_translate->args[2]);
 				char * t3 = handle_quad_arg(to_translate->args[0]);
-				fprintf(ys_file_ptr, "mrmovl %s(%%ebp), %%eax\n", t1);
-				fprintf(ys_file_ptr, "mrmovl %s(%%ebp), %%ebx\n", t2);
+				fprintf(ys_file_ptr, "mrmovl %s, %%eax\n", t1);
+				fprintf(ys_file_ptr, "mrmovl %s, %%ebx\n", t2);
 				fprintf(ys_file_ptr, "mull %%ebx, %%eax\n");
-				fprintf(ys_file_ptr, "rmmovl %%eax, %s(%%ebp)\n", t3);
+				fprintf(ys_file_ptr, "rmmovl %%eax, %s\n", t3);
 				break;
 			}
 
@@ -59,10 +61,10 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 				char * t1 = handle_quad_arg(to_translate->args[1]);
 				char * t2 = handle_quad_arg(to_translate->args[2]);
 				char * t3 = handle_quad_arg(to_translate->args[0]);
-				fprintf(ys_file_ptr, "mrmovl %s(%%ebp), %%eax\n", t1);
-				fprintf(ys_file_ptr, "mrmovl %s(%%ebp), %%ebx\n", t2);
+				fprintf(ys_file_ptr, "mrmovl %s, %%eax\n", t1);
+				fprintf(ys_file_ptr, "mrmovl %s, %%ebx\n", t2);
 				fprintf(ys_file_ptr, "divl %%ebx, %%eax\n");
-				fprintf(ys_file_ptr, "rmmovl %%eax, %s(%%ebp)\n", t3);
+				fprintf(ys_file_ptr, "rmmovl %%eax, %s\n", t3);
 				break;
 			}
 
@@ -71,10 +73,10 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 				char * t1 = handle_quad_arg(to_translate->args[1]);
 				char * t2 = handle_quad_arg(to_translate->args[2]);
 				char * t3 = handle_quad_arg(to_translate->args[0]);
-				fprintf(ys_file_ptr, "mrmovl %s(%%ebp), %%eax\n", t1);
-				fprintf(ys_file_ptr, "mrmovl %s(%%ebp), %%ebx\n", t2);
+				fprintf(ys_file_ptr, "mrmovl %s, %%eax\n", t1);
+				fprintf(ys_file_ptr, "mrmovl %s, %%ebx\n", t2);
 				fprintf(ys_file_ptr, "modl %%ebx, %%eax\n");
-				fprintf(ys_file_ptr, "rmmovl %%eax, %s(%%ebp)\n", t3);
+				fprintf(ys_file_ptr, "rmmovl %%eax, %s\n", t3);
 				break;
 			}
 
@@ -124,7 +126,7 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 			{
 				fprintf(ys_file_ptr, "pushl %%ebp\n");			
 				fprintf(ys_file_ptr, "rrmovl %%esp, %%ebp\n"); 		// move esp to ebp
-				
+
 				/* 
 				 * --- set esp to bottom of local and temp space --- 
 				 * esp should be set to symnode->s.f.stk_offset for function's symbol
@@ -157,26 +159,35 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 
 		case POSTRET_Q:
 			// return value is in %eax
+			// pop each argument? or just move esp back to the offset of the function {}		
+			{
+				char * t1 = handle_quad_arg(to_translate->args[0]); 										// get function string for symboltable lookup
+				symnode_t * func_sym = lookup_in_symboltable(symtab, t1);		
+				fprintf(ys_file_ptr, "irmovl $%d, %%ebx\n",func_sym->s.f.stk_offset); 	// %ebx b/c return lives in %eax
+				fprintf(ys_file_ptr, "subl %%ebx, %%esp");								
+			}
 			break;
 
 		case PARAM_Q:
 			{
 				char * t1 = handle_quad_arg(to_translate->args[0]);
-				fprintf(ys_file_ptr, "mrmovl %s(%%ebp), %%eax\n", t1);
+				fprintf(ys_file_ptr, "mrmovl %s, %%eax\n", t1);
 				fprintf(ys_file_ptr, "pushl %%eax\n");
 				break;
 			}
 
 		case RET_Q:
+			// void return
 			if (to_translate->args[0] == NULL) {
 				fprintf(ys_file_ptr, "irmovl $0, %%eax\n"); 	// clear return value for void
 
+			// constant return
 			} else if (to_translate->args[0]->type == INT_LITERAL_Q_ARG) {
 				fprintf(ys_file_ptr, "irmovl $%s, %%eax\n", handle_quad_arg(to_translate->args[0]));
 
+			// variable return
 			} else {
-				fprintf(ys_file_ptr, "mrmovl %s(%%ebx), %%eax\n", handle_quad_arg(to_translate->args[0]));
-
+				fprintf(ys_file_ptr, "mrmovl %s, %%eax\n", handle_quad_arg(to_translate->args[0]));
 			}
 			break;
 
@@ -196,9 +207,9 @@ char * handle_quad_arg(quad_arg * arg) {
 	switch (arg->type) {
 		case INT_LITERAL_Q_ARG:
 			{
-				int len = floor(log10(abs(INT_MAX))) + 2;
-				char int_str[len];
-				sprintf(int_str, "%d", arg->int_literal);
+				//int len = floor(log10(abs(INT_MAX))) + 2;
+				char int_str[MAX_ARG_LEN];
+				sprintf(int_str, "%d(%%ebp)", arg->int_literal);
 				to_return = strdup(int_str);
 				break;
 			}
@@ -209,7 +220,7 @@ char * handle_quad_arg(quad_arg * arg) {
 
 				int len = floor(log10(abs(INT_MAX))) + 2;
 				char int_str[len];
-				sprintf(int_str, "%d", fp_offset);
+				sprintf(int_str, "%d(%%ebp)", fp_offset);
 				to_return = strdup(int_str);
 				break;
 			}
@@ -220,7 +231,7 @@ char * handle_quad_arg(quad_arg * arg) {
 
 				int len = floor(log10(abs(INT_MAX))) + 2;
 				char int_str[len];
-				sprintf(int_str, "%d", fp_offset);
+				sprintf(int_str, "%d(%%ebp)", fp_offset);
 				to_return = strdup(int_str);
 				break;
 			}
@@ -239,7 +250,7 @@ char * handle_quad_arg(quad_arg * arg) {
 
 				int len = floor(log10(abs(INT_MAX))) + 2;
 				char int_str[len];
-				sprintf(int_str, "%d", offset);
+				sprintf(int_str, "%d(%%ebp)", offset);
 				to_return = strdup(int_str);
 				break;
 			}
