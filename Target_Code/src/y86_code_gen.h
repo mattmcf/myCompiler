@@ -9,9 +9,8 @@
 #define _TARGET_CODE_H
 
 #include "quad.h" 		// for quad struct
-#include <stdio.h>
+#include <stdio.h> 		// for FILE *
 
-#define STK_TOP 0x0000FFFF
 
 /*
  * creates ys file from global quad_list

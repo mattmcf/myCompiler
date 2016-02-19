@@ -11,6 +11,8 @@
 
 #define MAX_ARG_LEN 	50
 #define MAX_HEX_ADDRESS_LEN 11 	// 0x????????'\n' is 11 characters for a string (with null terminator)
+#define STK_TOP 0x0000FFFF
+
 
 extern symboltable_t * symtab; 	// for global lookups of symbols
 extern quad_arr * quad_list;
@@ -51,8 +53,9 @@ int create_ys(char * file_name) {
 
 	int stk_start = set_variable_memory_locations(symtab);
 	printf("stack starks at %x\n",stk_start);
+	//fprintf(ys_fp,"0start_label:\n");	
 	print_nop_comment(ys_fp, "initialization", -1);
-	fprintf(ys_fp,"\tirmovl %x, %%esp\n",stk_start);
+	fprintf(ys_fp,"\tirmovl 0x%x, %%esp\n",stk_start);
 	fprintf(ys_fp,"\trrmovl %%esp, %%ebp\n");
 	fprintf(ys_fp,"\tirmovl $4, %%eax\n");
 	fprintf(ys_fp,"\tsubl %%eax, %%esp\n");
@@ -152,6 +155,14 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 			break;
 
 		case ASSIGN_Q:
+			print_nop_comment(ys_file_ptr, "assignment", to_translate->number);
+			{
+				char * t1 = handle_quad_arg(to_translate->args[1]);
+				char * t3 = handle_quad_arg(to_translate->args[0]);
+				fprintf(ys_file_ptr, "\tmrmovl %s, %%eax\n", t1);
+				fprintf(ys_file_ptr, "\trmmovl %%eax, %s\n", t3);
+				break;
+			}		
 			break;
 
 		case LT_Q:
@@ -245,7 +256,10 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 
 		case PARAM_Q:
 
-		/* need to handle case when handling an array pointer or just an array element -- PASS_ARR_POINTER from IR_gen.c */
+		/* need to handle case when handling an array pointer or just an array element -- PASS_ARR_POINTER from IR_gen.c 
+		 * if the int literal is -1 -> pass array head address
+		 * if the int literal isn't -1, copy the data at the element to a param and then push it
+		 */
 
 			{
 				char * t1 = handle_quad_arg(to_translate->args[0]);
@@ -321,7 +335,7 @@ char * handle_quad_arg(quad_arg * arg) {
 
 				/* return absolute address */
 				char global_address_str[MAX_HEX_ADDRESS_LEN];
-				sprintf(global_address_str, "%x",arg->symnode->s.v.offset_of_frame_pointer); 	// global address
+				sprintf(global_address_str, "0x%x",arg->symnode->s.v.offset_of_frame_pointer); 	// global address
 				to_return = strdup(global_address_str);	
 
 			} else {
@@ -352,7 +366,7 @@ char * handle_quad_arg(quad_arg * arg) {
 					}
 				} 
 
-				sprintf(global_address_str, "%x",arg->symnode->s.v.offset_of_frame_pointer);
+				sprintf(global_address_str, "0x%x",arg->symnode->s.v.offset_of_frame_pointer);
 				to_return = strdup(global_address_str);	
 			} else {
 
@@ -396,6 +410,17 @@ char * handle_quad_arg(quad_arg * arg) {
 
 	printf("exiting handle quad arg (returning %s)\n",to_return);
 	return to_return;
+}
+
+/*
+ * add a "comment" to ys
+ */
+void print_nop_comment(FILE * ys_ptr, char * msg, int id) {
+	if (!msg || !ys_ptr)
+		return;
+
+	fprintf(ys_ptr, "\tnop # (quad %d) -- %s\n",id,msg);
+	return;
 }
 
 /*
@@ -521,10 +546,4 @@ int set_fp_offsets(symhashtable_t * symhash, int local_bytes, int param_bytes) {
 	return lowest_offset_seen;
 }
 
-void print_nop_comment(FILE * ys_ptr, char * msg, int id) {
-	if (!msg || !ys_ptr)
-		return;
 
-	fprintf(ys_ptr, "\n\tnop\n\tnop # (quad %d) -- %s\n\tnop\n",id,msg);
-	return;
-}

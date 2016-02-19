@@ -66,7 +66,7 @@ int main(void) {
     printf("\n\n ----- PRETTY PRINTING SYMBOLTABLE WITH TEMP VARIABLES -----\n");
     print_symtab(symtab);
 
-    create_ys("my_file");
+    create_ys("myfile");
 
     // clean up
     destroy_quad_list();

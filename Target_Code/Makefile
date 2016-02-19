@@ -35,7 +35,7 @@ parser.tab.c : parser.y
 
 
 clean :
-	rm -f IR_gen gen_target_code $(SRC_DIR)*.o *.o \
+	rm -f IR_gen gen_target_code $(SRC_DIR)*.o *.o *.yo *.ys \
 	parser.tab.h parser.tab.c lex.yy.c *~ parser.output \
 	&& rm -rf results
 
