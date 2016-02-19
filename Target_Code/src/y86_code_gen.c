@@ -17,8 +17,8 @@ extern quad_arr * quad_list;
 
 #define DSTR_reg 0x00FFFE10 		// DISPLAY STRING DATA REGISTER
 #define DHXR_reg 0x00FFFE14			// DISPLAY HEX REGISTER
-#define KHXR_reg 0x00FFFE14 		// KEYBOARD HEX REGISTER (BLOCKING)
 #define KSTR_reg 0x00FFFE18 		// KEYBOARD STRING REGISTER (BLOCKING) -- SEE DOCUMENTATION
+#define KHXR_reg 0x00FFFE1C 		// KEYBOARD HEX REGISTER (BLOCKING)
 #define KBDR_reg 0x00FFFE04 		// KEYBAORD DATA REGISTER 
 
 /**
@@ -173,6 +173,10 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 			break;
 
 		case GOTO_Q:
+			{
+				char * jmp_label = handle_quad_arg(to_translate->args[0]);
+				fprintf(ys_file_ptr,"\tjmp %s\n",jmp_label); 
+			}
 			break;
 
 		case PRINT_Q:
@@ -185,13 +189,6 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 			{
 				print_nop_comment(ys_file_ptr, "function prolog", to_translate->number);
 
-				fprintf(ys_file_ptr, "\tpushl %%ebp\n");			
-				fprintf(ys_file_ptr, "\trrmovl %%esp, %%ebp\n"); 		// move esp to ebp
-
-				/* 
-				 * --- set esp to bottom of local and temp space --- 
-				 * esp should be set to symnode->s.f.stk_offset for function's symbol
-				 */
 				char * t1 = handle_quad_arg(to_translate->args[0]);
 				printf("looking for %s in symboltable\n",t1);
 				symnode_t * func_sym = find_in_top_symboltable(symtab, t1);
@@ -202,15 +199,28 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 					exit(1);
 				}
 
+				fprintf(ys_file_ptr, "%s:\n",t1);
+				fprintf(ys_file_ptr, "\tpushl %%ebp\n");			
+				fprintf(ys_file_ptr, "\trrmovl %%esp, %%ebp\n"); 		// move esp to ebp
+				/* 
+				 * --- set esp to bottom of local and temp space --- 
+				 * esp should be set to symnode->s.f.stk_offset for function's symbol
+				 */
 				fprintf(ys_file_ptr, "\tirmovl $%d, %%eax\n",func_sym->s.f.stk_offset);
 				fprintf(ys_file_ptr, "\tsubl %%eax, %%esp");				
 			}
 			break;
 
 		case EPILOG_Q:
-			print_nop_comment(ys_file_ptr, "function epilog", to_translate->number);
-			fprintf(ys_file_ptr, "\trrmovl %%ebp, %%esp\n");
-			fprintf(ys_file_ptr, "\tpopl %%ebp\n"); 						// return to old frame pointer
+			{
+				print_nop_comment(ys_file_ptr, "function epilog", to_translate->number);
+
+				//char * epilog_label = handle_quad_arg(to_translate->args[0]);
+				//fprintf(ys_file_ptr, "%s:\n",epilog_label);
+				fprintf(ys_file_ptr, "\trrmovl %%ebp, %%esp\n");
+				fprintf(ys_file_ptr, "\tpopl %%ebp\n"); 						// return to old frame pointer
+			}
+
 			break;
 
 		case PRECALL_Q:
@@ -245,6 +255,8 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 			}
 
 		case RET_Q:
+			print_nop_comment(ys_file_ptr, "return statement", to_translate->number);
+
 			// void return
 			if (to_translate->args[0] == NULL) {
 				fprintf(ys_file_ptr, "\tirmovl $0, %%eax\n"); 	// clear return value for void
@@ -266,7 +278,7 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 		case LABEL_Q:
 			{
 				char * t1 = handle_quad_arg(to_translate->args[0]); 			// get string for label
-				fprintf(stderr,"%s:\n",t1);
+				fprintf(ys_file_ptr,"%s:\n",t1);
 			}
 			break;
 
@@ -382,7 +394,7 @@ char * handle_quad_arg(quad_arg * arg) {
 			break;
 	}
 
-	printf("exiting handle quad arg\n");
+	printf("exiting handle quad arg (returning %s)\n",to_return);
 	return to_return;
 }
 

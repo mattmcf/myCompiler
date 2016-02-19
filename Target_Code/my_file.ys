@@ -10,6 +10,7 @@
 	nop
 	nop # (quad 0) -- function prolog
 	nop
+main:
 	pushl %ebp
 	rrmovl %esp, %ebp
 	irmovl $-20, %eax
@@ -17,7 +18,13 @@
 	mrmovl -12(%ebp), %ebx
 	addl %ebx, %eax
 	rmmovl %eax, -20(%ebp)
+
+	nop
+	nop # (quad 7) -- return statement
+	nop
 	mrmovl -8(%ebp), %eax
+	jmp L_N44_EPILOG
+L_N44_EPILOG:
 
 	nop
 	nop # (quad 10) -- function epilog
