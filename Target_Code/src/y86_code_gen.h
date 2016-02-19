@@ -14,6 +14,11 @@
 #define STK_TOP 0x0000FFFF
 
 /*
+ * creates ys file from global quad_list
+ */
+int create_ys(char * file_name);
+
+/*
  * given a quad, print that quad's code to the ys_file
  */
 void print_code(quad * to_translate, FILE * ys_file_ptr);
@@ -51,6 +56,6 @@ int set_fp_offsets(symhashtable_t * symhash, int local_bytes, int param_bytes);
 /*
  * prints comment line in ys
  */
-void print_nop_comment(FILE * ys_ptr, char * msg);
+void print_nop_comment(FILE * ys_ptr, char * msg, int id);
 
 #endif 	// _TARGET_CODE_H

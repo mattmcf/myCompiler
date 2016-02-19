@@ -63,15 +63,13 @@ int main(void) {
     printf("\n\n ----- PRINTING QUAD LIST -----\n");
     print_quad_list();
 
-    int stk_start = set_variable_memory_locations(symtab);
-    printf("Stack starts at : %x\n",stk_start);
-
     printf("\n\n ----- PRETTY PRINTING SYMBOLTABLE WITH TEMP VARIABLES -----\n");
     print_symtab(symtab);
 
+    create_ys("my_file");
+
     // clean up
     destroy_quad_list();
-
   }
 
   return 0;

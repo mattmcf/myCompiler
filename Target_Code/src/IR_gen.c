@@ -292,6 +292,7 @@ quad_arg * CG(ast_node root) {
           ast_node func_id = root->left_child->right_sibling;
 
           quad_arg * func_arg = CG(func_id);
+          func_arg->symnode = look_up_scopes_to_find_symbol(root->scope_table, func_id->value_string);
           gen_quad(PROLOG_Q, func_arg, NULL, NULL);
 
           CG(root->left_child->right_sibling->right_sibling->right_sibling);
@@ -373,9 +374,11 @@ quad_arg * CG(ast_node root) {
           if (root->left_child->right_sibling == NULL && root->mod == SINGLE_DT) {
             to_return = create_quad_arg(SYMBOL_VAR_Q_ARG);
             to_return->label = root->left_child->value_string;
+            to_return->symnode = look_up_scopes_to_find_symbol(root->scope_table, to_return->label);
           } else {
             to_return = create_quad_arg(SYMBOL_ARR_Q_ARG);
             to_return->label = root->left_child->value_string;
+            to_return->symnode = look_up_scopes_to_find_symbol(root->scope_table, to_return->label);
 
             // check if accessing like an array
             if (root->left_child->right_sibling != NULL)
@@ -563,6 +566,7 @@ int gen_quad(quad_op operation, quad_arg * a1, quad_arg * a2, quad_arg * a3) {
     return 1;
 
   quad_list->arr[quad_list->count] = (quad *)calloc(1,sizeof(quad));
+  quad_list->arr[quad_list->count]->number = quad_list->count;
   quad_list->arr[quad_list->count]->op = operation;
   quad_list->arr[quad_list->count]->args[0] = a1;
   quad_list->arr[quad_list->count]->args[1] = a2;
@@ -600,7 +604,7 @@ void print_quad_list() {
 void print_quad(quad * q) {
 
   /* print quad operation */
-  printf("(%s, ",QUAD_NAME(q->op));
+  printf("%d -- (%s, ",q->number,QUAD_NAME(q->op));
 
   /* print three arguments */
   quad_arg arg;

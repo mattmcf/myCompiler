@@ -158,9 +158,17 @@ symnode_t *lookup_in_symboltable(symboltable_t *symtab, char *name);
 /* Lookup an entry in a symbol hash table. Returns NULL if symnode not found */
 symnode_t *lookup_symhashtable(symhashtable_t *hashtable, char *name, int slot);
 
+/*
+ * returns NULL if not found
+ */
+symnode_t * look_up_scopes_to_find_symbol(symhashtable_t * first_scope, char *name);
+
 /* Insert a new entry into a symhashtable, but only if it is not
    already present. */
 symnode_t *insert_into_symhashtable(symhashtable_t *hashtable, char *name, ast_node origin);
+
+/* search top level scope for symbol */
+symnode_t * find_in_top_symboltable(symboltable_t * symtab, char * name);
 
 /* Enter a new scope. */
 void enter_scope(symboltable_t *symtab, ast_node node, char *name);

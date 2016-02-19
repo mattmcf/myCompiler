@@ -137,6 +137,7 @@ typedef struct quad_arg {
  * arg1 / arg2 -> can be registers, numbers or labels
  */
 typedef struct quad {
+  int number;
   quad_op op;
   quad_arg * args[QUAD_ARG_NUM];
 } quad;

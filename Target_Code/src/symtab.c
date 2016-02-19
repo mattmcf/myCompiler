@@ -455,6 +455,24 @@ symnode_t *lookup_symhashtable(symhashtable_t *hashtable, char *name,
   return node;
 }
 
+/*
+ * returns NULL if not found
+ */
+symnode_t * look_up_scopes_to_find_symbol(symhashtable_t * first_scope, char *name) {
+  if (!first_scope || !name)
+    return NULL;
+
+  symnode_t * node = NULL;
+  symhashtable_t * cur_scope = first_scope;
+  while (cur_scope != NULL && !node) {
+    node = lookup_symhashtable(cur_scope, name, NOHASHSLOT);
+    cur_scope = cur_scope->parent;
+  }
+
+  return node;
+}
+
+
 /* Insert a new entry into a symhashtable, but only if it is not
    already present. */
 symnode_t *insert_into_symhashtable(symhashtable_t *hashtable, char *name, ast_node origin) {
@@ -523,6 +541,10 @@ symnode_t *lookup_in_symboltable(symboltable_t  *symtab, char *name) {
 
   assert(symtab);
 
+  if (symtab->leaf == NULL) {
+    printf("leaf is null!\n");
+  }
+
   for (node = NULL, hashtable = symtab->leaf;
        (node == NULL) &&  (hashtable != NULL);
        hashtable = hashtable->parent) {
@@ -531,6 +553,18 @@ symnode_t *lookup_in_symboltable(symboltable_t  *symtab, char *name) {
 
   return node;
 }
+
+symnode_t * find_in_top_symboltable(symboltable_t * symtab, char * name) {
+  if (!name || !symtab)
+    return NULL;
+
+  symnode_t * node = NULL;
+  node = lookup_symhashtable(symtab->root, name, NOHASHSLOT);
+
+
+  return node;
+}
+
 
 /*
   Functions for entering and leaving scope
