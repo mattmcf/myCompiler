@@ -22,8 +22,16 @@ quad_arg * CG(ast_node root) {
       // Switch on node types to handle root
       case VAR_DECL_N:
         // Check if there is a RHS value
-        if (root->left_child->right_sibling != NULL && root->left_child->mod == SINGLE_DT) {
-          to_return = CG_assign_op(root);
+        if ( (root->left_child->mod == SINGLE_DT) && (root->left_child->right_sibling != NULL) ) {
+          quad_arg * var_arg, * initialization_value;
+
+          var_arg = create_quad_arg(SYMBOL_VAR_Q_ARG);
+          var_arg->label = root->left_child->value_string;
+          var_arg->symnode = look_up_scopes_to_find_symbol(root->left_child->scope_table, var_arg->label);
+
+          initialization_value = CG(root->left_child->right_sibling);          
+
+          gen_quad(ASSIGN_Q, var_arg, initialization_value, NULL);
         }
         break;
 

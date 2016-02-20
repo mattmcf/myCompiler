@@ -196,6 +196,7 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 			break;
 
 		case PRINT_Q:
+			print_nop_comment(ys_file_ptr, "printing", to_translate->number);
 			{
 				switch(to_translate->args[0]->type){
 					case LABEL_Q_ARG:
@@ -203,6 +204,16 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 						fprintf(ys_file_ptr, "\trmmovl %%eax, 0x%x\n",DSTR_reg);
 						break;
 
+					case SYMBOL_ARR_Q_ARG:
+					case SYMBOL_VAR_Q_ARG:
+					case TEMP_VAR_Q_ARG:
+						{
+							char * arg = handle_quad_arg(to_translate->args[0]);
+							fprintf(ys_file_ptr,"\t%s %s, %%eax\n", get_move_type(to_translate->args[0]), arg);
+							fprintf(ys_file_ptr,"\trmmovl %%eax, 0x%x\n",DHXR_reg);
+						}
+						break;
+						
 					default:
 						break;
 				}

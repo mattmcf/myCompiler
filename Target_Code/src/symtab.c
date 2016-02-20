@@ -234,6 +234,7 @@ void handle_var_decl_line_node(ast_node vdl, symboltable_t * symtab) {
     char *name = child->left_child->value_string;
     modifier_t mod;
 
+    child->left_child->type = this_type;
     if (child->left_child->right_sibling == NULL) {
       mod = SINGLE_DT;
     } else if (child->left_child->right_sibling->node_type == INT_LITERAL_N) {
@@ -241,6 +242,7 @@ void handle_var_decl_line_node(ast_node vdl, symboltable_t * symtab) {
     } else {
       mod = SINGLE_DT;
     }
+    child->left_child->mod = mod;
 
     // Insert symnode for variable
     symnode_t *var_node = insert_into_symboltable(symtab, name, child);
