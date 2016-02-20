@@ -26,6 +26,8 @@ extern quad_arr * quad_list;
 /**
  * http://stackoverflow.com/questions/1021935/assembly-y86-stack-and-call-pushl-popl-and-ret-instructions
  * Pushing and popping from stack for function calls
+ *
+ * http://web.cse.ohio-state.edu/~reeves/CSE2421sp13/PracticeProblemsY86.pdf -- more subroutine examples
  */
 
 /*
@@ -53,12 +55,15 @@ int create_ys(char * file_name) {
 
 	int stk_start = set_variable_memory_locations(symtab);
 	printf("stack starks at %x\n",stk_start);
-	//fprintf(ys_fp,"0start_label:\n");	
+	fprintf(ys_fp,".pos 0\n");	
 	print_nop_comment(ys_fp, "initialization", -1);
 	fprintf(ys_fp,"\tirmovl 0x%x, %%esp\n",stk_start);
 	fprintf(ys_fp,"\trrmovl %%esp, %%ebp\n");
 	fprintf(ys_fp,"\tirmovl $4, %%eax\n");
 	fprintf(ys_fp,"\tsubl %%eax, %%esp\n");
+
+	fprintf(ys_fp, "\tcall main\n");
+	fprintf(ys_fp, "\thalt\n");
 
 	/* translate quad list */
 
@@ -69,8 +74,8 @@ int create_ys(char * file_name) {
 
 	/* wrap up */
 
-	print_nop_comment(ys_fp, "done", -1);
-	fprintf(ys_fp,"\thalt\n\n");	
+	// print_nop_comment(ys_fp, "done", -1);
+	// fprintf(ys_fp,"\thalt\n\n");	
 	fclose(ys_fp);
 
 	printf("\n----- PRINTED YS FILE %s ----- \n",file_name);
@@ -87,8 +92,8 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 				char * t1 = handle_quad_arg(to_translate->args[1]);
 				char * t2 = handle_quad_arg(to_translate->args[2]);
 				char * t3 = handle_quad_arg(to_translate->args[0]);
-				fprintf(ys_file_ptr, "\tmrmovl %s, %%eax\n", t1);
-				fprintf(ys_file_ptr, "\tmrmovl %s, %%ebx\n", t2);
+				fprintf(ys_file_ptr, "\t%s %s, %%eax\n", get_move_type(to_translate->args[1]),t1);
+				fprintf(ys_file_ptr, "\t%s %s, %%ebx\n", get_move_type(to_translate->args[2]),t2);
 				fprintf(ys_file_ptr, "\taddl %%ebx, %%eax\n");
 				fprintf(ys_file_ptr, "\trmmovl %%eax, %s\n", t3);
 				break;
@@ -99,8 +104,8 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 				char * t1 = handle_quad_arg(to_translate->args[1]);
 				char * t2 = handle_quad_arg(to_translate->args[2]);
 				char * t3 = handle_quad_arg(to_translate->args[0]);
-				fprintf(ys_file_ptr, "\tmrmovl %s, %%eax\n", t1);
-				fprintf(ys_file_ptr, "\tmrmovl %s, %%ebx\n", t2);
+				fprintf(ys_file_ptr, "\t%s %s, %%eax\n", get_move_type(to_translate->args[1]),t1);
+				fprintf(ys_file_ptr, "\t%s %s, %%ebx\n", get_move_type(to_translate->args[2]),t2);
 				fprintf(ys_file_ptr, "\tsubl %%ebx, %%eax\n");
 				fprintf(ys_file_ptr, "\trmmovl %%eax, %s\n", t3);
 				break;
@@ -111,8 +116,8 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 				char * t1 = handle_quad_arg(to_translate->args[1]);
 				char * t2 = handle_quad_arg(to_translate->args[2]);
 				char * t3 = handle_quad_arg(to_translate->args[0]);
-				fprintf(ys_file_ptr, "\tmrmovl %s, %%eax\n", t1);
-				fprintf(ys_file_ptr, "\tmrmovl %s, %%ebx\n", t2);
+				fprintf(ys_file_ptr, "\t%s %s, %%eax\n", get_move_type(to_translate->args[1]),t1);
+				fprintf(ys_file_ptr, "\t%s %s, %%ebx\n", get_move_type(to_translate->args[2]),t2);
 				fprintf(ys_file_ptr, "\tmull %%ebx, %%eax\n");
 				fprintf(ys_file_ptr, "\trmmovl %%eax, %s\n", t3);
 				break;
@@ -123,8 +128,8 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 				char * t1 = handle_quad_arg(to_translate->args[1]);
 				char * t2 = handle_quad_arg(to_translate->args[2]);
 				char * t3 = handle_quad_arg(to_translate->args[0]);
-				fprintf(ys_file_ptr, "\tmrmovl %s, %%eax\n", t1);
-				fprintf(ys_file_ptr, "\tmrmovl %s, %%ebx\n", t2);
+				fprintf(ys_file_ptr, "\t%s %s, %%eax\n", get_move_type(to_translate->args[1]),t1);
+				fprintf(ys_file_ptr, "\t%s %s, %%ebx\n", get_move_type(to_translate->args[2]),t2);
 				fprintf(ys_file_ptr, "\tdivl %%ebx, %%eax\n");
 				fprintf(ys_file_ptr, "\trmmovl %%eax, %s\n", t3);
 				break;
@@ -135,8 +140,8 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 				char * t1 = handle_quad_arg(to_translate->args[1]);
 				char * t2 = handle_quad_arg(to_translate->args[2]);
 				char * t3 = handle_quad_arg(to_translate->args[0]);
-				fprintf(ys_file_ptr, "\tmrmovl %s, %%eax\n", t1);
-				fprintf(ys_file_ptr, "\tmrmovl %s, %%ebx\n", t2);
+				fprintf(ys_file_ptr, "\t%s %s, %%eax\n", get_move_type(to_translate->args[1]),t1);
+				fprintf(ys_file_ptr, "\t%s %s, %%ebx\n", get_move_type(to_translate->args[2]),t2);
 				fprintf(ys_file_ptr, "\tmodl %%ebx, %%eax\n");
 				fprintf(ys_file_ptr, "\trmmovl %%eax, %s\n", t3);
 				break;
@@ -159,7 +164,7 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 			{
 				char * t1 = handle_quad_arg(to_translate->args[1]);
 				char * t3 = handle_quad_arg(to_translate->args[0]);
-				fprintf(ys_file_ptr, "\tmrmovl %s, %%eax\n", t1);
+				fprintf(ys_file_ptr, "\t%s %s, %%eax\n", get_move_type(to_translate->args[1]),t1);
 				fprintf(ys_file_ptr, "\trmmovl %%eax, %s\n", t3);
 				break;
 			}		
@@ -191,6 +196,17 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 			break;
 
 		case PRINT_Q:
+			{
+				switch(to_translate->args[0]->type){
+					case LABEL_Q_ARG:
+						fprintf(ys_file_ptr, "\tirmovl %s, %%eax\n",to_translate->args[0]->label);
+						fprintf(ys_file_ptr, "\trmmovl %%eax, 0x%x\n",DSTR_reg);
+						break;
+
+					default:
+						break;
+				}
+			}
 			break;
 
 		case READ_Q:
@@ -218,7 +234,7 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 				 * esp should be set to symnode->s.f.stk_offset for function's symbol
 				 */
 				fprintf(ys_file_ptr, "\tirmovl $%d, %%eax\n",func_sym->s.f.stk_offset);
-				fprintf(ys_file_ptr, "\tsubl %%eax, %%esp");				
+				fprintf(ys_file_ptr, "\tsubl %%eax, %%esp\n");				
 			}
 			break;
 
@@ -230,13 +246,14 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 				//fprintf(ys_file_ptr, "%s:\n",epilog_label);
 				fprintf(ys_file_ptr, "\trrmovl %%ebp, %%esp\n");
 				fprintf(ys_file_ptr, "\tpopl %%ebp\n"); 						// return to old frame pointer
+				fprintf(ys_file_ptr, "\tret\n");
 			}
 
 			break;
 
 		case PRECALL_Q:
 			{
-				print_nop_comment(ys_file_ptr, "function epilog", to_translate->number);
+				print_nop_comment(ys_file_ptr, "function precall", to_translate->number);
 				char * func_label = handle_quad_arg(to_translate->args[0]); 	// get function label	
 				fprintf(ys_file_ptr, "\tcall %s\n",func_label); 								// pushes ret addr on stack				
 			}
@@ -248,9 +265,9 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 			{
 				print_nop_comment(ys_file_ptr, "post return", to_translate->number);
 				char * t1 = handle_quad_arg(to_translate->args[0]); 										// get function string for symboltable lookup
-				symnode_t * func_sym = lookup_in_symboltable(symtab, t1);		
+				symnode_t * func_sym = find_in_top_symboltable(symtab, t1);		
 				fprintf(ys_file_ptr, "\tirmovl $%d, %%ebx\n",func_sym->s.f.stk_offset); 	// %ebx b/c return lives in %eax
-				fprintf(ys_file_ptr, "\tsubl %%ebx, %%esp");								
+				fprintf(ys_file_ptr, "\tsubl %%ebx, %%esp\n");								
 			}
 			break;
 
@@ -286,7 +303,14 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 			break;
 
 		case STRING_Q:
-			// write label string into memory byte by byte
+			{
+				int len = strlen(to_translate->args[0]->label);
+				//fprintf(ys_file_ptr,"\t.align 4\n");
+				for (int i = 0; i < len; i++) {
+					fprintf(ys_file_ptr,"\t.byte 0x%x\n",to_translate->args[0]->label[i]);
+				}
+				fprintf(ys_file_ptr,"\t.byte 0x0\n"); 	// null terminator
+			}
 			break;
 
 		case LABEL_Q:
@@ -301,6 +325,22 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 	}
 }
 
+char * get_move_type(quad_arg * src) {
+	if (!src)
+		return NULL;
+
+	char * mov_str;
+	if (src->type == RETURN_Q_ARG) {
+		mov_str = strdup("rrmovl");
+	} else if (src->type == INT_LITERAL_Q_ARG){
+		mov_str = strdup("irmovl");
+	} else {
+		mov_str = strdup("mrmovl");
+	}
+
+	return mov_str;
+}
+
 char * handle_quad_arg(quad_arg * arg) {
 	char * to_return;
 	printf("entering handle quad arg\n");
@@ -311,7 +351,7 @@ char * handle_quad_arg(quad_arg * arg) {
 			{
 				//int len = floor(log10(abs(INT_MAX))) + 2;
 				char int_str[MAX_ARG_LEN];
-				sprintf(int_str, "%d(%%ebp)", arg->int_literal);
+				sprintf(int_str, "%d", arg->int_literal);
 				to_return = strdup(int_str);
 				break;
 			}
@@ -370,10 +410,8 @@ char * handle_quad_arg(quad_arg * arg) {
 				to_return = strdup(global_address_str);	
 			} else {
 
-				printf("here\n");
 				/* get offset within globals */
 				int offset = arg->symnode->s.v.offset_of_frame_pointer;
-				printf("here\n");
 
 				if (arg->int_literal >= 0) {
 					if (arg->symnode->s.v.type == INT_TS) {
@@ -440,7 +478,7 @@ int set_variable_memory_locations(symboltable_t * symtab) {
 
 	/* set all global variable symbols */
 	// int globals_size = 0;
-	int bottom_of_globals = STK_TOP - TYPE_SIZE(INT_TS);
+	int bottom_of_globals = STK_TOP - TYPE_SIZE(INT_TS) + 1; 	// add one for correct indexing 
 	symnode_t * sym;
 	for (int i = 0; i < global_scope->size; i++) {
 		if (global_scope->table[i] != NULL) {

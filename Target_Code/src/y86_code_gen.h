@@ -23,6 +23,11 @@ int create_ys(char * file_name);
 void print_code(quad * to_translate, FILE * ys_file_ptr);
 
 /*
+ * 	chooses irmovl, rrmovl, or mrmovl depending on source 
+ */
+char * get_move_type(quad_arg * src); 
+
+/*
  * returns argument string to put in y86 assembly?
  */
 char * handle_quad_arg(quad_arg * arg);

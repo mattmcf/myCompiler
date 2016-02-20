@@ -53,8 +53,8 @@ int main(void) {
       return 1;
     }
 
-    printf("\n\n ----- PRETTY PRINTING AST TREE WITH TYPES -----\n");
-    print_ast(root,0);  
+    // printf("\n\n ----- PRETTY PRINTING AST TREE WITH TYPES -----\n");
+    // print_ast(root,0);  
 
     /* Start to generate quads */
     quad_list = init_quad_list();
