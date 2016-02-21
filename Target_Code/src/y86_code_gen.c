@@ -6,6 +6,7 @@
 #include <math.h>
 
 #include "symtab.h"
+#include "IR_gen.h"
 #include "y86_code_gen.h"
 #include "types.h"
 
@@ -15,7 +16,7 @@
 
 
 extern symboltable_t * symtab; 	// for global lookups of symbols
-extern quad_arr * quad_list;
+extern quad_arr * quad_list; 		// global quad list
 
 #define DSTR_reg 0x00FFFE10 		// DISPLAY STRING DATA REGISTER
 #define DHXR_reg 0x00FFFE14			// DISPLAY HEX REGISTER
@@ -217,6 +218,11 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 						}
 						break;
 
+					/* printing a return value */
+					case RETURN_Q_ARG:
+						fprintf(ys_file_ptr,"\trmmovl %%eax, 0x%x\n",DHXR_reg);
+						break;
+
 					default:
 						break;
 				}
@@ -231,10 +237,10 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 				print_nop_comment(ys_file_ptr, "function prolog", to_translate->number);
 
 				char * t1 = handle_quad_arg(to_translate->args[0]);
-				printf("looking for %s in symboltable\n",t1);
+				//printf("looking for %s in symboltable\n",t1);
 				symnode_t * func_sym = find_in_top_symboltable(symtab, t1);
 
-				// error check
+				// error check -- probably not necessary anymore
 				if (!func_sym) {
 					fprintf(stderr,"error during code generation: couldn't find function symbol %s\n", t1);
 					exit(1);
@@ -248,7 +254,7 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 				 * esp should be set to symnode->s.f.stk_offset for function's symbol
 				 */
 				fprintf(ys_file_ptr, "\tirmovl $%d, %%eax\n",func_sym->s.f.stk_offset);
-				fprintf(ys_file_ptr, "\tsubl %%eax, %%esp\n");				
+				fprintf(ys_file_ptr, "\taddl %%eax, %%esp\n");				
 			}
 			break;
 
@@ -274,12 +280,15 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 			break;
 
 		case POSTRET_Q:
-			// return value is in %eax
-			// pop each argument? or just move esp back to the offset of the function {}		
+			// return value is in %eax	
 			{
 				print_nop_comment(ys_file_ptr, "post return", to_translate->number);
-				char * t1 = handle_quad_arg(to_translate->args[0]); 										// get function string for symboltable lookup
-				symnode_t * func_sym = find_in_top_symboltable(symtab, t1);		
+
+				/* make a post return label */
+				char * t1 = handle_quad_arg(to_translate->args[0]); 								
+				symnode_t * func_sym = find_in_top_symboltable(symtab, t1);	
+
+				/* use control link to get back to caller frame */	
 				fprintf(ys_file_ptr, "\tirmovl $%d, %%ebx\n",func_sym->s.f.stk_offset); 	// %ebx b/c return lives in %eax
 				fprintf(ys_file_ptr, "\tsubl %%ebx, %%esp\n");								
 			}
@@ -287,17 +296,28 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 
 		case PARAM_Q:
 
-		/* need to handle case when handling an array pointer or just an array element -- PASS_ARR_POINTER from IR_gen.c 
-		 * if the int literal is -1 -> pass array head address
-		 * if the int literal isn't -1, copy the data at the element to a param and then push it
-		 */
+			print_nop_comment(ys_file_ptr,"parameter",to_translate->number);	 	
+			if (to_translate->args[0]->type == SYMBOL_ARR_Q_ARG && to_translate->args[0]->int_literal == PASS_ARR_POINTER) {
+				/* passing array pointer */
 
-			{
+				/* if global? */ 
+				if (to_translate->args[0]->symnode->s.v.specie == GLOBAL_VAR) {
+					/* return absolute address */
+					fprintf(ys_file_ptr,"\tirmovl 0x%x, %%eax\n",to_translate->args[0]->symnode->s.v.offset_of_frame_pointer);
+				} else {
+					/* calculate absolute address by adding offset (in bytes) of ebp */
+					fprintf(ys_file_ptr,"\tirmovl $%d, %%eax\n", to_translate->args[0]->symnode->s.v.offset_of_frame_pointer);
+					fprintf(ys_file_ptr,"\taddl %%ebp, %%eax\n");
+				}
+
+			} else {
+				/* passing single parameter */
 				char * t1 = handle_quad_arg(to_translate->args[0]);
-				fprintf(ys_file_ptr, "\tmrmovl %s, %%eax\n", t1);
-				fprintf(ys_file_ptr, "\tpushl %%eax\n");
-				break;
+				fprintf(ys_file_ptr, "\t%s %s, %%eax\n", get_move_type(to_translate->args[0]),t1);
 			}
+
+			fprintf(ys_file_ptr, "\tpushl %%eax\n");			
+			break;
 
 		case RET_Q:
 			print_nop_comment(ys_file_ptr, "return statement", to_translate->number);
@@ -375,8 +395,9 @@ char * handle_quad_arg(quad_arg * arg) {
 			{
 				int fp_offset = ((symnode_t *) arg->temp->temp_symnode)->s.v.offset_of_frame_pointer;
 
-				int len = floor(log10(abs(INT_MAX))) + 2;
-				char int_str[len];
+				//int len = floor(log10(abs(INT_MAX))) + 2;
+				//int len = MAX_ARG_LEN;
+				char int_str[MAX_ARG_LEN];
 				sprintf(int_str, "%d(%%ebp)", fp_offset);
 				to_return = strdup(int_str);
 				break;
@@ -396,8 +417,9 @@ char * handle_quad_arg(quad_arg * arg) {
 
 				/* return relative address */
 				int fp_offset = arg->symnode->s.v.offset_of_frame_pointer;
-				int len = floor(log10(abs(INT_MAX))) + 2;
-				char int_str[len];
+				//int len = floor(log10(abs(INT_MAX))) + 2;
+				//int len = MAX_ARG_LEN;
+				char int_str[MAX_ARG_LEN];
 				sprintf(int_str, "%d(%%ebp)", fp_offset);
 				to_return = strdup(int_str);				
 			}
@@ -410,7 +432,6 @@ char * handle_quad_arg(quad_arg * arg) {
 
 				/* return absolute address within global array */
 				int offset = arg->symnode->s.v.offset_of_frame_pointer;
-				char global_address_str[MAX_HEX_ADDRESS_LEN];
 
 				if (arg->int_literal >= 0) {
 					if (arg->symnode->s.v.type == INT_TS) {
@@ -420,11 +441,13 @@ char * handle_quad_arg(quad_arg * arg) {
 					}
 				} 
 
-				sprintf(global_address_str, "0x%x",arg->symnode->s.v.offset_of_frame_pointer);
+				char global_address_str[MAX_HEX_ADDRESS_LEN];
+				sprintf(global_address_str, "0x%x",offset);
 				to_return = strdup(global_address_str);	
+
 			} else {
 
-				/* get offset within globals */
+				/* get offset within local frame */
 				int offset = arg->symnode->s.v.offset_of_frame_pointer;
 
 				if (arg->int_literal >= 0) {
@@ -435,8 +458,9 @@ char * handle_quad_arg(quad_arg * arg) {
 					}
 				} 
 
-				int len = floor(log10(abs(INT_MAX))) + 2;
-				char int_str[len];
+				//int len = floor(log10(abs(INT_MAX))) + 2;
+				//int len = MAX_ARG_LEN;
+				char int_str[MAX_ARG_LEN];
 				sprintf(int_str, "%d(%%ebp)", offset);
 				to_return = strdup(int_str);
 			}
@@ -492,7 +516,7 @@ int set_variable_memory_locations(symboltable_t * symtab) {
 
 	/* set all global variable symbols */
 	// int globals_size = 0;
-	int bottom_of_globals = STK_TOP - TYPE_SIZE(INT_TS) + 1; 	// add one for correct indexing 
+	int bottom_of_globals = (STK_TOP + 1) - TYPE_SIZE(INT_TS); 	// add one for correct indexing 
 	symnode_t * sym;
 	for (int i = 0; i < global_scope->size; i++) {
 		if (global_scope->table[i] != NULL) {
@@ -510,7 +534,7 @@ int set_variable_memory_locations(symboltable_t * symtab) {
 					} else {
 
 						/* put array in global space */
-						int bytes = sym->origin->left_child->right_sibling->value_int * TYPE_SIZE(sym->s.v.type);
+						int bytes = (sym->origin->left_child->right_sibling->value_int - 1)* TYPE_SIZE(sym->s.v.type); 	// minus one because bottom already points to a free spot
 						bottom_of_globals -= bytes;
 						sym->s.v.offset_of_frame_pointer = bottom_of_globals;
 						sym->s.v.specie = GLOBAL_VAR;

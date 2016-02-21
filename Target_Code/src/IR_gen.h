@@ -16,6 +16,8 @@
 #include "temp_list.h"
 #include "quad.h"
 
+#define PASS_ARR_POINTER -1     // HACKY but it works -- needed by y86_code_gen
+
 /*
  * returns label of form "L_N[#]_[NODE TYPE]"
  * should be free'd after done using

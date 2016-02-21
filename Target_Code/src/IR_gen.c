@@ -10,7 +10,7 @@
 
 #define INIT_QUAD_LIST_SIZE 10
 #define PASS_ARR_POINTER -1     // HACKY but it works
-#define MAX_LABEL_LENGTH 100 	// should be enough?
+#define MAX_LABEL_LENGTH 100 	  // should be enough?
 
 extern quad_arr * quad_list;
 

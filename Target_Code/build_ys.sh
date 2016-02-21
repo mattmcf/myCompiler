@@ -30,7 +30,7 @@ fi
 
 if [ "$?" -ne 0 ]
 then
-	echo "failed to generate target code"
+	echo "Failed to generate target code"
 	exit 1
 fi
 
@@ -39,11 +39,12 @@ yas $OUT_FILE
 
 if [ "$?" -ne 0 ]
 then
-	echo "failed to assemble target code"
+	echo "Failed to assemble target code"
 	exit 1
 fi
 
 EXECUTABLE="$2.yo"
+echo "Running .yo executable $EXECUTABLE"
 ssim -g $EXECUTABLE
 
 
