@@ -24,7 +24,7 @@ int node_count = 0;         // used to give unique node IDs
 quad_arr * quad_list = NULL;    // global quad list
 symboltable_t * symtab;
 
-int main(void) {
+int main(int argc, char * argv[]) {
   int noRoot = 0;		/* 0 means we will have a root */
 
   //yydebug = 1;
@@ -61,7 +61,14 @@ int main(void) {
     CG(root);
 
     /* create assembly */
-    create_ys("myfile");
+    char * file_name;
+    if (argc > 1 && argv[1] != NULL)
+      file_name = argv[1];
+    else
+      file_name = "myfile.ys";
+
+    create_ys(file_name);
+
 
     printf("\n\n ----- PRINTING QUAD LIST -----\n");
     print_quad_list();

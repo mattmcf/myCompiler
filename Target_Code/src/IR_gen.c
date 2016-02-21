@@ -23,6 +23,8 @@ quad_arg * CG(ast_node root) {
       case VAR_DECL_N:
         // Check if there is a RHS value
         if ( (root->left_child->mod == SINGLE_DT) && (root->left_child->right_sibling != NULL) ) {
+
+          /* have to build assignment quads here */
           quad_arg * var_arg, * initialization_value;
 
           var_arg = create_quad_arg(SYMBOL_VAR_Q_ARG);
