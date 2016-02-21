@@ -277,6 +277,16 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 					case EQ_C:
 						fprintf(ys_file_ptr, "\tjne %s\n", label);
 						break;
+					case NULL_C:
+						// Just check if temp is 0
+						{
+							char * t1 = handle_quad_arg(to_translate->args[0]);
+							fprintf(ys_file_ptr, "\tmrmovl $1, %%eax\n");
+							fprintf(ys_file_ptr, "\t%s %s, %%ebx\n", get_move_type(to_translate->args[0]), t1);
+							fprintf(ys_file_ptr, "\tsubl %%ebx, %%eax\n");
+							fprintf(ys_file_ptr, "\tjne %s\n", label);
+							break;
+						}
 					default:
 						break;
 				}
@@ -327,6 +337,7 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 			break;
 
 		case READ_Q:
+			print_nop_comment(ys_file_ptr, "reading", to_translate->number);
 			break;
 
 		case PROLOG_Q:
