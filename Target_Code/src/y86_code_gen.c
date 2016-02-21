@@ -24,6 +24,8 @@ extern quad_arr * quad_list; 		// global quad list
 #define KHXR_reg 0x00FFFE1C 		// KEYBOARD HEX REGISTER (BLOCKING)
 #define KBDR_reg 0x00FFFE04 		// KEYBAORD DATA REGISTER 
 
+condition_type condition;
+
 /**
  * http://stackoverflow.com/questions/1021935/assembly-y86-stack-and-call-pushl-popl-and-ret-instructions
  * Pushing and popping from stack for function calls
@@ -149,16 +151,41 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 			}
 
 		case INC_Q:
-			break;
+			{
+				char * t1 = handle_quad_arg(to_translate->args[0]);
+				char * t2 = handle_quad_arg(to_translate->args[1]);
+				fprintf(ys_file_ptr, "\t%s %s, %%eax\n", get_move_type(to_translate->args[0]), t1);
+				fprintf(ys_file_ptr, "\t%s %s, %%ebx\n", get_move_type(to_translate->args[1]), t2);
+				fprintf(ys_file_ptr, "\taddl %%ebx, %%eax\n");
+				fprintf(ys_file_ptr, "\trmmovl %%eax, %s\n", t1);
+				break;
+			}
 
 		case DEC_Q:
-			break;
+			{
+				char * t1 = handle_quad_arg(to_translate->args[0]);
+				char * t2 = handle_quad_arg(to_translate->args[1]);
+				fprintf(ys_file_ptr, "\t%s %s, %%eax\n", get_move_type(to_translate->args[0]), t1);
+				fprintf(ys_file_ptr, "\t%s %s, %%ebx\n", get_move_type(to_translate->args[1]), t2);
+				fprintf(ys_file_ptr, "\tsubl %%ebx, %%eax\n");
+				fprintf(ys_file_ptr, "\trmmovl %%eax, %s\n", t1);
+				break;
+			}
 
 		case NOT_Q:
 			break;
 
 		case NEG_Q:
-			break;
+			{
+				// Negative of an integer n = 0 - n
+				// i.e. 0 - 1 = -1, 0 - (-1) = 1
+				char * t1 = handle_quad_arg(to_translate->args[0]);
+				fprintf(ys_file_ptr, "\tmrmovl $0, %%eax\n");
+				fprintf(ys_file_ptr, "\t%s %s, %%ebx\n", get_move_type(to_translate->args[0]), t1);
+				fprintf(ys_file_ptr, "\tsubl %%ebx, %%eax\n");
+				fprintf(ys_file_ptr, "\trmmovl %%eax, %s\n", t1);
+				break;
+			}
 
 		case ASSIGN_Q:
 			print_nop_comment(ys_file_ptr, "assignment", to_translate->number);
@@ -172,22 +199,92 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 			break;
 
 		case LT_Q:
-			break;
+			// SF = 1 and ZF = 0
+			// jl
+			{
+				comp_sub(to_translate, ys_file_ptr);
+				condition = LT_C;
+				break;
+			}
 
 		case GT_Q:
-			break;
+			// SF = 0 and ZF = 0
+			// jg
+			{
+				comp_sub(to_translate, ys_file_ptr);
+				condition = GT_C;
+				break;
+			}
 
 		case LTE_Q:
-			break;
+			// SF = 1 or ZF = 0
+			// jle
+			{
+				comp_sub(to_translate, ys_file_ptr);
+				condition = LTE_C;
+				break;
+			}
+
+		case GTE_Q:
+			// SF = 0 or ZF = 1
+			// jge
+			{
+				comp_sub(to_translate, ys_file_ptr);
+				condition = GTE_C;
+				break;
+			}
 
 		case NE_Q:
-			break;
+			// ZF = 0
+			// jne
+			{
+				comp_sub(to_translate, ys_file_ptr);
+				condition = NE_C;
+				break;
+			}
 
 		case EQ_Q:
-			break;
+			// SF = 0 and ZF = 1
+			// je
+			{
+				comp_sub(to_translate, ys_file_ptr);
+				condition = EQ_C;
+				break;
+			}
 
 		case IFFALSE_Q:
-			break;
+			{
+				char * label = handle_quad_arg(to_translate->args[1]);
+
+				// Use the opposite conditional jump since we are checking
+				// for falseness
+				switch (condition) {
+					case LT_C:
+						fprintf(ys_file_ptr, "\tjge %s\n", label);
+						break;
+					case GT_C:
+						fprintf(ys_file_ptr, "\tjle %s\n", label);
+						break;
+					case LTE_C:
+						fprintf(ys_file_ptr, "\tjg %s\n", label);
+						break;
+					case GTE_C:
+						fprintf(ys_file_ptr, "\tjl %s\n", label);
+						break;
+					case NE_C:
+						fprintf(ys_file_ptr, "\tje %s\n", label);
+						break;
+					case EQ_C:
+						fprintf(ys_file_ptr, "\tjne %s\n", label);
+						break;
+					default:
+						break;
+				}
+
+				condition = NULL_C;
+
+				break;
+			}
 
 		case GOTO_Q:
 			{
@@ -486,6 +583,16 @@ char * handle_quad_arg(quad_arg * arg) {
 
 	printf("exiting handle quad arg (returning %s)\n",to_return);
 	return to_return;
+}
+
+void comp_sub(quad * to_translate, FILE * ys_file_ptr) {
+	char * t1 = handle_quad_arg(to_translate->args[1]);
+	char * t2 = handle_quad_arg(to_translate->args[2]);
+	char * t3 = handle_quad_arg(to_translate->args[0]);
+	fprintf(ys_file_ptr, "\t%s %s, %%eax\n", get_move_type(to_translate->args[1]),t1);
+	fprintf(ys_file_ptr, "\t%s %s, %%ebx\n", get_move_type(to_translate->args[2]),t2);
+	fprintf(ys_file_ptr, "\tsubl %%ebx, %%eax\n");
+	fprintf(ys_file_ptr, "\trmmovl %%eax, %s\n", t3);
 }
 
 /*
