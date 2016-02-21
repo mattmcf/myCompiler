@@ -173,7 +173,20 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 			}
 
 		case NOT_Q:
-			break;
+			{
+				char * arg = handle_quad_arg(to_translate->args[0]);
+
+				fprintf(ys_file_ptr, "\t%s %s, %%eax\n", get_move_type(to_translate->args[0]), arg);
+				fprintf(ys_file_ptr, "\tirmovl $0, %%ebx\n");
+				fprintf(ys_file_ptr, "\tsubl %%ebx, %%eax\n");
+
+				fprintf(ys_file_ptr, "\tirmovl $1, %%ebx\n");
+				fprintf(ys_file_ptr, "\tcmove %%ebx, %%eax\n");
+				fprintf(ys_file_ptr, "\tirmovl $0, %%ebx\n");
+				fprintf(ys_file_ptr, "\tcmovne %%ebx, %%eax\n");
+				fprintf(ys_file_ptr, "\trmmovl %%eax, %s\n", arg);
+				break;
+			}
 
 		case NEG_Q:
 			{
@@ -202,8 +215,8 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 			// SF = 1 and ZF = 0
 			// jl
 			{
-				comp_sub(to_translate, ys_file_ptr);
 				condition = LT_C;
+				comp_sub(to_translate, ys_file_ptr);
 				break;
 			}
 
@@ -211,8 +224,8 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 			// SF = 0 and ZF = 0
 			// jg
 			{
-				comp_sub(to_translate, ys_file_ptr);
 				condition = GT_C;
+				comp_sub(to_translate, ys_file_ptr);
 				break;
 			}
 
@@ -220,8 +233,8 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 			// SF = 1 or ZF = 0
 			// jle
 			{
-				comp_sub(to_translate, ys_file_ptr);
 				condition = LTE_C;
+				comp_sub(to_translate, ys_file_ptr);
 				break;
 			}
 
@@ -229,8 +242,8 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 			// SF = 0 or ZF = 1
 			// jge
 			{
-				comp_sub(to_translate, ys_file_ptr);
 				condition = GTE_C;
+				comp_sub(to_translate, ys_file_ptr);
 				break;
 			}
 
@@ -238,8 +251,8 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 			// ZF = 0
 			// jne
 			{
-				comp_sub(to_translate, ys_file_ptr);
 				condition = NE_C;
+				comp_sub(to_translate, ys_file_ptr);
 				break;
 			}
 
@@ -247,8 +260,8 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 			// SF = 0 and ZF = 1
 			// je
 			{
-				comp_sub(to_translate, ys_file_ptr);
 				condition = EQ_C;
+				comp_sub(to_translate, ys_file_ptr);
 				break;
 			}
 
@@ -338,7 +351,13 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 
 		case READ_Q:
 			print_nop_comment(ys_file_ptr, "reading", to_translate->number);
-			break;
+			{
+				// Right now only reading integers
+				char * arg = handle_quad_arg(to_translate->args[0]);
+				fprintf(ys_file_ptr, "\tmrmovl 0x%x, %%eax\n", KHXR_reg);
+				fprintf(ys_file_ptr, "\trmmovl %%eax, %s\n", arg);
+				break;
+			}
 
 		case PROLOG_Q:
 			{
@@ -603,6 +622,48 @@ void comp_sub(quad * to_translate, FILE * ys_file_ptr) {
 	fprintf(ys_file_ptr, "\t%s %s, %%eax\n", get_move_type(to_translate->args[1]),t1);
 	fprintf(ys_file_ptr, "\t%s %s, %%ebx\n", get_move_type(to_translate->args[2]),t2);
 	fprintf(ys_file_ptr, "\tsubl %%ebx, %%eax\n");
+
+	switch (condition) {
+		case LT_C:
+			fprintf(ys_file_ptr, "\tirmovl $0, %%ebx\n");
+			fprintf(ys_file_ptr, "\tcmovl %%ebx, %%eax\n");
+			fprintf(ys_file_ptr, "\tirmovl $1, %%ebx\n");
+			fprintf(ys_file_ptr, "\tcmovge %%ebx, %%eax\n");
+			break;
+		case GT_C:
+			fprintf(ys_file_ptr, "\tirmovl $0, %%ebx\n");
+			fprintf(ys_file_ptr, "\tcmovg %%ebx, %%eax\n");
+			fprintf(ys_file_ptr, "\tirmovl $1, %%ebx\n");
+			fprintf(ys_file_ptr, "\tcmovle %%ebx, %%eax\n");
+			break;
+		case LTE_C:
+			fprintf(ys_file_ptr, "\tirmovl $0, %%ebx\n");
+			fprintf(ys_file_ptr, "\tcmovle %%ebx, %%eax\n");
+			fprintf(ys_file_ptr, "\tirmovl $1, %%ebx\n");
+			fprintf(ys_file_ptr, "\tcmovg %%ebx, %%eax\n");
+			break;
+		case GTE_C:
+			fprintf(ys_file_ptr, "\tirmovl $0, %%ebx\n");
+			fprintf(ys_file_ptr, "\tcmovge %%ebx, %%eax\n");
+			fprintf(ys_file_ptr, "\tirmovl $1, %%ebx\n");
+			fprintf(ys_file_ptr, "\tcmovl %%ebx, %%eax\n");
+			break;
+		case NE_C:
+			fprintf(ys_file_ptr, "\tirmovl $0, %%ebx\n");
+			fprintf(ys_file_ptr, "\tcmovne %%ebx, %%eax\n");
+			fprintf(ys_file_ptr, "\tirmovl $1, %%ebx\n");
+			fprintf(ys_file_ptr, "\tcmove %%ebx, %%eax\n");
+			break;
+		case EQ_C:
+			fprintf(ys_file_ptr, "\tirmovl $0, %%ebx\n");
+			fprintf(ys_file_ptr, "\tcmove %%ebx, %%eax\n");
+			fprintf(ys_file_ptr, "\tirmovl $1, %%ebx\n");
+			fprintf(ys_file_ptr, "\tcmovne %%ebx, %%eax\n");
+			break;
+		default:
+			break;
+	}
+
 	fprintf(ys_file_ptr, "\trmmovl %%eax, %s\n", t3);
 }
 
