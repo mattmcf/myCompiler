@@ -65,12 +65,19 @@ int create_ys(char * file_name) {
 	fprintf(ys_fp,"\tirmovl $4, %%eax\n");
 	fprintf(ys_fp,"\tsubl %%eax, %%esp\n");
 
+	/* initialize globals here */
+	int i;
+	for (i = 0; quad_list->arr[i]->op == ASSIGN_Q; i++) {
+		printf("global initialziation quad %d\n",i);
+		print_code(quad_list->arr[i], ys_fp);
+	}
+
 	fprintf(ys_fp, "\tcall main\n");
 	fprintf(ys_fp, "\thalt\n");
 
 	/* translate quad list */
 
-	for (int i = 0; i < quad_list->count; i++) {
+	for (/* start at end of global initalizations */; i < quad_list->count; i++) {
 		printf("looking at quad %d\n",i);
 		print_code(quad_list->arr[i], ys_fp);
 	}

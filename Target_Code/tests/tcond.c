@@ -1,3 +1,6 @@
+int global_a = 5;
+int global_b = 9;
+
 int main(void) {
 	int a = 0;
 	int b = 10;
