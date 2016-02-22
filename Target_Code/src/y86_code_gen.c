@@ -108,100 +108,67 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 			break;
 
 		case SUB_Q:
-			char * t1 = handle_quad_arg(to_translate->args[1]);
-			char * t2 = handle_quad_arg(to_translate->args[2]);
-			char * t3 = handle_quad_arg(to_translate->args[0]);
-			fprintf(ys_file_ptr, "\t%s %s, %%eax\n", get_move_type(to_translate->args[1]),t1);
-			fprintf(ys_file_ptr, "\t%s %s, %%ebx\n", get_move_type(to_translate->args[2]),t2);
+			fprintf(ys_file_ptr, "\t%s, %%eax\n", get_source_value(to_translate->args[1]));
+			fprintf(ys_file_ptr, "\t%s, %%ebx\n", get_source_value(to_translate->args[2]));
 			fprintf(ys_file_ptr, "\tsubl %%ebx, %%eax\n");
-			fprintf(ys_file_ptr, "\trmmovl %%eax, %s\n", t3);
+			fprintf(ys_file_ptr, "\trmmovl %%eax, %s\n", get_dest_value(to_translate->args[0]));
 			break;
 
 		case MUL_Q:
-			{
-				char * t1 = handle_quad_arg(to_translate->args[1]);
-				char * t2 = handle_quad_arg(to_translate->args[2]);
-				char * t3 = handle_quad_arg(to_translate->args[0]);
-				fprintf(ys_file_ptr, "\t%s %s, %%eax\n", get_move_type(to_translate->args[1]),t1);
-				fprintf(ys_file_ptr, "\t%s %s, %%ebx\n", get_move_type(to_translate->args[2]),t2);
-				fprintf(ys_file_ptr, "\tmull %%ebx, %%eax\n");
-				fprintf(ys_file_ptr, "\trmmovl %%eax, %s\n", t3);
-				break;
-			}
+			fprintf(ys_file_ptr, "\t%s, %%eax\n", get_source_value(to_translate->args[1]));
+			fprintf(ys_file_ptr, "\t%s, %%ebx\n", get_source_value(to_translate->args[2]));
+			fprintf(ys_file_ptr, "\tmull %%ebx, %%eax\n");
+			fprintf(ys_file_ptr, "\trmmovl %%eax, %s\n", get_dest_value(to_translate->args[0]));
+			break;
 
 		case DIV_Q:
-			{
-				char * t1 = handle_quad_arg(to_translate->args[1]);
-				char * t2 = handle_quad_arg(to_translate->args[2]);
-				char * t3 = handle_quad_arg(to_translate->args[0]);
-				fprintf(ys_file_ptr, "\t%s %s, %%eax\n", get_move_type(to_translate->args[1]),t1);
-				fprintf(ys_file_ptr, "\t%s %s, %%ebx\n", get_move_type(to_translate->args[2]),t2);
-				fprintf(ys_file_ptr, "\tdivl %%ebx, %%eax\n");
-				fprintf(ys_file_ptr, "\trmmovl %%eax, %s\n", t3);
-				break;
-			}
+			fprintf(ys_file_ptr, "\t%s, %%eax\n", get_source_value(to_translate->args[1]));
+			fprintf(ys_file_ptr, "\t%s, %%ebx\n", get_source_value(to_translate->args[2]));
+			fprintf(ys_file_ptr, "\tdivl %%ebx, %%eax\n");
+			fprintf(ys_file_ptr, "\trmmovl %%eax, %s\n", get_dest_value(to_translate->args[0]));
+			break;
 
 		case MOD_Q:
-			{
-				// char * t1 = handle_quad_arg(to_translate->args[1]);
-				// char * t2 = handle_quad_arg(to_translate->args[2]);
-				// char * t3 = handle_quad_arg(to_translate->args[0]);
-				// fprintf(ys_file_ptr, "\t%s %s, %%eax\n", get_move_type(to_translate->args[1]),t1);
-				// fprintf(ys_file_ptr, "\t%s %s, %%ebx\n", get_move_type(to_translate->args[2]),t2);
-				// fprintf(ys_file_ptr, "\tmodl %%ebx, %%eax\n");
-				// fprintf(ys_file_ptr, "\trmmovl %%eax, %s\n", t3);
-				break;
-			}
+			fprintf(ys_file_ptr, "\t%s, %%eax\n", get_source_value(to_translate->args[1]));
+			fprintf(ys_file_ptr, "\t%s, %%ebx\n", get_source_value(to_translate->args[2]));
+			fprintf(ys_file_ptr, "\tmodl %%ebx, %%eax\n");
+			fprintf(ys_file_ptr, "\trmmovl %%eax, %s\n", get_dest_value(to_translate->args[0]));
+			break;
 
 		case INC_Q:
-			{
-				char * t1 = handle_quad_arg(to_translate->args[0]);
-				char * t2 = handle_quad_arg(to_translate->args[1]);
-				fprintf(ys_file_ptr, "\t%s %s, %%eax\n", get_move_type(to_translate->args[0]), t1);
-				fprintf(ys_file_ptr, "\t%s %s, %%ebx\n", get_move_type(to_translate->args[1]), t2);
-				fprintf(ys_file_ptr, "\taddl %%ebx, %%eax\n");
-				fprintf(ys_file_ptr, "\trmmovl %%eax, %s\n", t1);
-				break;
-			}
+			fprintf(ys_file_ptr, "\t%s, %%eax\n", get_source_value(to_translate->args[0]));
+			fprintf(ys_file_ptr, "\t%s, %%ebx\n", get_source_value(to_translate->args[1]));
+			fprintf(ys_file_ptr, "\taddl %%ebx, %%eax\n");
+			fprintf(ys_file_ptr, "\trmmovl %%eax, %s\n", get_dest_value(to_translate->args[0]));
+			break;
 
 		case DEC_Q:
-			{
-				char * t1 = handle_quad_arg(to_translate->args[0]);
-				char * t2 = handle_quad_arg(to_translate->args[1]);
-				fprintf(ys_file_ptr, "\t%s %s, %%eax\n", get_move_type(to_translate->args[0]), t1);
-				fprintf(ys_file_ptr, "\t%s %s, %%ebx\n", get_move_type(to_translate->args[1]), t2);
-				fprintf(ys_file_ptr, "\tsubl %%ebx, %%eax\n");
-				fprintf(ys_file_ptr, "\trmmovl %%eax, %s\n", t1);
-				break;
-			}
+			fprintf(ys_file_ptr, "\t%s, %%eax\n", get_source_value(to_translate->args[0]));
+			fprintf(ys_file_ptr, "\t%s, %%ebx\n", get_source_value(to_translate->args[1]));
+			fprintf(ys_file_ptr, "\tsubl %%ebx, %%eax\n");
+			fprintf(ys_file_ptr, "\trmmovl %%eax, %s\n", get_dest_value(to_translate->args[0]));
+			break;
 
 		case NOT_Q:
-			{
-				char * arg = handle_quad_arg(to_translate->args[0]);
+			fprintf(ys_file_ptr, "\t%s, %%eax\n", get_source_value(to_translate->args[0]));
+			fprintf(ys_file_ptr, "\tirmovl $0, %%ebx\n");
+			fprintf(ys_file_ptr, "\tsubl %%ebx, %%eax\n");
 
-				fprintf(ys_file_ptr, "\t%s %s, %%eax\n", get_move_type(to_translate->args[0]), arg);
-				fprintf(ys_file_ptr, "\tirmovl $0, %%ebx\n");
-				fprintf(ys_file_ptr, "\tsubl %%ebx, %%eax\n");
-
-				fprintf(ys_file_ptr, "\tirmovl $1, %%ebx\n");
-				fprintf(ys_file_ptr, "\tcmove %%ebx, %%eax\n");
-				fprintf(ys_file_ptr, "\tirmovl $0, %%ebx\n");
-				fprintf(ys_file_ptr, "\tcmovne %%ebx, %%eax\n");
-				fprintf(ys_file_ptr, "\trmmovl %%eax, %s\n", arg);
-				break;
-			}
+			fprintf(ys_file_ptr, "\tirmovl $1, %%ebx\n");
+			fprintf(ys_file_ptr, "\tcmove %%ebx, %%eax\n");
+			fprintf(ys_file_ptr, "\tirmovl $0, %%ebx\n");
+			fprintf(ys_file_ptr, "\tcmovne %%ebx, %%eax\n");
+			fprintf(ys_file_ptr, "\trmmovl %%eax, %s\n", get_dest_value(to_translate->args[0]));
+			break;
 
 		case NEG_Q:
-			{
-				// Negative of an integer n = 0 - n
-				// i.e. 0 - 1 = -1, 0 - (-1) = 1
-				char * t1 = handle_quad_arg(to_translate->args[0]);
-				fprintf(ys_file_ptr, "\tmrmovl $0, %%eax\n");
-				fprintf(ys_file_ptr, "\t%s %s, %%ebx\n", get_move_type(to_translate->args[0]), t1);
-				fprintf(ys_file_ptr, "\tsubl %%ebx, %%eax\n");
-				fprintf(ys_file_ptr, "\trmmovl %%eax, %s\n", t1);
-				break;
-			}
+			// Negative of an integer n = 0 - n
+			// i.e. 0 - 1 = -1, 0 - (-1) = 1
+			fprintf(ys_file_ptr, "\tmrmovl $0, %%eax\n");
+			fprintf(ys_file_ptr, "\t%s, %%ebx\n", get_source_value(to_translate->args[0]));
+			fprintf(ys_file_ptr, "\tsubl %%ebx, %%eax\n");
+			fprintf(ys_file_ptr, "\trmmovl %%eax, %s\n", get_dest_value(to_translate->args[0]));
+			break;
 
 		case ASSIGN_Q:
 			print_nop_comment(ys_file_ptr, "assignment", to_translate->number);
@@ -270,7 +237,7 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 
 		case IFFALSE_Q:
 			{
-				char * label = handle_quad_arg(to_translate->args[1]);
+				char * label = get_dest_value(to_translate->args[1]);
 
 				// Use the opposite conditional jump since we are checking
 				// for falseness
@@ -295,14 +262,11 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 						break;
 					case NULL_C:
 						// Just check if temp is 0
-						{
-							char * t1 = handle_quad_arg(to_translate->args[0]);
-							fprintf(ys_file_ptr, "\tirmovl $0, %%eax\n");
-							fprintf(ys_file_ptr, "\t%s %s, %%ebx\n", get_move_type(to_translate->args[0]), t1);
-							fprintf(ys_file_ptr, "\tsubl %%ebx, %%eax\n");
-							fprintf(ys_file_ptr, "\tje %s\n", label);
-							break;
-						}
+						fprintf(ys_file_ptr, "\tirmovl $0, %%eax\n");
+						fprintf(ys_file_ptr, "\t%s, %%ebx\n", get_source_value(to_translate->args[0]));
+						fprintf(ys_file_ptr, "\tsubl %%ebx, %%eax\n");
+						fprintf(ys_file_ptr, "\tje %s\n", label);
+						break;
 					default:
 						break;
 				}
@@ -350,13 +314,10 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 
 		case READ_Q:
 			print_nop_comment(ys_file_ptr, "reading", to_translate->number);
-			{
-				// Right now only reading integers
-				char * arg = handle_quad_arg(to_translate->args[0]);
-				fprintf(ys_file_ptr, "\tmrmovl 0x%x, %%eax\n", KHXR_reg);
-				fprintf(ys_file_ptr, "\trmmovl %%eax, %s\n", arg);
-				break;
-			}
+			// Right now only reading integers
+			fprintf(ys_file_ptr, "\tmrmovl 0x%x, %%eax\n", KHXR_reg);
+			fprintf(ys_file_ptr, "\trmmovl %%eax, %s\n", get_dest_value(to_translate->args[0]));
+			break;
 
 		case PROLOG_Q:
 			{
@@ -731,11 +692,8 @@ char * get_move_type(quad_arg * src) {
 }
 
 void comp_sub(quad * to_translate, FILE * ys_file_ptr) {
-	char * t1 = handle_quad_arg(to_translate->args[1]);
-	char * t2 = handle_quad_arg(to_translate->args[2]);
-	char * t3 = handle_quad_arg(to_translate->args[0]);
-	fprintf(ys_file_ptr, "\t%s %s, %%eax\n", get_move_type(to_translate->args[1]),t1);
-	fprintf(ys_file_ptr, "\t%s %s, %%ebx\n", get_move_type(to_translate->args[2]),t2);
+	fprintf(ys_file_ptr, "\t%s, %%eax\n", get_source_value(to_translate->args[1]));
+	fprintf(ys_file_ptr, "\t%s, %%ebx\n", get_source_value(to_translate->args[2]));
 	fprintf(ys_file_ptr, "\tsubl %%ebx, %%eax\n");
 
 	switch (condition) {
@@ -779,7 +737,7 @@ void comp_sub(quad * to_translate, FILE * ys_file_ptr) {
 			break;
 	}
 
-	fprintf(ys_file_ptr, "\trmmovl %%eax, %s\n", t3);
+	fprintf(ys_file_ptr, "\trmmovl %%eax, %s\n", get_dest_value(to_translate->args[0]));
 }
 
 /*
