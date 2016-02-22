@@ -237,7 +237,8 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 
 		case IFFALSE_Q:
 			{
-				char * label = get_dest_value(to_translate->args[1]);
+				// char * label = get_dest_value(to_translate->args[1]);
+				char * label = to_translate->args[1]->label;
 
 				// Use the opposite conditional jump since we are checking
 				// for falseness
