@@ -44,9 +44,15 @@ Run `./build_ys.sh tests/tnested.c tnested` to observe assembly code generation 
 
 ### Subroutine with Parameter and Return Value
 
+Run `./build_ys.sh test/first.c first` to see a routine where main calls a function and then prints the return value.
+
 ### Simple Math
 
 Run `./build_ys.sh tests/tmath.c tmath` to observe assembly code generation and execution for a program with simple math operations.
+
+### Array Manipulation
+
+Run `.build_ys.sh tests/array.c array` to observe array manipulations including indexing into local / global arrays as well as passing arrays into a function.
 
 
 
