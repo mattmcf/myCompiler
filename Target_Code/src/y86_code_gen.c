@@ -327,13 +327,6 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 				//char * t1 = handle_quad_arg(to_translate->args[0]);
 				//printf("looking for %s in symboltable\n",t1);
 				symnode_t * func_sym = find_in_top_symboltable(symtab, to_translate->args[0]->label);
-
-				// error check -- probably not necessary anymore
-				if (!func_sym) {
-					fprintf(stderr,"error during code generation: couldn't find function symbol %s\n", to_translate->args[0]->label);
-					exit(1);
-				}
-
 				fprintf(ys_file_ptr, "%s:\n",to_translate->args[0]->label);
 				fprintf(ys_file_ptr, "\tpushl %%ebp\n");			
 				fprintf(ys_file_ptr, "\trrmovl %%esp, %%ebp\n"); 		// move esp to ebp
@@ -348,9 +341,6 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 
 		case EPILOG_Q:
 			print_nop_comment(ys_file_ptr, "function epilog", to_translate->number);
-
-			//char * epilog_label = handle_quad_arg(to_translate->args[0]);
-			//fprintf(ys_file_ptr, "%s:\n",epilog_label);
 			fprintf(ys_file_ptr, "\trrmovl %%ebp, %%esp\n");
 			fprintf(ys_file_ptr, "\tpopl %%ebp\n"); 						// return to old frame pointer
 			fprintf(ys_file_ptr, "\tret\n");
@@ -367,8 +357,7 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 			{
 				print_nop_comment(ys_file_ptr, "post return", to_translate->number);
 
-				/* make a post return label */
-				//char * t1 = handle_quad_arg(to_translate->args[0]); 								
+				/* make a post return label */ 								
 				symnode_t * func_sym = find_in_top_symboltable(symtab, to_translate->args[0]->label);	
 
 				/* use control link to get back to caller frame */	
@@ -395,9 +384,7 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 
 			} else {
 				/* passing single parameter */
-				//char * t1 = handle_quad_arg(to_translate->args[0]);
 				fprintf(ys_file_ptr,"\t%s, %%eax\n",get_source_value(to_translate->args[0]));
-				//fprintf(ys_file_ptr, "\t%s %s, %%eax\n", get_move_type(to_translate->args[0]),t1);
 			}
 
 			fprintf(ys_file_ptr, "\tpushl %%eax\n");			

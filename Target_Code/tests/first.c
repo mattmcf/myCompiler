@@ -1,6 +1,6 @@
 int main() {
 
-	print "hello world!";
+	print "What's 5 squared?";
 
 	print square(5);
 
