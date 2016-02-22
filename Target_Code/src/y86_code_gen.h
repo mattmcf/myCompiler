@@ -11,6 +11,16 @@
 #include "quad.h" 		// for quad struct
 #include <stdio.h> 		// for FILE *
 
+/* Enum for conditions types */
+typedef enum {
+	LT_C,
+	GT_C,
+	LTE_C,
+	GTE_C,
+	NE_C,
+	EQ_C,
+	NULL_C
+} condition_type;
 
 /*
  * creates ys file from global quad_list
@@ -35,6 +45,11 @@ char * get_move_type(quad_arg * src);
  * returns argument string to put in y86 assembly? -- depreciated
  */
 // char * handle_quad_arg(quad_arg * arg);
+
+/*
+ * generic subtraction operation for comparisons 
+ */
+void comp_sub(quad * to_translate, FILE * ys_file_ptr);
 
 /*
  * Given that a variable can be a temp, local, parameter or global,
