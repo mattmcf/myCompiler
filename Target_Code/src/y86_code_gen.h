@@ -22,15 +22,19 @@ int create_ys(char * file_name);
  */
 void print_code(quad * to_translate, FILE * ys_file_ptr);
 
+char * load_arr_ptr(quad_arg * arr);
+char * get_source_value(quad_arg * src);
+char * get_dest_value(quad_arg * dest); 
+
 /*
  * 	chooses irmovl, rrmovl, or mrmovl depending on source 
  */
 char * get_move_type(quad_arg * src); 
 
 /*
- * returns argument string to put in y86 assembly?
+ * returns argument string to put in y86 assembly? -- depreciated
  */
-char * handle_quad_arg(quad_arg * arg);
+// char * handle_quad_arg(quad_arg * arg);
 
 /*
  * Given that a variable can be a temp, local, parameter or global,

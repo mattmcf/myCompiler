@@ -54,6 +54,7 @@ typedef enum {
 
 	/* constant creation operations */
 	STRING_Q, // Create string literal
+	INDEX_Q, 	// evaluate array index
 
 	LABEL_Q // Create label
 } quad_op;
@@ -98,6 +99,7 @@ static val_name_pair quad_op_table[] = {
 
 	/* constant creation operations */
 	{STRING_Q, "save string"},
+	{INDEX_Q, "evaluate array index"},
 
 	/* label generator */
 	{LABEL_Q, "make label"},
@@ -123,7 +125,10 @@ typedef enum quad_arg_discriminant {
  */
 typedef struct quad_arg {
   quad_arg_discriminant type;
-  int int_literal; 			// holds array offset if SYMBOL_ARR_Q_ARG (0 for singles)
+
+  int int_literal; 			// holds array offset if SYMBOL_ARR_Q_ARG
+  struct quad_arg * index; 	// used in arrays indexed by expressions
+
   temp_var * temp;
   char * label;   			// for variable ID's, function ID's and Label ID's
   symnode_t * symnode; 		// function node for function labels

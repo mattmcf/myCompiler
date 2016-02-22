@@ -60,6 +60,9 @@ quad_arr * init_quad_list();
  */
 quad_arg * create_quad_arg(quad_arg_discriminant type);
 
+/* get string representation */
+char * get_quad_arg_label(quad_arg * arg);
+
 /*
  * gen_quad -- adds quad to quad list 
  *

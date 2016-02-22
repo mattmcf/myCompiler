@@ -116,7 +116,7 @@ void set_type(ast_node root) {
 				ast_node var = root->left_child;
 				ast_node expr = root->left_child->right_sibling;
 
-				if (var->type == expr->type && var->mod == expr->mod) {
+				if ( (var->type == expr->type) && (var->mod == expr->mod) ) {
 					root->type 	= var->type;
 					root->mod 	= expr->mod;
 				} else {
@@ -139,6 +139,21 @@ void set_type(ast_node root) {
 			}
 			break;
 
+		case OP_ASSIGN_N:
+			{
+				ast_node var = root->left_child;
+				ast_node expr = root->left_child->right_sibling;		
+				if ( (var->type == expr->type) && (var->mod == expr->mod) ) {
+					root->type 	= var->type;
+					root->mod 	= expr->mod;
+				} else {
+					type_err(root);
+					root->type 	= NULL_TS;
+					root->mod 	= NULL_DT;
+				}
+			}
+			break;
+	
 		/* 
 		 * Handle r-value operand nodes -> both arguments must be same type 
 		 */

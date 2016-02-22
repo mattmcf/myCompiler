@@ -2,14 +2,15 @@
 #include <stdlib.h> 		// for NULL
 #include <stdio.h>          // for sprintf
 #include <assert.h>        
+#include <string.h>
 
 #include "ast.h"
 #include "types.h"
 #include "toktypes.h"
 #include "IR_gen.h"
 
+
 #define INIT_QUAD_LIST_SIZE 10
-#define PASS_ARR_POINTER -1     // HACKY but it works
 #define MAX_LABEL_LENGTH 100 	  // should be enough?
 
 extern quad_arr * quad_list;
@@ -390,11 +391,16 @@ quad_arg * CG(ast_node root) {
             to_return->label = root->left_child->value_string;
             to_return->symnode = look_up_scopes_to_find_symbol(root->scope_table, to_return->label);
 
-            // check if accessing like an array
-            if (root->left_child->right_sibling != NULL)
-              to_return->int_literal = root->left_child->right_sibling->left_child->value_int;     // get offset into array  
-            else
-              to_return->int_literal = PASS_ARR_POINTER;       
+            // check if accessing like an array --> evaluate expression and save somewhere?
+            // quad_arg * index;
+            if (root->left_child->right_sibling != NULL) {
+              to_return->index = CG(root->left_child->right_sibling);
+              //gen_quad(INDEX_Q, index, NULL, NULL);
+              //to_return->int_literal = root->left_child->right_sibling->left_child->value_int;     // get offset into array 
+            } else {
+              to_return->int_literal = PASS_ARR_POINTER; 
+            }
+                    
           }
           break;
         }
@@ -561,6 +567,42 @@ quad_arg * create_quad_arg(quad_arg_discriminant type) {
   return new_arg;
 }
 
+char * get_quad_arg_label(quad_arg * arg) {
+  if (!arg)
+    return NULL;
+
+  char * label;
+  switch(arg->type) {
+    case INT_LITERAL_Q_ARG:
+      {
+        char constant_str[MAX_LABEL_LENGTH] = "";
+        sprintf(constant_str,"CONSTANT: %d",arg->int_literal);
+        label = strdup(constant_str);
+      }
+      break;
+
+    case TEMP_VAR_Q_ARG:
+      label = ((symnode_t *)arg->temp->temp_symnode)->name;
+      break;
+
+    case LABEL_Q_ARG:
+    case SYMBOL_FUNC_Q_ARG:
+    case SYMBOL_VAR_Q_ARG:
+    case SYMBOL_ARR_Q_ARG:
+      label = arg->label;
+      break;
+
+    case RETURN_Q_ARG:
+      label = strdup("return value");
+      break;
+
+    default:
+      break;
+  }
+
+  return label;
+}
+
 /*
  * gen_quad -- adds quad to quad list 
  *
@@ -638,7 +680,11 @@ void print_quad(quad * q) {
         break;
 
       case SYMBOL_ARR_Q_ARG:
-        printf("Symbol: %s [offset: %d]",q->args[i]->label,q->args[i]->int_literal);
+        if (q->args[i]->index != NULL)
+          printf("Symbol: %s [index: %s]",q->args[i]->label, get_quad_arg_label(q->args[i]->index));
+        else
+          printf("Symbol: %s, [pointer]",q->args[i]->label);
+
         break;
 
       case SYMBOL_FUNC_Q_ARG:

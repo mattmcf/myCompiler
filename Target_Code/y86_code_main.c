@@ -69,7 +69,6 @@ int main(int argc, char * argv[]) {
 
     create_ys(file_name);
 
-
     printf("\n\n ----- PRINTING QUAD LIST -----\n");
     print_quad_list();
 
