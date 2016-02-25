@@ -237,40 +237,45 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 
 		case IFFALSE_Q:
 			{
-				// char * label = get_dest_value(to_translate->args[1]);
 				char * label = to_translate->args[1]->label;
+
+				// Just check if temp is 0
+				fprintf(ys_file_ptr, "\tirmovl $0, %%eax\n");
+				fprintf(ys_file_ptr, "\t%s, %%ebx\n", get_source_value(to_translate->args[0]));
+				fprintf(ys_file_ptr, "\tsubl %%ebx, %%eax\n");
+				fprintf(ys_file_ptr, "\tje %s\n", label);
 
 				// Use the opposite conditional jump since we are checking
 				// for falseness
-				switch (condition) {
-					case LT_C:
-						fprintf(ys_file_ptr, "\tjge %s\n", label);
-						break;
-					case GT_C:
-						fprintf(ys_file_ptr, "\tjle %s\n", label);
-						break;
-					case LTE_C:
-						fprintf(ys_file_ptr, "\tjg %s\n", label);
-						break;
-					case GTE_C:
-						fprintf(ys_file_ptr, "\tjl %s\n", label);
-						break;
-					case NE_C:
-						fprintf(ys_file_ptr, "\tje %s\n", label);
-						break;
-					case EQ_C:
-						fprintf(ys_file_ptr, "\tjne %s\n", label);
-						break;
-					case NULL_C:
-						// Just check if temp is 0
-						fprintf(ys_file_ptr, "\tirmovl $0, %%eax\n");
-						fprintf(ys_file_ptr, "\t%s, %%ebx\n", get_source_value(to_translate->args[0]));
-						fprintf(ys_file_ptr, "\tsubl %%ebx, %%eax\n");
-						fprintf(ys_file_ptr, "\tje %s\n", label);
-						break;
-					default:
-						break;
-				}
+				// switch (condition) {
+				// 	case LT_C:
+				// 		fprintf(ys_file_ptr, "\tjge %s\n", label);
+				// 		break;
+				// 	case GT_C:
+				// 		fprintf(ys_file_ptr, "\tjle %s\n", label);
+				// 		break;
+				// 	case LTE_C:
+				// 		fprintf(ys_file_ptr, "\tjg %s\n", label);
+				// 		break;
+				// 	case GTE_C:
+				// 		fprintf(ys_file_ptr, "\tjl %s\n", label);
+				// 		break;
+				// 	case NE_C:
+				// 		fprintf(ys_file_ptr, "\tje %s\n", label);
+				// 		break;
+				// 	case EQ_C:
+				// 		fprintf(ys_file_ptr, "\tjne %s\n", label);
+				// 		break;
+				// 	case NULL_C:
+				// 		// Just check if temp is 0
+				// 		fprintf(ys_file_ptr, "\tirmovl $0, %%eax\n");
+				// 		fprintf(ys_file_ptr, "\t%s, %%ebx\n", get_source_value(to_translate->args[0]));
+				// 		fprintf(ys_file_ptr, "\tsubl %%ebx, %%eax\n");
+				// 		fprintf(ys_file_ptr, "\tje %s\n", label);
+				// 		break;
+				// 	default:
+				// 		break;
+				// }
 
 				condition = NULL_C;
 
