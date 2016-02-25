@@ -510,51 +510,51 @@ char * get_source_value(quad_arg * src) {
 
 				/* pointer now lives in %edi, now we need to get the offset into %eax */
 				char t2[MAX_ARG_LEN * 5] = "";
-				if (src->int_literal >= 0 && src->index) {
-					printf("getting index from symbol / constant\n");
+				// if (src->int_literal >= 0 && src->index) {
+				// 	printf("getting index from symbol / constant\n");
 
-					switch(src->index->type){
-						case INT_LITERAL_Q_ARG:
-							printf("constant index\n");
-							sprintf(t2,"\tmrmovl %d(%%edi)",src->index->int_literal * TYPE_SIZE(src->symnode->s.v.type));
-							break;
+					// switch(src->index->type){
+					// 	case INT_LITERAL_Q_ARG:
+					// 		printf("constant index\n");
+					// 		sprintf(t2,"\tmrmovl %d(%%edi)",src->index->int_literal * TYPE_SIZE(src->symnode->s.v.type));
+					// 		break;
 
-							/*
-							 * step 1) // get symbol's value into %eax
-							 * step 1.5) // shift left by 2 to multiply by 4
-							 * step 2) // add that value to the array's pointer
-							 * step 3) // get indexed value from memory
-							 */
-						case SYMBOL_VAR_Q_ARG:
-							printf("symbol index\n");
-							sprintf(t2,"\tmrmovl %d(%%ebp), %%eax\n\tshll $2, %%eax\n\taddl %%eax, %%edi\n\tmrmovl (%%edi)", 
-								src->index->symnode->s.v.offset_of_frame_pointer);
-							break;
+					// 		/*
+					// 		 * step 1) // get symbol's value into %eax
+					// 		 * step 1.5) // shift left by 2 to multiply by 4
+					// 		 * step 2) // add that value to the array's pointer
+					// 		 * step 3) // get indexed value from memory
+					// 		 */
+					// 	case SYMBOL_VAR_Q_ARG:
+					// 		printf("symbol index\n");
+					// 		sprintf(t2,"\tmrmovl %d(%%ebp), %%eax\n\tshll $2, %%eax\n\taddl %%eax, %%edi\n\tmrmovl (%%edi)", 
+					// 			src->index->symnode->s.v.offset_of_frame_pointer);
+					// 		break;
 
-						case TEMP_VAR_Q_ARG:
-							printf("temp index");
-							sprintf(t2,"\tmrmovl %d(%%ebp), %%eax\n\tshll $2, %%eax\n\taddl %%eax, %%edi\n\tmrmovl (%%edi)", 
-								((symnode_t *)src->index->temp->temp_symnode)->s.v.offset_of_frame_pointer);
-							break;
+					// 	case TEMP_VAR_Q_ARG:
+					// 		printf("temp index");
+					// 		sprintf(t2,"\tmrmovl %d(%%ebp), %%eax\n\tshll $2, %%eax\n\taddl %%eax, %%edi\n\tmrmovl (%%edi)", 
+					// 			((symnode_t *)src->index->temp->temp_symnode)->s.v.offset_of_frame_pointer);
+					// 		break;
 
-						/* not handled yet */
-						case SYMBOL_ARR_Q_ARG:
-							printf("Arrays indexing into arrays is not supported.\n");
-							exit(1);
-							break;
+					// 	/* not handled yet */
+					// 	case SYMBOL_ARR_Q_ARG:
+					// 		printf("Arrays indexing into arrays is not supported.\n");
+					// 		exit(1);
+					// 		break;
 
-						default:
-							printf("unknown index into array\n");
-							exit(1);
-							break;
-					}		
-					strcat(t1,t2);			
-				} else {
-					printf("passing pointer\n");
+					// 	default:
+					// 		printf("unknown index into array\n");
+					// 		exit(1);
+					// 		break;
+					// }		
+					// strcat(t1,t2);			
+				// } else {
+				// 	printf("passing pointer\n");
 
-					// pass pointer
-					strcat(t1,"%%edi");
-				}
+				// 	// pass pointer
+				// 	strcat(t1,"%%edi");
+				// }
 					
 			}
 			break;
@@ -611,50 +611,50 @@ char * get_dest_value(quad_arg * dest) {
 			break;			
 
 		case SYMBOL_ARR_Q_ARG:
-			printf("array symbol %s, offset %s\n",dest->symnode->name, get_quad_arg_label(dest->index) ); 
-			if (dest->int_literal >= 0 && dest->index != NULL) {					// get offset from array pointer
-				printf("getting destination index from symbol / constant\n");
+			// printf("array symbol %s, offset %s\n",dest->symnode->name, get_quad_arg_label(dest->index) ); 
+			// if (dest->int_literal >= 0 && dest->index != NULL) {					// get offset from array pointer
+			// 	printf("getting destination index from symbol / constant\n");
 
-				char get_array[MAX_ARG_LEN * 5];
-				switch(dest->index->type){
-					case INT_LITERAL_Q_ARG:
-						printf("constant index\n");
-						sprintf(get_array,"%d(%%edi)",dest->index->int_literal * TYPE_SIZE(dest->symnode->s.v.type));
-						break;
+			// 	char get_array[MAX_ARG_LEN * 5];
+			// 	switch(dest->index->type){
+			// 		case INT_LITERAL_Q_ARG:
+			// 			printf("constant index\n");
+			// 			sprintf(get_array,"%d(%%edi)",dest->index->int_literal * TYPE_SIZE(dest->symnode->s.v.type));
+			// 			break;
 
-					/*
-					 * step 0) stash %eax source value at $-4(%esp) which is a garbage spot. Nothing's there.
-					 * step 1) move offset into register
-					 * step 1.5) shift left by two to multiply by 4! (size)
-					 * step 2) add that value to the array's pointer
-					 * step 3) // get indexed value from memory
-					 */
-					case SYMBOL_VAR_Q_ARG:
-						printf("symbol index\n");
-						sprintf(get_array,"$-4(%%esp)\n\tmrmovl %d(%%ebp), %%ebx\n\tshll 2, %%ebx\n\taddl %%ebx, %%edi\n\trmmovl %%eax, (%%edi)", 
-							dest->index->symnode->s.v.offset_of_frame_pointer);
-						break;
+					
+			// 		 * step 0) stash %eax source value at $-4(%esp) which is a garbage spot. Nothing's there.
+			// 		 * step 1) move offset into register
+			// 		 * step 1.5) shift left by two to multiply by 4! (size)
+			// 		 * step 2) add that value to the array's pointer
+			// 		 * step 3) // get indexed value from memory
+					 
+			// 		case SYMBOL_VAR_Q_ARG:
+			// 			printf("symbol index\n");
+			// 			sprintf(get_array,"$-4(%%esp)\n\tmrmovl %d(%%ebp), %%ebx\n\tshll 2, %%ebx\n\taddl %%ebx, %%edi\n\trmmovl %%eax, (%%edi)", 
+			// 				dest->index->symnode->s.v.offset_of_frame_pointer);
+			// 			break;
 
-					case TEMP_VAR_Q_ARG:
-						printf("temp index");
-						sprintf(get_array,"$-4(%%esp)\n\tmrmovl %d(%%ebp), %%ebx\n\tshll 2, %%ebx\n\taddl %%ebx, %%edi\n\trmmovl %%eax, (%%edi)", 
-							((symnode_t *)dest->index->temp->temp_symnode)->s.v.offset_of_frame_pointer);
-						break;
+			// 		case TEMP_VAR_Q_ARG:
+			// 			printf("temp index");
+			// 			sprintf(get_array,"$-4(%%esp)\n\tmrmovl %d(%%ebp), %%ebx\n\tshll 2, %%ebx\n\taddl %%ebx, %%edi\n\trmmovl %%eax, (%%edi)", 
+			// 				((symnode_t *)dest->index->temp->temp_symnode)->s.v.offset_of_frame_pointer);
+			// 			break;
 
-					/* not handled yet */
-					case SYMBOL_ARR_Q_ARG:
-						printf("Arrays indexing into arrays is not supported.\n");
-						exit(1);
-						break;
+			// 		/* not handled yet */
+			// 		case SYMBOL_ARR_Q_ARG:
+			// 			printf("Arrays indexing into arrays is not supported.\n");
+			// 			exit(1);
+			// 			break;
 
-					default:
-						printf("unknown index into array\n");
-						exit(1);
-						break;
-				}
-				strcat(dest_str, get_array);		
-			} else											// else pass array pointer
-				strcat(dest_str,"%%edi");
+			// 		default:
+			// 			printf("unknown index into array\n");
+			// 			exit(1);
+			// 			break;
+			// 	}
+			//	strcat(dest_str, get_array);		
+			//} else											// else pass array pointer
+			//	strcat(dest_str,"%%edi");
 			break;
 
 		case RETURN_Q_ARG:
