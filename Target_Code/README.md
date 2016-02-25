@@ -41,6 +41,12 @@ The callee continues through it's subroutine until it hits a return statement qu
 
 (Quick note about passing parameters. If an array pointer is passed, then the address of the first element of the array is pushed onto the stack in the parameter region.)
 
+### Conditional Jumps and Conditional Moves
+
+Whenver we encounter a comparison quad (<, <=, >, >=, ==, etc.), we set a flag that describes which type of comparison is being done. Then we use the function `comp_sub` to perform a subtraction operation and conditional move operations to set a temp with either 1 or 0 depending on what type of comparison is being performed. For example, if the quad represents the comparison a < b, we will subtract b from a. If the result is less than 0, the sign flag will be set and the `cmovl` assembler operation will move a 1 to the temp. If the result is greater than or equal to 0, the sign flag will not be set and the `cmovge` assembler operation will move a 0 to the temp.
+
+This process is useful because whenever we encounter an IFFALSE_Q quad, we only need to use the `je` assembler operation rather than any of the other conditonal jump assembler operations such as `jl` and `jg`. We can do this because the temp that is passed to an IFFALSE_Q quad will contain a 1 or 0. We perform another subtraction operation here, this time subtracting 0 from the temp value. If the result is 0, then the zero flag is set and the `je` assembler operation is triggered causing the program to jump to the label associated with this IFFALSE_Q quad.
+
 ## Testing Files
 All test files live in the tests directory
 
