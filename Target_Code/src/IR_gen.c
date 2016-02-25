@@ -391,14 +391,22 @@ quad_arg * CG(ast_node root) {
             to_return->label = root->left_child->value_string;
             to_return->symnode = look_up_scopes_to_find_symbol(root->scope_table, to_return->label);
 
-            // check if accessing like an array --> evaluate expression and save somewhere?
-            // quad_arg * index;
             if (root->left_child->right_sibling != NULL) {
-              to_return->index = CG(root->left_child->right_sibling);
-              //gen_quad(INDEX_Q, index, NULL, NULL);
-              //to_return->int_literal = root->left_child->right_sibling->left_child->value_int;     // get offset into array 
+
+              // holds index into array
+              to_return->temp     = new_temp(root);    
+              quad_arg * temp_QA  = create_quad_arg(TEMP_VAR_Q_ARG);
+              temp_QA->temp       = to_return->temp;
+
+              // evaluate index
+              quad_arg* index_val = CG(root->left_child->right_sibling);
+
+              // assign evaluated index to array's temp (which we will use to move pointer to right location)
+              gen_quad(ASSIGN_Q, temp_QA,index_val, NULL);
+
             } else {
               to_return->int_literal = PASS_ARR_POINTER; 
+              to_return->temp = NULL;
             }
                     
           }
@@ -680,8 +688,8 @@ void print_quad(quad * q) {
         break;
 
       case SYMBOL_ARR_Q_ARG:
-        if (q->args[i]->index != NULL)
-          printf("Symbol: %s [index: %s]",q->args[i]->label, get_quad_arg_label(q->args[i]->index));
+        if (q->args[i]->temp != NULL)
+          printf("Symbol: %s [index: %s]",q->args[i]->label, ((symnode_t *)q->args[i]->temp->temp_symnode)->name);
         else
           printf("Symbol: %s, [pointer]",q->args[i]->label);
 

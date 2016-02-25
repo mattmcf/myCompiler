@@ -127,7 +127,7 @@ typedef struct quad_arg {
   quad_arg_discriminant type;
 
   int int_literal; 			// holds array offset if SYMBOL_ARR_Q_ARG
-  struct quad_arg * index; 	// used in arrays indexed by expressions
+  //struct quad_arg * index; 	// used in arrays indexed by expressions
 
   temp_var * temp;
   char * label;   			// for variable ID's, function ID's and Label ID's
