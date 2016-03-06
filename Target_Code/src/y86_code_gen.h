@@ -88,6 +88,10 @@ int get_variable_address_off_fp(quad_arg * var);
 
 int get_global_address(quad_arg * global_var);
 
+/*
+ * adds a STRING_Q to the ys file -- called after all executable quads are written
+ */
+void translate_string(FILE * ys_file_ptr, quad * string_to_add);
 
 /*
  * before generating code, set all your frame pointer offsets for variables

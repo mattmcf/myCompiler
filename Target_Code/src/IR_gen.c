@@ -62,12 +62,20 @@ quad_arg * CG(ast_node root) {
         to_return = CG_math_op(root, MOD_Q);
         break;
 
-      case OP_INC_N:
-        to_return = CG_math_op(root, INC_Q);
+      case OP_PRE_INC_N:
+        to_return = CG_math_op(root, PRE_INC_Q);
         break;
 
-      case OP_DECR_N:
-        to_return = CG_math_op(root, DEC_Q);
+      case OP_PRE_DEC_N:
+        to_return = CG_math_op(root, PRE_DEC_Q);
+        break;
+
+      case OP_POST_INC_N:
+        to_return = CG_math_op(root, POST_INC_Q);
+        break;
+
+      case OP_POST_DEC_N:
+        to_return = CG_math_op(root, POST_DEC_Q);
         break;
 
       case OP_EQ_N:
@@ -199,6 +207,37 @@ quad_arg * CG(ast_node root) {
           CG(root->left_child->right_sibling);
 
           gen_quad(GOTO_Q, test_arg, NULL, NULL);
+          gen_quad(LABEL_Q, exit_arg, NULL, NULL);
+
+          break;
+        }
+
+      case DO_WHILE_N:
+        {
+          char * label_do = new_label(root, "DO_WHILE_DO");
+          quad_arg * do_arg = create_quad_arg(LABEL_Q_ARG);
+          do_arg->label = label_do;
+
+          char * label_test = new_label(root, "DO_WHILE_TEST");
+          quad_arg * test_arg = create_quad_arg(LABEL_Q_ARG);
+          test_arg->label = label_test;
+
+          char * label_exit = new_label(root, "DO_WHILE_EXIT");
+          quad_arg * exit_arg = create_quad_arg(LABEL_Q_ARG);
+          exit_arg->label = label_exit;
+
+          gen_quad(LABEL_Q, do_arg, NULL, NULL);
+
+          // Generate quads in the do block
+          CG(root->left_child);
+
+          gen_quad(LABEL_Q, test_arg, NULL, NULL);
+
+          quad_arg * arg1 = CG(root->left_child->right_sibling);
+
+          gen_quad(IFFALSE_Q, arg1, exit_arg, NULL);
+
+          gen_quad(GOTO_Q, do_arg, NULL, NULL);
           gen_quad(LABEL_Q, exit_arg, NULL, NULL);
 
           break;
@@ -433,10 +472,10 @@ quad_arg * CG(ast_node root) {
           quad_arg * ascii = create_quad_arg(LABEL_Q_ARG);
           ascii->label = root->value_string;
   
-          gen_quad(GOTO_Q, end_label_arg, NULL, NULL);
-          gen_quad(LABEL_Q, ascii_arg, NULL, NULL);
-          gen_quad(STRING_Q, ascii, NULL, NULL);
-          gen_quad(LABEL_Q, end_label_arg, NULL, NULL);
+          //gen_quad(GOTO_Q, end_label_arg, NULL, NULL);
+          //gen_quad(LABEL_Q, ascii_arg, NULL, NULL);
+          gen_quad(STRING_Q, ascii_arg, ascii, NULL);
+          //gen_quad(LABEL_Q, end_label_arg, NULL, NULL);
           break;
         }
 
@@ -487,29 +526,31 @@ quad_arg * CG_assign_op(ast_node root) {
 quad_arg * CG_math_op(ast_node root, quad_op op) {
   quad_arg * arg1 = CG(root->left_child);
 
+  temp_var * t3 = new_temp(root);
+
+  quad_arg * arg3 = create_quad_arg(TEMP_VAR_Q_ARG);
+  arg3->temp = t3;
+
   quad_arg * arg2;
   if (root->left_child->right_sibling == NULL) {
 
     if (op == NOT_Q || op == NEG_Q) {
       // Special case for not
       gen_quad(op, arg1, NULL, NULL);
+
+      return arg1;
     } else {
       // Special case for increment and decrement
       arg2 = create_quad_arg(INT_LITERAL_Q_ARG);
       arg2->int_literal = 1;
 
-      gen_quad(op, arg1, arg2, NULL);
-    }
+      gen_quad(op, arg3, arg1, arg2);
 
-    return arg1;
+      return arg3;
+    }
   } else {
     arg2 = CG(root->left_child->right_sibling);
   }
-
-  temp_var * t3 = new_temp(root);
-
-  quad_arg * arg3 = create_quad_arg(TEMP_VAR_Q_ARG);
-  arg3->temp = t3;
 
   gen_quad(op, arg3, arg1, arg2);
 
@@ -691,7 +732,7 @@ void print_quad(quad * q) {
         if (q->args[i]->temp != NULL)
           printf("Symbol: %s [index: %s]",q->args[i]->label, ((symnode_t *)q->args[i]->temp->temp_symnode)->name);
         else
-          printf("Symbol: %s, [pointer]",q->args[i]->label);
+          printf("Symbol: %s, [pointer: %d]",q->args[i]->label, q->args[i]->int_literal);
 
         break;
 

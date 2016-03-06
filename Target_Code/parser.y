@@ -617,13 +617,21 @@ expression '+' expression {
   $$ = t; }
 | var { $$ = $1; } 									// note, set VAR to EXPR here
 | INCR_T var {
-  ast_node t = create_ast_node(OP_INC_N);
+  ast_node t = create_ast_node(OP_PRE_INC_N);
   t->left_child = $2;
   $$ = t; }
+| var INCR_T {
+	ast_node t = create_ast_node(OP_POST_INC_N);
+	t->left_child = $1;
+	$$ = t; }
 | DECR_T var {
-  ast_node t = create_ast_node(OP_DECR_N);
+  ast_node t = create_ast_node(OP_PRE_DEC_N);
   t->left_child = $2;
   $$ = t; }
+| var DECR_T {
+	ast_node t = create_ast_node(OP_POST_DEC_N);
+	t->left_child = $1;
+	$$ = t; }
 | call { $$ = $1; } 								// note, set expr = call here
 | '(' expression ')' { $$ = $2; }
 | INT_T {

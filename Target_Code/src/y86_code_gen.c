@@ -47,8 +47,9 @@ int create_ys(char * file_name) {
 		return 1;
 	}
 
-	/* make sure a main is called */
-
+	/* 
+	 * make sure a main is called 
+	 */
 	symnode_t * main = find_in_top_symboltable(symtab, "main");
 	if (!main) {
 		fprintf(stderr,"Error during .ys construction. No \"main\" function is declared -- cannot find entry point.\n");
@@ -58,8 +59,9 @@ int create_ys(char * file_name) {
 		exit(1);		
 	}
 
-	/* stack and base pointer initialization */
-
+	/* 
+	 * stack and base pointer initialization 
+	 */
 	int stk_start = set_variable_memory_locations(symtab);
 	printf("stack starks at %x\n",stk_start);
 	fprintf(ys_fp,".pos 0\n");	
@@ -69,24 +71,41 @@ int create_ys(char * file_name) {
 	fprintf(ys_fp,"\tirmovl $4, %%eax\n");
 	fprintf(ys_fp,"\tsubl %%eax, %%esp\n");
 
-	/* initialize globals here */
+	/* 
+	 * initialize globals here 
+	 */
 	int i;
 	for (i = 0; quad_list->arr[i]->op == ASSIGN_Q; i++) {
 		printf("global initialization quad %d\n",i);
 		print_code(quad_list->arr[i], ys_fp);
 	}
 
+	/* 
+	 * jump into main when executing 
+	 */
 	fprintf(ys_fp, "\tcall main\n");
 	fprintf(ys_fp, "\thalt\n");
 
-	/* translate quad list */
-
+	/* 
+	 * translate quad list 
+	 */
 	for (/* start at end of global initalizations */; i < quad_list->count; i++) {
 		printf("looking at quad %d\n",i);
 		print_code(quad_list->arr[i], ys_fp);
 	}
 
-	/* wrap up */
+	/* 
+	 * add string constants 
+	 */
+	for(int i = 0; i < quad_list->count; i++) {
+		if (quad_list->arr[i]->op == STRING_Q)
+			translate_string(ys_fp, quad_list->arr[i]);
+	}
+
+	/* 
+	 * wrap up 
+	 */
+	fprintf(ys_fp, "\n\n");
 	fclose(ys_fp);
 
 	printf("\n----- PRINTED YS FILE %s ----- \n",file_name);
@@ -135,18 +154,48 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 			get_dest_value(ys_file_ptr,EAX_R,to_translate->args[0]);
 			break;
 
-		case INC_Q:
-			get_source_value(ys_file_ptr, to_translate->args[0], EAX_R);
-			get_source_value(ys_file_ptr, to_translate->args[1], EBX_R);		
+		case PRE_INC_Q:
+			get_source_value(ys_file_ptr, to_translate->args[1], EAX_R);
+			get_source_value(ys_file_ptr, to_translate->args[2], EBX_R);
 			fprintf(ys_file_ptr, "\taddl %%ebx, %%eax\n");
+			// Update variable
+			// Return updated return value
+
+			get_dest_value(ys_file_ptr,EAX_R,to_translate->args[1]);
 			get_dest_value(ys_file_ptr,EAX_R,to_translate->args[0]);
 			break;
 
-		case DEC_Q:
-			get_source_value(ys_file_ptr, to_translate->args[0], EAX_R);
-			get_source_value(ys_file_ptr, to_translate->args[1], EBX_R);		
+		case PRE_DEC_Q:
+			get_source_value(ys_file_ptr, to_translate->args[1], EAX_R);
+			get_source_value(ys_file_ptr, to_translate->args[2], EBX_R);
 			fprintf(ys_file_ptr, "\tsubl %%ebx, %%eax\n");
+			// Update variable
+			// Return updated return value
+
+			get_dest_value(ys_file_ptr,EAX_R,to_translate->args[1]);
+			get_dest_value(ys_file_ptr,EAX_R,to_translate->args[0]);			
+			break;
+
+		case POST_INC_Q:
+			get_source_value(ys_file_ptr,to_translate->args[1],EAX_R);
+			// Return variable's original value
 			get_dest_value(ys_file_ptr,EAX_R,to_translate->args[0]);
+
+			get_source_value(ys_file_ptr,to_translate->args[2],EBX_R);
+			fprintf(ys_file_ptr, "\taddl %%ebx, %%eax\n");
+			// Update variable
+			get_dest_value(ys_file_ptr, EAX_R,to_translate->args[1]);
+			break;
+
+		case POST_DEC_Q:
+			get_source_value(ys_file_ptr,to_translate->args[1],EAX_R);
+			// Return variable's original value
+			get_dest_value(ys_file_ptr,EAX_R,to_translate->args[0]);
+
+			get_source_value(ys_file_ptr,to_translate->args[2],EBX_R);
+			fprintf(ys_file_ptr, "\tsubl %%ebx, %%eax\n");
+			// Update variable
+			get_dest_value(ys_file_ptr, EAX_R,to_translate->args[1]);
 			break;
 
 		case NOT_Q:
@@ -240,38 +289,6 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 				get_source_value(ys_file_ptr,to_translate->args[0],EBX_R);
 				fprintf(ys_file_ptr, "\tsubl %%ebx, %%eax\n");
 				fprintf(ys_file_ptr, "\tje %s\n", label);
-
-				// Use the opposite conditional jump since we are checking
-				// for falseness
-				// switch (condition) {
-				// 	case LT_C:
-				// 		fprintf(ys_file_ptr, "\tjge %s\n", label);
-				// 		break;
-				// 	case GT_C:
-				// 		fprintf(ys_file_ptr, "\tjle %s\n", label);
-				// 		break;
-				// 	case LTE_C:
-				// 		fprintf(ys_file_ptr, "\tjg %s\n", label);
-				// 		break;
-				// 	case GTE_C:
-				// 		fprintf(ys_file_ptr, "\tjl %s\n", label);
-				// 		break;
-				// 	case NE_C:
-				// 		fprintf(ys_file_ptr, "\tje %s\n", label);
-				// 		break;
-				// 	case EQ_C:
-				// 		fprintf(ys_file_ptr, "\tjne %s\n", label);
-				// 		break;
-				// 	case NULL_C:
-				// 		// Just check if temp is 0
-				// 		fprintf(ys_file_ptr, "\tirmovl $0, %%eax\n");
-				// 		fprintf(ys_file_ptr, "\t%s, %%ebx\n", get_source_value(to_translate->args[0]));
-				// 		fprintf(ys_file_ptr, "\tsubl %%ebx, %%eax\n");
-				// 		fprintf(ys_file_ptr, "\tje %s\n", label);
-				// 		break;
-				// 	default:
-				// 		break;
-				// }
 
 				condition = NULL_C;
 
@@ -416,14 +433,15 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 			break;
 
 		case STRING_Q:
-			{
-				int len = strlen(to_translate->args[0]->label);
-				//fprintf(ys_file_ptr,"\t.align 4\n");
-				for (int i = 0; i < len; i++) {
-					fprintf(ys_file_ptr,"\t.byte 0x%x\n",to_translate->args[0]->label[i]);
-				}
-				fprintf(ys_file_ptr,"\t.byte 0x0\n"); 	// null terminator
-			}
+			/* update -- wait to do this until all the text has been translated. */
+			// {
+			// 	int len = strlen(to_translate->args[0]->label);
+			// 	//fprintf(ys_file_ptr,"\t.align 4\n");
+			// 	for (int i = 0; i < len; i++) {
+			// 		fprintf(ys_file_ptr,"\t.byte 0x%x\n",to_translate->args[0]->label[i]);
+			// 	}
+			// 	fprintf(ys_file_ptr,"\t.byte 0x0\n"); 	// null terminator
+			// }
 			break;
 
 		case LABEL_Q:			
@@ -466,6 +484,9 @@ int get_source_value(FILE * fp, quad_arg * src, my_register_t dest) {
 		case SYMBOL_ARR_Q_ARG: 
 			printf("array symbol %s, offset %d\n",src->symnode->name, src->temp->id);
 			{
+				/*
+				 * get array head
+				 */
 				if (src->symnode->s.v.specie == GLOBAL_VAR)	{					// get absolute address of pointer if global
 					fprintf(fp,"\tirmovl 0x%x, %%edi\n",src->symnode->s.v.offset_of_frame_pointer);
 
@@ -478,6 +499,9 @@ int get_source_value(FILE * fp, quad_arg * src, my_register_t dest) {
 					fprintf(fp,"\taddl %%ebx, %%edi\n");
 				}
 
+				/*
+				 * calculate offset
+				 */
 				if (src->int_literal != PASS_ARR_POINTER) {
 					/* get temp that holds index */
 					fprintf(fp,"\tmrmovl $%d(%%ebp), %%ebx\n",((symnode_t *) src->temp->temp_symnode)->s.v.offset_of_frame_pointer);
@@ -549,7 +573,6 @@ int get_dest_value(FILE * fp, my_register_t src, quad_arg * dest) {
 				fprintf(fp,"\trrmovl %%ebp, %%edi\n");
 				fprintf(fp,"\tirmovl $%d, %%ebx\n",dest->symnode->s.v.offset_of_frame_pointer);
 				fprintf(fp,"\taddl %%ebx, %%edi\n");
-				//sprintf(t1,"%%ebp, %%edi\n\tirmovl $%d, %%ebx\n\taddl %%ebx, %%edi\n",src->symnode->s.v.offset_of_frame_pointer);
 			}
 
 			/* 
@@ -573,7 +596,6 @@ int get_dest_value(FILE * fp, my_register_t src, quad_arg * dest) {
 		case RETURN_Q_ARG:
 			printf("return destination\n");
 			fprintf(fp,"\trrmovl %s, %%eax\n",REGISTER_STR(src));
-			//sprintf(dest_str,"%%eax");
 			break;
 
 		case LABEL_Q_ARG:			
@@ -644,6 +666,29 @@ void print_nop_comment(FILE * ys_ptr, char * msg, int id) {
 		return;
 
 	fprintf(ys_ptr, "\tnop # (quad %d) -- %s\n",id,msg);
+	return;
+}
+
+void translate_string(FILE * ys_file_ptr, quad * string_to_add) {
+	if (!ys_file_ptr || ! string_to_add)
+		return;
+
+	if (!string_to_add->args[0] || !string_to_add->args[1]) {
+		fprintf(stderr,"cannot translate string -- lacking arguments\n");
+		exit(1);
+	}
+
+	// generate label
+	fprintf(ys_file_ptr,"%s:\n",string_to_add->args[0]->label);
+
+	// generate ascii bytes
+
+	int len = strlen(string_to_add->args[1]->label);
+	for (int i = 0; i < len; i++) {
+		fprintf(ys_file_ptr,"\t.byte 0x%x\n",string_to_add->args[1]->label[i]);
+	}
+	fprintf(ys_file_ptr,"\t.byte 0x0\n"); 	// null terminator
+
 	return;
 }
 
