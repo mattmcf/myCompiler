@@ -204,6 +204,37 @@ quad_arg * CG(ast_node root) {
           break;
         }
 
+      case DO_WHILE_N:
+        {
+          char * label_do = new_label(root, "DO_WHILE_DO");
+          quad_arg * do_arg = create_quad_arg(LABEL_Q_ARG);
+          do_arg->label = label_do;
+
+          char * label_test = new_label(root, "DO_WHILE_TEST");
+          quad_arg * test_arg = create_quad_arg(LABEL_Q_ARG);
+          test_arg->label = label_test;
+
+          char * label_exit = new_label(root, "DO_WHILE_EXIT");
+          quad_arg * exit_arg = create_quad_arg(LABEL_Q_ARG);
+          exit_arg->label = label_exit;
+
+          gen_quad(LABEL_Q, do_arg, NULL, NULL);
+
+          // Generate quads in the do block
+          CG(root->left_child);
+
+          gen_quad(LABEL_Q, test_arg, NULL, NULL);
+
+          quad_arg * arg1 = CG(root->left_child->right_sibling);
+
+          gen_quad(IFFALSE_Q, arg1, exit_arg, NULL);
+
+          gen_quad(GOTO_Q, do_arg, NULL, NULL);
+          gen_quad(LABEL_Q, exit_arg, NULL, NULL);
+
+          break;
+        }
+
       case OP_AND_N:
         {
           char * label_false = new_label(root, "FALSE");
