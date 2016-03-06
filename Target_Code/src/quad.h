@@ -21,8 +21,10 @@ typedef enum {
 	MUL_Q, // Multiply
 	DIV_Q, // Divide
 	MOD_Q, // Modulo
-	INC_Q, // Increment
-	DEC_Q, // Decrement
+	PRE_INC_Q, // Pre increment
+	PRE_DEC_Q, // Pre decrement
+	POST_INC_Q, // Post increment
+	POST_DEC_Q, // Post decrement
 	
 	NOT_Q, // Not - negation
 	NEG_Q, // Unary minus aka negative
@@ -66,8 +68,10 @@ static val_name_pair quad_op_table[] = {
 	{MUL_Q, "multiply"},
 	{DIV_Q, "divide"},
 	{MOD_Q, "mod divide"},
-	{INC_Q, "increment"},
-	{DEC_Q, "decrement"},
+	{PRE_INC_Q, "pre increment"},
+	{PRE_DEC_Q, "pre decrement"},
+	{POST_INC_Q, "post increment"},
+	{POST_DEC_Q, "post decrement"},
 
 	{NOT_Q, "not"},
 	{NEG_Q, "negative"},

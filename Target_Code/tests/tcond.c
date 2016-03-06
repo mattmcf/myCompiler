@@ -5,7 +5,10 @@ int main(void) {
 	int a = 0;
 	int b = 10;
 	int c;
-	int d = 5;
+	int g = 5;
+	int d;
+	int e;
+	int f = 5;
 
 	read c;
 
@@ -27,10 +30,21 @@ int main(void) {
 
 	do {
 		print "WAHOO!";
-		--d;
-	} while (d >= 0);
+		--g;
+	} while (g >= 0);
 
 	print "DONE YET AGAIN!";
+
+	// Increment and decrement operator tests
+	d = f--;
+
+	print d; // d = 5
+	print f; // f = 4
+
+	e = --f;
+
+	print e; // e = 3
+	print f; // f = 3
 
 	return 0;
 }

@@ -190,8 +190,10 @@ void set_type(ast_node root) {
 		 */
 		case OP_NEG_N:
 		case OP_NOT_N:
-		case OP_INC_N:
-		case OP_DECR_N:
+		case OP_PRE_INC_N:
+		case OP_PRE_DEC_N:
+		case OP_POST_INC_N:
+		case OP_POST_DEC_N:
 			if (check_op_arg_types(root, 1, INT_TS, SINGLE_DT)) {
 
 				fprintf(stderr,"mismatching type arguments for operation %s\n", NODE_NAME(root->node_type));

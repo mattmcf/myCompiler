@@ -47,7 +47,7 @@ typedef enum {
 	       OP_ASSIGN_N, OP_PLUS_N, OP_MINUS_N, OP_NEG_N, OP_TIMES_N, OP_DIVIDE_N,
 	       OP_MOD_N, OP_LT_N, OP_LTE_N, OP_GT_N, OP_GTE_N, 
          OP_EQ_N, OP_NE_N, OP_AND_N, OP_OR_N, OP_NOT_N,
-         OP_INC_N, OP_DECR_N,
+         OP_PRE_INC_N, OP_PRE_DEC_N, OP_POST_INC_N, OP_POST_DEC_N,
 
 	       IF_STMT_N, IF_ELSE_STMT_N,
 
@@ -101,8 +101,10 @@ static val_name_pair token_table[] = {
   { OP_AND_N, "&&"},
   { OP_OR_N, "||"},
   { OP_NOT_N, "!"},
-  { OP_INC_N, "++"},
-  { OP_DECR_N, "--"},
+  { OP_PRE_INC_N, "PRE ++"},
+  { OP_PRE_DEC_N, "PRE --"},
+  { OP_POST_INC_N, "POST ++"},
+  { OP_POST_DEC_N, "POST --"},
 
   { IF_STMT_N, "IF_STMT" },
   { IF_ELSE_STMT_N, "IF_ELSE_STMT" },

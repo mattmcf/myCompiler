@@ -135,18 +135,46 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 			fprintf(ys_file_ptr, "\trmmovl %%eax, %s\n", get_dest_value(to_translate->args[0]));
 			break;
 
-		case INC_Q:
-			fprintf(ys_file_ptr, "\t%s, %%eax\n", get_source_value(to_translate->args[0]));
-			fprintf(ys_file_ptr, "\t%s, %%ebx\n", get_source_value(to_translate->args[1]));
+		case PRE_INC_Q:
+			fprintf(ys_file_ptr, "\t%s, %%eax\n", get_source_value(to_translate->args[1]));
+			fprintf(ys_file_ptr, "\t%s, %%ebx\n", get_source_value(to_translate->args[2]));
 			fprintf(ys_file_ptr, "\taddl %%ebx, %%eax\n");
+			// Update variable
+			fprintf(ys_file_ptr, "\trmmovl %%eax, %s\n", get_dest_value(to_translate->args[1]));
+			// Return updated return value
 			fprintf(ys_file_ptr, "\trmmovl %%eax, %s\n", get_dest_value(to_translate->args[0]));
 			break;
 
-		case DEC_Q:
-			fprintf(ys_file_ptr, "\t%s, %%eax\n", get_source_value(to_translate->args[0]));
-			fprintf(ys_file_ptr, "\t%s, %%ebx\n", get_source_value(to_translate->args[1]));
+		case PRE_DEC_Q:
+			fprintf(ys_file_ptr, "\t%s, %%eax\n", get_source_value(to_translate->args[1]));
+			fprintf(ys_file_ptr, "\t%s, %%ebx\n", get_source_value(to_translate->args[2]));
 			fprintf(ys_file_ptr, "\tsubl %%ebx, %%eax\n");
+			// Update variable
+			fprintf(ys_file_ptr, "\trmmovl %%eax, %s\n", get_dest_value(to_translate->args[1]));
+			// Return updated return value
 			fprintf(ys_file_ptr, "\trmmovl %%eax, %s\n", get_dest_value(to_translate->args[0]));
+			break;
+
+		case POST_INC_Q:
+			fprintf(ys_file_ptr, "\t%s, %%eax\n", get_source_value(to_translate->args[1]));
+			// Return variable's original value
+			fprintf(ys_file_ptr, "\trmmovl %%eax, %s\n", get_dest_value(to_translate->args[0]));
+
+			fprintf(ys_file_ptr, "\t%s, %%ebx\n", get_source_value(to_translate->args[2]));
+			fprintf(ys_file_ptr, "\taddl %%ebx, %%eax\n");
+			// Update variable
+			fprintf(ys_file_ptr, "\trmmovl %%eax, %s\n", get_dest_value(to_translate->args[1]));
+			break;
+
+		case POST_DEC_Q:
+			fprintf(ys_file_ptr, "\t%s, %%eax\n", get_source_value(to_translate->args[1]));
+			// Return variable's original value
+			fprintf(ys_file_ptr, "\trmmovl %%eax, %s\n", get_dest_value(to_translate->args[0]));
+
+			fprintf(ys_file_ptr, "\t%s, %%ebx\n", get_source_value(to_translate->args[2]));
+			fprintf(ys_file_ptr, "\tsubl %%ebx, %%eax\n");
+			// Update variable
+			fprintf(ys_file_ptr, "\trmmovl %%eax, %s\n", get_dest_value(to_translate->args[1]));
 			break;
 
 		case NOT_Q:

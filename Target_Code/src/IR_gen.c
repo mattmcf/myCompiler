@@ -62,12 +62,20 @@ quad_arg * CG(ast_node root) {
         to_return = CG_math_op(root, MOD_Q);
         break;
 
-      case OP_INC_N:
-        to_return = CG_math_op(root, INC_Q);
+      case OP_PRE_INC_N:
+        to_return = CG_math_op(root, PRE_INC_Q);
         break;
 
-      case OP_DECR_N:
-        to_return = CG_math_op(root, DEC_Q);
+      case OP_PRE_DEC_N:
+        to_return = CG_math_op(root, PRE_DEC_Q);
+        break;
+
+      case OP_POST_INC_N:
+        to_return = CG_math_op(root, POST_INC_Q);
+        break;
+
+      case OP_POST_DEC_N:
+        to_return = CG_math_op(root, POST_DEC_Q);
         break;
 
       case OP_EQ_N:
@@ -518,29 +526,31 @@ quad_arg * CG_assign_op(ast_node root) {
 quad_arg * CG_math_op(ast_node root, quad_op op) {
   quad_arg * arg1 = CG(root->left_child);
 
+  temp_var * t3 = new_temp(root);
+
+  quad_arg * arg3 = create_quad_arg(TEMP_VAR_Q_ARG);
+  arg3->temp = t3;
+
   quad_arg * arg2;
   if (root->left_child->right_sibling == NULL) {
 
     if (op == NOT_Q || op == NEG_Q) {
       // Special case for not
       gen_quad(op, arg1, NULL, NULL);
+
+      return arg1;
     } else {
       // Special case for increment and decrement
       arg2 = create_quad_arg(INT_LITERAL_Q_ARG);
       arg2->int_literal = 1;
 
-      gen_quad(op, arg1, arg2, NULL);
-    }
+      gen_quad(op, arg3, arg1, arg2);
 
-    return arg1;
+      return arg3;
+    }
   } else {
     arg2 = CG(root->left_child->right_sibling);
   }
-
-  temp_var * t3 = new_temp(root);
-
-  quad_arg * arg3 = create_quad_arg(TEMP_VAR_Q_ARG);
-  arg3->temp = t3;
 
   gen_quad(op, arg3, arg1, arg2);
 
@@ -722,7 +732,7 @@ void print_quad(quad * q) {
         if (q->args[i]->temp != NULL)
           printf("Symbol: %s [index: %s]",q->args[i]->label, ((symnode_t *)q->args[i]->temp->temp_symnode)->name);
         else
-          printf("Symbol: %s, [pointer]",q->args[i]->label);
+          printf("Symbol: %s, [pointer: %d]",q->args[i]->label, q->args[i]->int_literal);
 
         break;
 
