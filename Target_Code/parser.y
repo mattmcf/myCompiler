@@ -42,7 +42,7 @@ int errors; 				// global error count
 %error-verbose
 
 /* don't change this token identifier order */
-%token ID_T INT_T STRING_T TYPEINT_T IF_T ELSE_T DO_T WHILE_T RETURN_T FOR_T VOID_T READ_T PRINT_T '+' '-' '*' '/' '=' '<' '>' LTE_T GTE_T EQ_T NE_T INCR_T DECR_T AND_T OR_T '!' ';' ',' '(' ')' '[' ']' '{' '}' '%' COMMENT_T OTHER_T 
+%token ID_T INT_T STRING_T TYPEINT_T IF_T ELSE_T DO_T WHILE_T RETURN_T BREAK_T CONTINUE_T FOR_T VOID_T READ_T PRINT_T SIZEOF_T '+' '-' '*' '/' '=' '<' '>' LTE_T GTE_T EQ_T NE_T INCR_T DECR_T AND_T OR_T '!' ';' ',' '(' ')' '[' ']' '{' '}' '%' COMMENT_T OTHER_T 
 
 /* from flex&bison book: how to resolve if/then/else */
 %nonassoc LOWER_THAN_ELSE
@@ -638,6 +638,11 @@ expression '+' expression {
   ast_node t = create_ast_node(INT_LITERAL_N);	
   t->value_int = atoi(savedLiteralText); 			
   $$ = t; } 
+| SIZEOF_T '(' var ')' {
+	ast_node t = create_ast_node(SIZEOF_N);
+	t->left_child = $3;
+	$$ = t; }
+| SIZEOF_T '(' error ')' { $$ = NULL; }
 | '(' error ')' { $$ = NULL; }
 ;
 

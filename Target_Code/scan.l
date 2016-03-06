@@ -118,11 +118,14 @@ int kwLookup(char *s) {
     {"do", DO_T},
     {"while", WHILE_T},
     {"return", RETURN_T},
+    {"break", BREAK_T},
+    {"continue", CONTINUE_T},
     {"for", FOR_T},
     {"void", VOID_T},
     {"read", READ_T},
     {"print", PRINT_T},
     {"int", TYPEINT_T},
+    {"sizeof", SIZEOF_T},
     {NULL, ID_T}
   };
 

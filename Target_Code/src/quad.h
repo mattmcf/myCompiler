@@ -53,6 +53,11 @@ typedef enum {
 	POSTRET_Q, // Post return
 	PARAM_Q, // Create function argument/parameter
 	RET_Q, // Function return
+	BREAK_Q,
+	CONTINUE_Q,
+
+	/* built-in */
+	SIZEOF_Q,
 
 	/* constant creation operations */
 	STRING_Q, // Create string literal
@@ -100,6 +105,11 @@ static val_name_pair quad_op_table[] = {
 	{POSTRET_Q, "post return"},
 	{PARAM_Q, "param"},
 	{RET_Q, "return"},
+	{BREAK_Q, "break"},
+	{CONTINUE_Q, "continue"},
+
+	/* built-in */
+	{SIZEOF_Q, "sizeof"},
 
 	/* constant creation operations */
 	{STRING_Q, "save string"},

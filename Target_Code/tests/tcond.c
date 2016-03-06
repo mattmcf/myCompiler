@@ -9,6 +9,7 @@ int main(void) {
 	int d;
 	int e;
 	int f = 5;
+	int h[12];
 
 	read c;
 
@@ -45,6 +46,15 @@ int main(void) {
 
 	print e; // e = 3
 	print f; // f = 3
+
+	// Size of tests
+	print "SIZEOF c (int)";
+	d = sizeof(c); 
+	print d; // 4
+
+	print "SIZEOF h (array)";
+	d = sizeof(h);
+	print d; // 48
 
 	return 0;
 }

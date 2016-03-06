@@ -64,6 +64,8 @@ int check_fdl_node(ast_node root);
  */
 int check_call(ast_node root);
 
+int check_sizeof(ast_node root);
+
 /*
  * find_return -- runs down the children of a function's compound statement, searching for
  * return statements. Returns 0 if expected type matches up. Returns 1 if there's a mismatch.
@@ -258,6 +260,14 @@ void set_type(ast_node root) {
 				root->type = NULL_TS;
 				root->mod = NULL_DT;
 			}		
+			break;
+
+		case SIZEOF_N:
+			if (check_sizeof(root)) {
+				type_err(root);
+				root->type = NULL_TS;
+				root->mod = NULL_DT;
+			}
 			break;
 
 		case RETURN_N:
@@ -534,6 +544,12 @@ int check_call(ast_node root) {
 	root->type = func->s.f.return_type;
 	root->mod = SINGLE_DT;
 
+	return 0;
+}
+
+int check_sizeof(ast_node root) {
+	root->type = INT_TS;
+	root->mod = SINGLE_DT;
 	return 0;
 }
 

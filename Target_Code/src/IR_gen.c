@@ -357,6 +357,18 @@ quad_arg * CG(ast_node root) {
           break;
         }
 
+      case BREAK_N:
+        {
+          // Go one level up
+          break;
+        }
+
+      case CONTINUE_N:
+        {
+          // Go to start of loop (next iteration of loop)
+          break;
+        }
+
       case RETURN_N:
         // get value to return to caller
         // move that into return location
@@ -415,6 +427,22 @@ quad_arg * CG(ast_node root) {
           quad_arg * arg1 = CG(root->left_child);
           gen_quad(READ_Q, arg1, NULL, NULL);
 
+          break;
+        }
+
+      case SIZEOF_N:
+        {
+          quad_arg * arg1 = CG(root->left_child);
+
+          temp_var * t2 = new_temp(root);
+
+          quad_arg * arg2 = create_quad_arg(TEMP_VAR_Q_ARG);
+          arg2->temp = t2;
+
+          gen_quad(SIZEOF_Q, arg2, arg1, NULL);
+
+          to_return = arg2;
+          
           break;
         }
 
