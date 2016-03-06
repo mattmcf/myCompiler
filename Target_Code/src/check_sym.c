@@ -116,7 +116,8 @@ void set_type(ast_node root) {
 				ast_node var = root->left_child;
 				ast_node expr = root->left_child->right_sibling;
 
-				if ( (var->type == expr->type) && (var->mod == expr->mod) ) {
+				/* can only do assignment between like types and for single data types */
+				if ( (var->type == expr->type) && (var->mod == SINGLE_DT) && (expr->mod == SINGLE_DT) ) {
 					root->type 	= var->type;
 					root->mod 	= expr->mod;
 				} else {
@@ -143,7 +144,7 @@ void set_type(ast_node root) {
 			{
 				ast_node var = root->left_child;
 				ast_node expr = root->left_child->right_sibling;		
-				if ( (var->type == expr->type) && (var->mod == expr->mod) ) {
+				if ( (var->type == expr->type) && ((var->mod == SINGLE_DT) && (expr->mod == SINGLE_DT)) ) {
 					root->type 	= var->type;
 					root->mod 	= expr->mod;
 				} else {

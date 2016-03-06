@@ -72,7 +72,7 @@ int create_ys(char * file_name) {
 	/* initialize globals here */
 	int i;
 	for (i = 0; quad_list->arr[i]->op == ASSIGN_Q; i++) {
-		printf("global initialziation quad %d\n",i);
+		printf("global initialization quad %d\n",i);
 		print_code(quad_list->arr[i], ys_fp);
 	}
 
@@ -101,56 +101,56 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 		case ADD_Q:
 			print_nop_comment(ys_file_ptr,"add",to_translate->number);
 
-			fprintf(ys_file_ptr,"\t%s, %%eax\n", get_source_value(to_translate->args[1]));
-			fprintf(ys_file_ptr,"\t%s, %%ebx\n", get_source_value(to_translate->args[2]));
+			get_source_value(ys_file_ptr, to_translate->args[1], EAX_R);
+			get_source_value(ys_file_ptr, to_translate->args[2], EBX_R);
 			fprintf(ys_file_ptr, "\taddl %%ebx, %%eax\n");			
-			fprintf(ys_file_ptr,"\trmmovl %%eax, %s\n",get_dest_value(to_translate->args[0]));
+			get_dest_value(ys_file_ptr,EAX_R,to_translate->args[0]);
 			break;
 
 		case SUB_Q:
-			fprintf(ys_file_ptr, "\t%s, %%eax\n", get_source_value(to_translate->args[1]));
-			fprintf(ys_file_ptr, "\t%s, %%ebx\n", get_source_value(to_translate->args[2]));
+			get_source_value(ys_file_ptr, to_translate->args[1], EAX_R);
+			get_source_value(ys_file_ptr, to_translate->args[2], EBX_R);
 			fprintf(ys_file_ptr, "\tsubl %%ebx, %%eax\n");
-			fprintf(ys_file_ptr, "\trmmovl %%eax, %s\n", get_dest_value(to_translate->args[0]));
+			get_dest_value(ys_file_ptr,EAX_R,to_translate->args[0]);
 			break;
 
 		case MUL_Q:
-			fprintf(ys_file_ptr, "\t%s, %%eax\n", get_source_value(to_translate->args[1]));
-			fprintf(ys_file_ptr, "\t%s, %%ebx\n", get_source_value(to_translate->args[2]));
+			get_source_value(ys_file_ptr, to_translate->args[1], EAX_R);
+			get_source_value(ys_file_ptr, to_translate->args[2], EBX_R);
 			fprintf(ys_file_ptr, "\tmull %%ebx, %%eax\n");
-			fprintf(ys_file_ptr, "\trmmovl %%eax, %s\n", get_dest_value(to_translate->args[0]));
+			get_dest_value(ys_file_ptr,EAX_R,to_translate->args[0]);		
 			break;
 
 		case DIV_Q:
-			fprintf(ys_file_ptr, "\t%s, %%eax\n", get_source_value(to_translate->args[1]));
-			fprintf(ys_file_ptr, "\t%s, %%ebx\n", get_source_value(to_translate->args[2]));
+			get_source_value(ys_file_ptr, to_translate->args[1], EAX_R);
+			get_source_value(ys_file_ptr, to_translate->args[2], EBX_R);
 			fprintf(ys_file_ptr, "\tdivl %%ebx, %%eax\n");
-			fprintf(ys_file_ptr, "\trmmovl %%eax, %s\n", get_dest_value(to_translate->args[0]));
+			get_dest_value(ys_file_ptr,EAX_R,to_translate->args[0]);
 			break;
 
 		case MOD_Q:
-			fprintf(ys_file_ptr, "\t%s, %%eax\n", get_source_value(to_translate->args[1]));
-			fprintf(ys_file_ptr, "\t%s, %%ebx\n", get_source_value(to_translate->args[2]));
+			get_source_value(ys_file_ptr, to_translate->args[1], EAX_R);
+			get_source_value(ys_file_ptr, to_translate->args[2], EBX_R);
 			fprintf(ys_file_ptr, "\tmodl %%ebx, %%eax\n");
-			fprintf(ys_file_ptr, "\trmmovl %%eax, %s\n", get_dest_value(to_translate->args[0]));
+			get_dest_value(ys_file_ptr,EAX_R,to_translate->args[0]);
 			break;
 
 		case INC_Q:
-			fprintf(ys_file_ptr, "\t%s, %%eax\n", get_source_value(to_translate->args[0]));
-			fprintf(ys_file_ptr, "\t%s, %%ebx\n", get_source_value(to_translate->args[1]));
+			get_source_value(ys_file_ptr, to_translate->args[0], EAX_R);
+			get_source_value(ys_file_ptr, to_translate->args[1], EBX_R);		
 			fprintf(ys_file_ptr, "\taddl %%ebx, %%eax\n");
-			fprintf(ys_file_ptr, "\trmmovl %%eax, %s\n", get_dest_value(to_translate->args[0]));
+			get_dest_value(ys_file_ptr,EAX_R,to_translate->args[0]);
 			break;
 
 		case DEC_Q:
-			fprintf(ys_file_ptr, "\t%s, %%eax\n", get_source_value(to_translate->args[0]));
-			fprintf(ys_file_ptr, "\t%s, %%ebx\n", get_source_value(to_translate->args[1]));
+			get_source_value(ys_file_ptr, to_translate->args[0], EAX_R);
+			get_source_value(ys_file_ptr, to_translate->args[1], EBX_R);		
 			fprintf(ys_file_ptr, "\tsubl %%ebx, %%eax\n");
-			fprintf(ys_file_ptr, "\trmmovl %%eax, %s\n", get_dest_value(to_translate->args[0]));
+			get_dest_value(ys_file_ptr,EAX_R,to_translate->args[0]);
 			break;
 
 		case NOT_Q:
-			fprintf(ys_file_ptr, "\t%s, %%eax\n", get_source_value(to_translate->args[0]));
+			get_source_value(ys_file_ptr,to_translate->args[0],EAX_R);
 			fprintf(ys_file_ptr, "\tirmovl $0, %%ebx\n");
 			fprintf(ys_file_ptr, "\tsubl %%ebx, %%eax\n");
 
@@ -158,27 +158,23 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 			fprintf(ys_file_ptr, "\tcmove %%ebx, %%eax\n");
 			fprintf(ys_file_ptr, "\tirmovl $0, %%ebx\n");
 			fprintf(ys_file_ptr, "\tcmovne %%ebx, %%eax\n");
-			fprintf(ys_file_ptr, "\trmmovl %%eax, %s\n", get_dest_value(to_translate->args[0]));
+			get_dest_value(ys_file_ptr,EAX_R,to_translate->args[0]);
 			break;
 
 		case NEG_Q:
 			// Negative of an integer n = 0 - n
 			// i.e. 0 - 1 = -1, 0 - (-1) = 1
 			fprintf(ys_file_ptr, "\tmrmovl $0, %%eax\n");
-			fprintf(ys_file_ptr, "\t%s, %%ebx\n", get_source_value(to_translate->args[0]));
+			get_source_value(ys_file_ptr,to_translate->args[0],EBX_R);
 			fprintf(ys_file_ptr, "\tsubl %%ebx, %%eax\n");
-			fprintf(ys_file_ptr, "\trmmovl %%eax, %s\n", get_dest_value(to_translate->args[0]));
+			get_dest_value(ys_file_ptr,EAX_R,to_translate->args[0]);
 			break;
 
 		case ASSIGN_Q:
 			print_nop_comment(ys_file_ptr, "assignment", to_translate->number);
 
-			fprintf(ys_file_ptr,"\t%s, %%eax\n",get_source_value(to_translate->args[1]));
-
-			if (to_translate->args[0]->type == SYMBOL_ARR_Q_ARG)
-				fprintf(ys_file_ptr,"\t%s\n",load_arr_ptr(to_translate->args[0]));
-
-			fprintf(ys_file_ptr,"\trmmovl %%eax, %s\n", get_dest_value(to_translate->args[0]));
+			get_source_value(ys_file_ptr,to_translate->args[1],EAX_R);
+			get_dest_value(ys_file_ptr,EAX_R,to_translate->args[0]);
 			break;
 
 		case LT_Q:
@@ -241,7 +237,7 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 
 				// Just check if temp is 0
 				fprintf(ys_file_ptr, "\tirmovl $0, %%eax\n");
-				fprintf(ys_file_ptr, "\t%s, %%ebx\n", get_source_value(to_translate->args[0]));
+				get_source_value(ys_file_ptr,to_translate->args[0],EBX_R);
 				fprintf(ys_file_ptr, "\tsubl %%ebx, %%eax\n");
 				fprintf(ys_file_ptr, "\tje %s\n", label);
 
@@ -303,7 +299,7 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 				case SYMBOL_ARR_Q_ARG:
 				case SYMBOL_VAR_Q_ARG:
 				case TEMP_VAR_Q_ARG: 
-					fprintf(ys_file_ptr,"\t%s, %%eax\n", get_source_value(to_translate->args[0]));
+					get_source_value(ys_file_ptr,to_translate->args[0], EAX_R);
 					fprintf(ys_file_ptr,"\trmmovl %%eax, 0x%x\n",DHXR_reg);	
 					break;
 
@@ -322,7 +318,7 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 			print_nop_comment(ys_file_ptr, "reading", to_translate->number);
 			// Right now only reading integers
 			fprintf(ys_file_ptr, "\tmrmovl 0x%x, %%eax\n", KHXR_reg);
-			fprintf(ys_file_ptr, "\trmmovl %%eax, %s\n", get_dest_value(to_translate->args[0]));
+			get_dest_value(ys_file_ptr,EAX_R,to_translate->args[0]);
 			break;
 
 		case PROLOG_Q:
@@ -354,8 +350,6 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 		case EPILOG_Q:
 			print_nop_comment(ys_file_ptr, "function epilog", to_translate->number);
 
-			//char * epilog_label = handle_quad_arg(to_translate->args[0]);
-			//fprintf(ys_file_ptr, "%s:\n",epilog_label);
 			fprintf(ys_file_ptr, "\trrmovl %%ebp, %%esp\n");
 			fprintf(ys_file_ptr, "\tpopl %%ebp\n"); 						// return to old frame pointer
 			fprintf(ys_file_ptr, "\tret\n");
@@ -363,7 +357,6 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 
 		case PRECALL_Q:
 			print_nop_comment(ys_file_ptr, "function precall", to_translate->number);
-			//char * func_label = handle_quad_arg(to_translate->args[0]); 	// get function label	
 			fprintf(ys_file_ptr, "\tcall %s\n",to_translate->args[0]->label); 								// pushes ret addr on stack				
 			break;
 
@@ -373,7 +366,6 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 				print_nop_comment(ys_file_ptr, "post return", to_translate->number);
 
 				/* make a post return label */
-				//char * t1 = handle_quad_arg(to_translate->args[0]); 								
 				symnode_t * func_sym = find_in_top_symboltable(symtab, to_translate->args[0]->label);	
 
 				/* use control link to get back to caller frame */	
@@ -400,9 +392,7 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 
 			} else {
 				/* passing single parameter */
-				//char * t1 = handle_quad_arg(to_translate->args[0]);
-				fprintf(ys_file_ptr,"\t%s, %%eax\n",get_source_value(to_translate->args[0]));
-				//fprintf(ys_file_ptr, "\t%s %s, %%eax\n", get_move_type(to_translate->args[0]),t1);
+				get_source_value(ys_file_ptr,to_translate->args[0],EAX_R);
 			}
 
 			fprintf(ys_file_ptr, "\tpushl %%eax\n");			
@@ -417,12 +407,11 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 
 			// constant return
 			} else if (to_translate->args[0]->type == INT_LITERAL_Q_ARG) {
-				fprintf(ys_file_ptr, "\t%s, %%eax\n", get_source_value(to_translate->args[0]));
+				get_source_value(ys_file_ptr,to_translate->args[0],EAX_R);
 
 			// variable return
 			} else {
-				//fprintf(ys_file_ptr, "\tmrmovl %s, %%eax\n", handle_quad_arg(to_translate->args[0]));
-				fprintf(ys_file_ptr,"\t%s, %%eax\n",get_source_value(to_translate->args[0]));
+				get_source_value(ys_file_ptr,to_translate->args[0],EAX_R);
 			}
 			break;
 
@@ -438,7 +427,6 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 			break;
 
 		case LABEL_Q:			
-			//char * t1 = handle_quad_arg(to_translate->args[0]); 			// get string for label
 			fprintf(ys_file_ptr,"%s:\n",to_translate->args[0]->label);
 			break;
 
@@ -447,126 +435,70 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 	}
 }
 
-char * load_arr_ptr(quad_arg * arr) {
-	if (!arr || arr->type != SYMBOL_ARR_Q_ARG)
-		return NULL;
-
-	printf("loading array pointer into %%edi\n");
-	char load_str[MAX_ARG_LEN * 2] = "";
-	if (arr->symnode->s.v.specie == GLOBAL_VAR)
-		sprintf(load_str,"irmovl 0x%x, %%edi",arr->symnode->s.v.offset_of_frame_pointer);
-
-	else if (arr->symnode->s.v.offset_of_frame_pointer > 0) 	// parameters are passed as pointers, so just load that
-		sprintf(load_str,"mrmovl $%d(%%ebp), %%edi\n",arr->symnode->s.v.offset_of_frame_pointer);
-
-	else
-		sprintf(load_str,"irmovl $%d, %%edi\n\taddl %%ebp, %%edi",arr->symnode->s.v.offset_of_frame_pointer);
-		//sprintf(load_str,"mrmovl $%d(%%ebp), %%edi",arr->symnode->s.v.offset_of_frame_pointer);
-
-	return strdup(load_str);
-}
-
-char * get_source_value(quad_arg * src) {
-	if (!src)
-		return NULL;
+int get_source_value(FILE * fp, quad_arg * src, my_register_t dest) {
+	if (!src || !fp)
+		return 1;
 
 	printf("getting source\n");
-
-	char src_str[MAX_ARG_LEN * 10] = "";
-	strcat(src_str,get_move_type(src));
-	strcat(src_str," ");
-
-	char t1[MAX_ARG_LEN * 5] = "";
 	switch(src->type) {
 		case INT_LITERAL_Q_ARG:
-			printf("constant %d\n",src->int_literal);
-			sprintf(t1,"0x%x",src->int_literal);
+			printf("constant %d\n",src->int_literal);		
+			fprintf(fp, "\tirmovl 0x%x, %s\n",src->int_literal,REGISTER_STR(dest));
 			break;
 
 		case TEMP_VAR_Q_ARG:
 			printf("temp variable symbol %s\n", ((symnode_t *) src->temp->temp_symnode)->name);
-			sprintf(t1,"$%d(%%ebp)",((symnode_t *) src->temp->temp_symnode)->s.v.offset_of_frame_pointer); 	// always local
+			fprintf(fp, "\tmrmovl $%d(%%ebp), %s\n", ((symnode_t *) src->temp->temp_symnode)->s.v.offset_of_frame_pointer, REGISTER_STR(dest));
 			break;
 
 		case SYMBOL_VAR_Q_ARG:
 			printf("variable symbol %s\n",src->symnode->name);
 			if (src->symnode->s.v.specie == GLOBAL_VAR) {
 				/* return absolute address */
-				sprintf(t1, "0x%x",src->symnode->s.v.offset_of_frame_pointer); 	// global address
+				fprintf(fp,"\tmrmovl 0x%x, %s\n",src->symnode->s.v.offset_of_frame_pointer, REGISTER_STR(dest));
 
 			} else {
 				/* return relative address */
-				sprintf(t1, "%d(%%ebp)", src->symnode->s.v.offset_of_frame_pointer);			
+				fprintf(fp,"\tmrmovl $%d(%%ebp), %s\n", src->symnode->s.v.offset_of_frame_pointer, REGISTER_STR(dest));
 			}
 			break;			
 
 		case SYMBOL_ARR_Q_ARG: 
-			printf("array symbol %s, offset %d\n",src->symnode->name, src->int_literal);
+			printf("array symbol %s, offset %d\n",src->symnode->name, src->temp->id);
 			{
-				if (src->symnode->s.v.specie == GLOBAL_VAR)		// get absolute address of pointer if global
-					sprintf(t1,"0x%x, %%edi\n",src->symnode->s.v.offset_of_frame_pointer);	
-				else											// else get relative address based on FP 
-					sprintf(t1,"%%ebp, %%edi\n\tirmovl $%d, %%ebx\n\taddl %%ebx, %%edi\n",src->symnode->s.v.offset_of_frame_pointer);
+				if (src->symnode->s.v.specie == GLOBAL_VAR)	{					// get absolute address of pointer if global
+					fprintf(fp,"\tirmovl 0x%x, %%edi\n",src->symnode->s.v.offset_of_frame_pointer);
 
-				/* pointer now lives in %edi, now we need to get the offset into %eax */
-				char t2[MAX_ARG_LEN * 5] = "";
-				// if (src->int_literal >= 0 && src->index) {
-				// 	printf("getting index from symbol / constant\n");
+				} else if (src->symnode->s.v.offset_of_frame_pointer > 0) {		// need get address of array from parameters
+					fprintf(fp,"\tmrmovl $%d(%%ebp), %%edi\n", src->symnode->s.v.offset_of_frame_pointer);
 
-					// switch(src->index->type){
-					// 	case INT_LITERAL_Q_ARG:
-					// 		printf("constant index\n");
-					// 		sprintf(t2,"\tmrmovl %d(%%edi)",src->index->int_literal * TYPE_SIZE(src->symnode->s.v.type));
-					// 		break;
+				} else {														// else get relative address based addition to FP 
+					fprintf(fp,"\trrmovl %%ebp, %%edi\n");
+					fprintf(fp,"\tirmovl $%d, %%ebx\n",src->symnode->s.v.offset_of_frame_pointer);
+					fprintf(fp,"\taddl %%ebx, %%edi\n");
+				}
 
-					// 		/*
-					// 		 * step 1) // get symbol's value into %eax
-					// 		 * step 1.5) // shift left by 2 to multiply by 4
-					// 		 * step 2) // add that value to the array's pointer
-					// 		 * step 3) // get indexed value from memory
-					// 		 */
-					// 	case SYMBOL_VAR_Q_ARG:
-					// 		printf("symbol index\n");
-					// 		sprintf(t2,"\tmrmovl %d(%%ebp), %%eax\n\tshll $2, %%eax\n\taddl %%eax, %%edi\n\tmrmovl (%%edi)", 
-					// 			src->index->symnode->s.v.offset_of_frame_pointer);
-					// 		break;
-
-					// 	case TEMP_VAR_Q_ARG:
-					// 		printf("temp index");
-					// 		sprintf(t2,"\tmrmovl %d(%%ebp), %%eax\n\tshll $2, %%eax\n\taddl %%eax, %%edi\n\tmrmovl (%%edi)", 
-					// 			((symnode_t *)src->index->temp->temp_symnode)->s.v.offset_of_frame_pointer);
-					// 		break;
-
-					// 	/* not handled yet */
-					// 	case SYMBOL_ARR_Q_ARG:
-					// 		printf("Arrays indexing into arrays is not supported.\n");
-					// 		exit(1);
-					// 		break;
-
-					// 	default:
-					// 		printf("unknown index into array\n");
-					// 		exit(1);
-					// 		break;
-					// }		
-					// strcat(t1,t2);			
-				// } else {
-				// 	printf("passing pointer\n");
-
-				// 	// pass pointer
-				// 	strcat(t1,"%%edi");
-				// }
-					
+				if (src->int_literal != PASS_ARR_POINTER) {
+					/* get temp that holds index */
+					fprintf(fp,"\tmrmovl $%d(%%ebp), %%ebx\n",((symnode_t *) src->temp->temp_symnode)->s.v.offset_of_frame_pointer);
+					fprintf(fp,"\tshll $2, %%ebx\n");
+					fprintf(fp,"\taddl %%ebx, %%edi\n");
+					fprintf(fp,"\tmrmovl (%%edi), %s\n", REGISTER_STR(dest));					
+				} else {
+					/* pass array pointer */
+					fprintf(fp,"\trrmovl %%edi, %s\n", REGISTER_STR(dest));
+				}					
 			}
 			break;
 
 		case LABEL_Q_ARG:
 			printf("label %s\n",src->label);
-			strcat(t1,src->label);
+			fprintf(fp,"%s",src->label);
 			break;
 
 		case RETURN_Q_ARG:
 			printf("return arg\n");
-			sprintf(t1,"%%eax");
+			fprintf(fp,"rrmovl %%eax, %s\n",REGISTER_STR(dest));
 			break;
 
 		default:
@@ -574,92 +506,74 @@ char * get_source_value(quad_arg * src) {
 			exit(1);
 			break;
 	}
-
-	strcat(src_str,t1);
-
-	printf("got source value %s\n",src_str);
-	return strdup(src_str);
+	return 0;
 }
 
-/*
- * assumes that array pointer is already in %edi
- */
-char * get_dest_value(quad_arg * dest) {
-	if (!dest)
-		return NULL;
 
-	char dest_str[MAX_ARG_LEN * 5] = "";
+int get_dest_value(FILE * fp, my_register_t src, quad_arg * dest) {
+	if (!dest || !fp)
+		return 1;
+
 	printf("getting destination value\n");
-
 	switch(dest->type){
 		case TEMP_VAR_Q_ARG:
 			printf("temp variable symbol %s\n", ((symnode_t *) dest->temp->temp_symnode)->name);
-			sprintf(dest_str,"$%d(%%ebp)",((symnode_t *) dest->temp->temp_symnode)->s.v.offset_of_frame_pointer); 	// always local
+			fprintf(fp,"\trmmovl %s, $%d(%%ebp)\n",REGISTER_STR(src),((symnode_t *) dest->temp->temp_symnode)->s.v.offset_of_frame_pointer);
 			break;
 
 		case SYMBOL_VAR_Q_ARG:
 			printf("variable symbol\n");
-			//printf("variable symbol %s\n",dest->symnode->name);
 			if (dest->symnode->s.v.specie == GLOBAL_VAR) {
 				/* return absolute address */
-				sprintf(dest_str, "0x%x",dest->symnode->s.v.offset_of_frame_pointer); 	// global address
+				fprintf(fp,"\trmmovl %s, 0x%x\n",REGISTER_STR(src), dest->symnode->s.v.offset_of_frame_pointer);
 
 			} else {
 				/* return relative address */
-				sprintf(dest_str, "$%d(%%ebp)", dest->symnode->s.v.offset_of_frame_pointer);			
+				fprintf(fp,"\trmmovl %s, $%d(%%ebp)\n", REGISTER_STR(src), dest->symnode->s.v.offset_of_frame_pointer);
 			}
 			break;			
 
 		case SYMBOL_ARR_Q_ARG:
-			// printf("array symbol %s, offset %s\n",dest->symnode->name, get_quad_arg_label(dest->index) ); 
-			// if (dest->int_literal >= 0 && dest->index != NULL) {					// get offset from array pointer
-			// 	printf("getting destination index from symbol / constant\n");
 
-			// 	char get_array[MAX_ARG_LEN * 5];
-			// 	switch(dest->index->type){
-			// 		case INT_LITERAL_Q_ARG:
-			// 			printf("constant index\n");
-			// 			sprintf(get_array,"%d(%%edi)",dest->index->int_literal * TYPE_SIZE(dest->symnode->s.v.type));
-			// 			break;
+			/* 
+			 * get array pointer into %edi 
+			 */
+			if (dest->symnode->s.v.specie == GLOBAL_VAR)	{					// get absolute address of pointer if global
+				fprintf(fp,"\tirmovl 0x%x, %%edi\n",dest->symnode->s.v.offset_of_frame_pointer);
+				//sprintf(t1,"0x%x, %%edi\n",src->symnode->s.v.offset_of_frame_pointer);
 
-					
-			// 		 * step 0) stash %eax source value at $-4(%esp) which is a garbage spot. Nothing's there.
-			// 		 * step 1) move offset into register
-			// 		 * step 1.5) shift left by two to multiply by 4! (size)
-			// 		 * step 2) add that value to the array's pointer
-			// 		 * step 3) // get indexed value from memory
-					 
-			// 		case SYMBOL_VAR_Q_ARG:
-			// 			printf("symbol index\n");
-			// 			sprintf(get_array,"$-4(%%esp)\n\tmrmovl %d(%%ebp), %%ebx\n\tshll 2, %%ebx\n\taddl %%ebx, %%edi\n\trmmovl %%eax, (%%edi)", 
-			// 				dest->index->symnode->s.v.offset_of_frame_pointer);
-			// 			break;
+			} else if (dest->symnode->s.v.offset_of_frame_pointer > 0) {		// need get address out of memory for parameter
+				fprintf(fp,"\tmrmovl $%d(%%ebp), %%edi\n", dest->symnode->s.v.offset_of_frame_pointer);
 
-			// 		case TEMP_VAR_Q_ARG:
-			// 			printf("temp index");
-			// 			sprintf(get_array,"$-4(%%esp)\n\tmrmovl %d(%%ebp), %%ebx\n\tshll 2, %%ebx\n\taddl %%ebx, %%edi\n\trmmovl %%eax, (%%edi)", 
-			// 				((symnode_t *)dest->index->temp->temp_symnode)->s.v.offset_of_frame_pointer);
-			// 			break;
+			} else {															// else get relative address based addition to FP 
+				fprintf(fp,"\trrmovl %%ebp, %%edi\n");
+				fprintf(fp,"\tirmovl $%d, %%ebx\n",dest->symnode->s.v.offset_of_frame_pointer);
+				fprintf(fp,"\taddl %%ebx, %%edi\n");
+				//sprintf(t1,"%%ebp, %%edi\n\tirmovl $%d, %%ebx\n\taddl %%ebx, %%edi\n",src->symnode->s.v.offset_of_frame_pointer);
+			}
 
-			// 		/* not handled yet */
-			// 		case SYMBOL_ARR_Q_ARG:
-			// 			printf("Arrays indexing into arrays is not supported.\n");
-			// 			exit(1);
-			// 			break;
-
-			// 		default:
-			// 			printf("unknown index into array\n");
-			// 			exit(1);
-			// 			break;
-			// 	}
-			//	strcat(dest_str, get_array);		
-			//} else											// else pass array pointer
-			//	strcat(dest_str,"%%edi");
+			/* 
+			 * calculate offset
+			 */
+			if (dest->int_literal != PASS_ARR_POINTER && dest->temp != NULL) {
+				/* get temp that holds index */
+				fprintf(fp,"\tmrmovl $%d(%%ebp), %%ebx\n",((symnode_t *) dest->temp->temp_symnode)->s.v.offset_of_frame_pointer);
+				fprintf(fp,"\tshll $2, %%ebx\n");
+				fprintf(fp,"\taddl %%ebx, %%edi\n");
+				fprintf(fp,"\trmmovl %s, (%%edi)\n", REGISTER_STR(src));					
+			} else {
+				/* 
+				 * For how we work with arrays, can never actually change array head
+				 */
+				fprintf(stderr,"error during code generation: cannot assign new values to array headers\n");
+				exit(1);
+			}
 			break;
 
 		case RETURN_Q_ARG:
 			printf("return destination\n");
-			sprintf(dest_str,"%%eax");
+			fprintf(fp,"\trrmovl %s, %%eax\n",REGISTER_STR(src));
+			//sprintf(dest_str,"%%eax");
 			break;
 
 		case LABEL_Q_ARG:			
@@ -670,36 +584,12 @@ char * get_dest_value(quad_arg * dest) {
 			break;
 	}
 
-	printf("returning destination %s\n",dest_str);
-	return strdup(dest_str);
-}
-
-char * get_move_type(quad_arg * src) {
-	if (!src)
-		return NULL;
-
-	char * mov_str;
-
-	// immediately load into register
-	if (src->type == INT_LITERAL_Q_ARG ||	 									// is constant or
-	 (src->type == SYMBOL_ARR_Q_ARG && (src->symnode != NULL) && (src->symnode->s.v.specie == GLOBAL_VAR)) ) { 	// is global
-		mov_str = strdup("irmovl");
-
-	// move from register
-	} else if (src->type == RETURN_Q_ARG || (src->type == SYMBOL_ARR_Q_ARG) ) {
-		mov_str = strdup("rrmovl");
-
-	// load from memory
-	} else {
-		mov_str = strdup("mrmovl");
-	}
-
-	return mov_str;
+	return 0;
 }
 
 void comp_sub(quad * to_translate, FILE * ys_file_ptr) {
-	fprintf(ys_file_ptr, "\t%s, %%eax\n", get_source_value(to_translate->args[1]));
-	fprintf(ys_file_ptr, "\t%s, %%ebx\n", get_source_value(to_translate->args[2]));
+	get_source_value(ys_file_ptr,to_translate->args[1],EAX_R);
+	get_source_value(ys_file_ptr,to_translate->args[2],EBX_R);
 	fprintf(ys_file_ptr, "\tsubl %%ebx, %%eax\n");
 
 	switch (condition) {
@@ -743,7 +633,7 @@ void comp_sub(quad * to_translate, FILE * ys_file_ptr) {
 			break;
 	}
 
-	fprintf(ys_file_ptr, "\trmmovl %%eax, %s\n", get_dest_value(to_translate->args[0]));
+	get_dest_value(ys_file_ptr,EAX_R, to_translate->args[0]);
 }
 
 /*

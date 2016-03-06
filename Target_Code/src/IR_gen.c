@@ -402,7 +402,7 @@ quad_arg * CG(ast_node root) {
               quad_arg* index_val = CG(root->left_child->right_sibling);
 
               // assign evaluated index to array's temp (which we will use to move pointer to right location)
-              gen_quad(ASSIGN_Q, temp_QA,index_val, NULL);
+              gen_quad(ASSIGN_Q, temp_QA, index_val, NULL);
 
             } else {
               to_return->int_literal = PASS_ARR_POINTER; 

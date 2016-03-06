@@ -31,7 +31,13 @@ fi
 if [ "$?" -ne 0 ]
 then
 	echo "Failed to generate target code"
+	make clean > /dev/null
 	exit 1
+fi
+
+if [ -z "$2" ]
+then
+	$2="myfile"
 fi
 
 OUT_FILE="$2.ys"

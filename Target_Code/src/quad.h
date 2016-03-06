@@ -129,7 +129,7 @@ typedef struct quad_arg {
   int int_literal; 			// holds array offset if SYMBOL_ARR_Q_ARG
   //struct quad_arg * index; 	// used in arrays indexed by expressions
 
-  temp_var * temp;
+  temp_var * temp;			// temp symbols and temps that index into array
   char * label;   			// for variable ID's, function ID's and Label ID's
   symnode_t * symnode; 		// function node for function labels
 } quad_arg;

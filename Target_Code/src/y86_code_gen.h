@@ -23,34 +23,33 @@ typedef enum {
 	NULL_C
 } condition_type;
 
-
-/* 
- * type_specifier is for symbol.type
- */
-// typedef enum {
-//   NULL_TS,
-//   INT_TS,       // int literals
-//   VOID_TS,      // void returns
-//   FUNC_TS       // not a type specifier -> used for symbols
-// } type_specifier_t;
-
-//  Table for type specifiers 
-// static val_name_pair type_table[] = {
-//   {NULL_TS, "NO DATA TYPE"},
-//   {INT_TS, "INT"},
-//   {VOID_TS, "VOID"},
-//   {FUNC_TS, "FUNC"},
-//   {0, NULL}
-// };
-
 /*
- * register enumerations
+ * register enumerations and strings
  */
-// typedef enum {
-// 	EAX_R,
-// 	EBX_R,
-	
-// }
+typedef enum {
+	EAX_R,
+	ECX_R,
+	EDX_R,
+	EBX_R,
+	ESP_R,
+	EBP_R,
+	ESI_R,
+	EDI_R
+} my_register_t;
+
+static val_name_pair reg_table[] = {
+	{EAX_R, "%eax"},
+	{ECX_R, "%ecx"},
+	{EDX_R, "%edx"},
+	{EBX_R, "%ebx"},
+	{ESP_R, "%esp"},
+	{EBP_R, "%ebp"},
+	{ESI_R, "%esi"},
+	{EDI_R, "%edi"}
+};
+
+#define REGISTER_INDEX(X) ( (X) - EAX_R )
+#define REGISTER_STR(X) ( reg_table[ TYPE_INDEX((X)) ].name)
 
 /*
  * creates ys file from global quad_list
@@ -62,14 +61,14 @@ int create_ys(char * file_name);
  */
 void print_code(quad * to_translate, FILE * ys_file_ptr);
 
-char * load_arr_ptr(quad_arg * arr);
-char * get_source_value(quad_arg * src);
-char * get_dest_value(quad_arg * dest); 
+//char * load_arr_ptr(quad_arg * arr);
+int get_source_value(FILE * fp, quad_arg * src, my_register_t dest);
+int get_dest_value(FILE * fp, my_register_t src, quad_arg * dest);
 
 /*
  * 	chooses irmovl, rrmovl, or mrmovl depending on source 
  */
-char * get_move_type(quad_arg * src); 
+//char * get_move_type(quad_arg * src); 
 
 /*
  * returns argument string to put in y86 assembly? -- depreciated

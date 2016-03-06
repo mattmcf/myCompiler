@@ -65,7 +65,7 @@ int main(int argc, char * argv[]) {
     if (argc > 1 && argv[1] != NULL)
       file_name = argv[1];
     else
-      file_name = "myfile.ys";
+      file_name = "myfile";
 
     create_ys(file_name);
 
