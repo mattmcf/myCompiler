@@ -9,6 +9,7 @@
 #define _TARGET_CODE_H
 
 #include "quad.h" 		// for quad struct
+#include "types.h"		// for val-name pair struct
 #include <stdio.h> 		// for FILE *
 
 /* Enum for conditions types */
@@ -21,6 +22,35 @@ typedef enum {
 	EQ_C,
 	NULL_C
 } condition_type;
+
+
+/* 
+ * type_specifier is for symbol.type
+ */
+// typedef enum {
+//   NULL_TS,
+//   INT_TS,       // int literals
+//   VOID_TS,      // void returns
+//   FUNC_TS       // not a type specifier -> used for symbols
+// } type_specifier_t;
+
+//  Table for type specifiers 
+// static val_name_pair type_table[] = {
+//   {NULL_TS, "NO DATA TYPE"},
+//   {INT_TS, "INT"},
+//   {VOID_TS, "VOID"},
+//   {FUNC_TS, "FUNC"},
+//   {0, NULL}
+// };
+
+/*
+ * register enumerations
+ */
+// typedef enum {
+// 	EAX_R,
+// 	EBX_R,
+	
+// }
 
 /*
  * creates ys file from global quad_list
