@@ -40,12 +40,16 @@ int main(void) {
 	// Increment and decrement operator tests
 	d = f--;
 
+	print "d after post decrement";
 	print d; // d = 5
+	print "f after post decrement";
 	print f; // f = 4
 
 	e = --f;
 
+	print "e after pre decrement";
 	print e; // e = 3
+	print "f after pre decrement";
 	print f; // f = 3
 
 	// Size of tests
