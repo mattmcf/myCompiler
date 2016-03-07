@@ -97,6 +97,7 @@ int create_ys(char * file_name) {
 	/* 
 	 * add string constants 
 	 */
+	fprintf(ys_fp,"STRING_SECTION:\n");
 	for(int i = 0; i < quad_list->count; i++) {
 		if (quad_list->arr[i]->op == STRING_Q)
 			translate_string(ys_fp, quad_list->arr[i]);

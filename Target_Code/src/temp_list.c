@@ -72,6 +72,7 @@ temp_var * new_temp(ast_node root) {
   node_model.type = INT_TS;
   node_model.modifier = SINGLE_DT;
   node_model.specie = TEMP_VAR;
+  node_model.byte_size = TYPE_SIZE(INT_TS);
 
   // save to symbol table 
   set_node_var(new_node, &node_model);

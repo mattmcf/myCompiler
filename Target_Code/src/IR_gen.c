@@ -408,11 +408,11 @@ quad_arg * CG(ast_node root) {
           // quad_arg * func_arg = create_quad_arg(SYMBOL_FUNC_Q_ARG);
           // func_arg->symnode = root;
           // func_arg->label = root->left_child->value_string;
-          gen_quad(PRECALL_Q, func_arg, NULL, NULL);
+          gen_quad(PRECALL_Q, func_arg, NULL, NULL);        
+          gen_quad(POSTRET_Q, func_arg, NULL, NULL);
 
           /* get return value */
-          to_return = create_quad_arg(RETURN_Q_ARG);         
-          gen_quad(POSTRET_Q, func_arg, NULL, NULL);
+          quad_arg * return_arg = create_quad_arg(RETURN_Q_ARG); 
 
           /* create temp for return space */
           temp_var * t1 = new_temp(root);
@@ -420,7 +420,7 @@ quad_arg * CG(ast_node root) {
           return_temp->temp = t1; 
 
           /* save return in temp and pass that temp up */
-          gen_quad(ASSIGN_Q, return_temp, to_return, NULL);
+          gen_quad(ASSIGN_Q, return_temp, return_arg, NULL);
 
           /* need to save return arg to a temp and then pass that temp up */
           to_return = return_temp;

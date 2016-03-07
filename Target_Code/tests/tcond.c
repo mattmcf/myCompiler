@@ -11,6 +11,7 @@ int main(void) {
 	int f = 5;
 	int h[12];
 
+	print "Feed me a number!";
 	read c;
 
 	print c;
