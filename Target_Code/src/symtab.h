@@ -38,6 +38,7 @@ typedef struct var_symbol {
   type_specifier_t type;
   modifier_t modifier;
 
+  int byte_size; // byte size of variables, int = 4, array = 4 * length of array
   variable_specie_t specie;       // used to indicate where this thing should live in reference to the FP
   int offset_of_frame_pointer;    // bytes to subtract from frame pointer to get to bottom most byte of variable
 } var_symbol;
@@ -113,7 +114,7 @@ void add_scope_to_children(ast_node root, symboltable_t * symtab);
  * makes a variable of type and with modifier 
  * returns variable on stack, should save elsewhere
  */
-var_symbol init_variable(char * name, type_specifier_t type, modifier_t mod, variable_specie_t specie);
+var_symbol init_variable(char * name, type_specifier_t type, modifier_t mod, variable_specie_t specie, int byte_size);
 
 /* 
  * get_type() : returns enumerated type_specifier (definied in symtab.h)

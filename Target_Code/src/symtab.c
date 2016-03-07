@@ -128,6 +128,7 @@ ast_node handle_func_decl_node(ast_node fdl, symboltable_t * symtab) {
    
     type_specifier_t type;
     modifier_t mod;
+    int byte_size;
     char * name;
 
     int param_offset = TYPE_SIZE(INT_TS);
@@ -136,15 +137,18 @@ ast_node handle_func_decl_node(ast_node fdl, symboltable_t * symtab) {
 
       /* make a variable for each argument */
       type = get_datatype(arg->left_child->left_child);
-      if (arg->node_type == FORMAL_PARAM_N)
+      if (arg->node_type == FORMAL_PARAM_N) {
         mod = SINGLE_DT;
-      else 
+        byte_size = 4;
+      } else {
         mod = ARRAY_DT;
+        byte_size = 4 * arg->value_int;
+      }
 
       name = arg->left_child->right_sibling->value_string;
 
       // calculate change in stack pointer -- note: push down to avoid inserting now
-      arg_arr[arg_count] = init_variable(name, type, mod, PARAMETER_VAR);   // static variable on stack
+      arg_arr[arg_count] = init_variable(name, type, mod, PARAMETER_VAR, byte_size);   // static variable on stack
       //arg_arr[arg_count].offset_of_frame_pointer = param_offset;            // need to push offsets now b/c order matters
       //param_offset += TYPE_SIZE(type);                                      // keep going
 
@@ -233,14 +237,18 @@ void handle_var_decl_line_node(ast_node vdl, symboltable_t * symtab) {
   while (child != NULL) {
     char *name = child->left_child->value_string;
     modifier_t mod;
+    int byte_size;
 
     child->left_child->type = this_type;
     if (child->left_child->right_sibling == NULL) {
       mod = SINGLE_DT;
+      byte_size = 4;
     } else if (child->left_child->right_sibling->node_type == INT_LITERAL_N) {
       mod = ARRAY_DT;
+      byte_size = 4 * child->left_child->right_sibling->value_int;
     } else {
       mod = SINGLE_DT;
+      byte_size = 4;
     }
     child->left_child->mod = mod;
 
@@ -258,7 +266,7 @@ void handle_var_decl_line_node(ast_node vdl, symboltable_t * symtab) {
     symhashtable_t * symhashtab = vdl->scope_table;
 
     // Initialize variable
-    var_symbol new_var = init_variable(name, this_type, mod, LOCAL_VAR);
+    var_symbol new_var = init_variable(name, this_type, mod, LOCAL_VAR, byte_size);
 
     // Set variable field in symnode
     set_node_var(var_node, &new_var);
@@ -291,12 +299,13 @@ void add_scope_to_children(ast_node root, symboltable_t * symtab) {
  * Inits a new varable struct and returns the structure on stack
  * Note: need to copy returned struct into dynamically allocated memory
  */
-var_symbol init_variable(char * name, type_specifier_t type, modifier_t mod, variable_specie_t specie) {
+var_symbol init_variable(char * name, type_specifier_t type, modifier_t mod, variable_specie_t specie, int byte_size) {
 
   var_symbol new_var;
 
   new_var.name = name;     // note, name needs to be saved somewhere else
   new_var.type = type;
+  new_var.byte_size = byte_size;
   new_var.modifier = mod;
   new_var.specie = specie;
 
@@ -369,6 +378,7 @@ void set_node_var(symnode_t *node, var_symbol *var) {
 
   //ode->s.v.m = SINGLE_DT;
   node->s.v.specie = var->specie;
+  node->s.v.byte_size = var->byte_size;
   //node->s.v.offset_of_frame_pointer = var->offset_of_frame_pointer;
 
 }
@@ -665,6 +675,7 @@ void print_symhash(symhashtable_t *hashtable) {
         case VAR_SYM:
           printf("VAR_TYPE: %s, ", TYPE_NAME(node->s.v.type));
           printf("MODIFIER: %s, ", MODIFIER_NAME(node->s.v.modifier));
+          printf("SIZE: %d, ", node->s.v.byte_size);
           printf("SPECIE: %s ", VAR_SPECIE_NAME(node->s.v.specie));
           printf("[offset %d]", node->s.v.offset_of_frame_pointer);
           break;
