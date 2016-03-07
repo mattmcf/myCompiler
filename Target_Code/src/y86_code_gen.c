@@ -527,7 +527,7 @@ int get_source_value(FILE * fp, quad_arg * src, my_register_t dest) {
 
 		case RETURN_Q_ARG:
 			printf("return arg\n");
-			fprintf(fp,"rrmovl %%eax, %s\n",REGISTER_STR(dest));
+			fprintf(fp,"\trrmovl %%eax, %s\n",REGISTER_STR(dest));
 			break;
 
 		default:
