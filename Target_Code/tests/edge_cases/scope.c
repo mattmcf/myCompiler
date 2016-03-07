@@ -3,6 +3,7 @@ int x;
 void sub(int x) {
 
   x = 3;
+  print x;
 
 }
 

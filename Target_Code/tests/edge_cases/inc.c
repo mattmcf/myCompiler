@@ -1,3 +1,5 @@
+//#include <stdio.h>
+
 int a[3];
 
 int main(void){
@@ -18,7 +20,7 @@ int main(void){
   ++b[++n];
 
   for (i = 0; i < 3; i = i + 1) {
-    //    printf("a[%d] = %d, b[%d] = %d\n",i,a[i],i, b[i]);
+    //printf("a[%d] = %d, b[%d] = %d\n",i,a[i],i, b[i]);
     print a[i];
     print b[i];
   }

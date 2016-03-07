@@ -14,7 +14,6 @@
 #define MAX_HEX_ADDRESS_LEN 11 	// 0x????????'\n' is 11 characters for a string (with null terminator)
 #define STK_TOP 0x0000FFFF
 
-
 extern symboltable_t * symtab; 	// for global lookups of symbols
 extern quad_arr * quad_list; 		// global quad list
 
@@ -35,6 +34,9 @@ int create_ys(char * file_name) {
 		return 1;
 	}
 
+	/*
+	 * Create ys file
+	 */
 	int title_len = strlen(file_name + 4);
 	char title_str[title_len];
 	title_str[0] = '\0';
@@ -74,6 +76,7 @@ int create_ys(char * file_name) {
 	/* 
 	 * initialize globals here 
 	 */
+	fprintf(ys_fp,"GLOBALS_INITIALIZATION:\n");
 	int i;
 	for (i = 0; quad_list->arr[i]->op == ASSIGN_Q; i++) {
 		printf("global initialization quad %d\n",i);
@@ -485,6 +488,7 @@ int get_source_value(FILE * fp, quad_arg * src, my_register_t dest) {
 
 	printf("getting source\n");
 	switch(src->type) {
+
 		case INT_LITERAL_Q_ARG:
 			printf("constant %d\n",src->int_literal);		
 			fprintf(fp, "\tirmovl 0x%x, %s\n",src->int_literal,REGISTER_STR(dest));
