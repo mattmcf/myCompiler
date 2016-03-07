@@ -360,12 +360,16 @@ quad_arg * CG(ast_node root) {
       case BREAK_N:
         {
           // Go one level up
+          fprintf(stderr, "Cannot handle break statements yet\n");
+          exit(1);
           break;
         }
 
       case CONTINUE_N:
         {
           // Go to start of loop (next iteration of loop)
+          fprintf(stderr,"cannot handle continue statements yet\n");
+          exit(1);
           break;
         }
 
@@ -405,12 +409,21 @@ quad_arg * CG(ast_node root) {
           // func_arg->symnode = root;
           // func_arg->label = root->left_child->value_string;
           gen_quad(PRECALL_Q, func_arg, NULL, NULL);
+
+          /* get return value */
+          to_return = create_quad_arg(RETURN_Q_ARG);         
           gen_quad(POSTRET_Q, func_arg, NULL, NULL);
 
-          // We should probably return a quad arg here that can be used
-          // for assignment. But how do we get the return value?
-          to_return = create_quad_arg(RETURN_Q_ARG);
+          /* create temp for return space */
+          temp_var * t1 = new_temp(root);
+          quad_arg * return_temp = create_quad_arg(TEMP_VAR_Q_ARG);
+          return_temp->temp = t1; 
 
+          /* save return in temp and pass that temp up */
+          gen_quad(ASSIGN_Q, return_temp, to_return, NULL);
+
+          /* need to save return arg to a temp and then pass that temp up */
+          to_return = return_t;
           break;
         }
 

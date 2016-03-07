@@ -439,14 +439,6 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 
 		case STRING_Q:
 			/* update -- wait to do this until all the text has been translated. */
-			// {
-			// 	int len = strlen(to_translate->args[0]->label);
-			// 	//fprintf(ys_file_ptr,"\t.align 4\n");
-			// 	for (int i = 0; i < len; i++) {
-			// 		fprintf(ys_file_ptr,"\t.byte 0x%x\n",to_translate->args[0]->label[i]);
-			// 	}
-			// 	fprintf(ys_file_ptr,"\t.byte 0x0\n"); 	// null terminator
-			// }
 			break;
 
 		case LABEL_Q:			
