@@ -1,3 +1,5 @@
+//#include <stdio.h>
+
 int glob[3];
 
 void fun2(int a[]) {
@@ -24,7 +26,7 @@ int fun1(int a[]) {
 
 
 
-int main (void) {
+int main(void) {
 
   int la[3];
   int y;
@@ -39,6 +41,6 @@ int main (void) {
   print la[2];
   //printf("%d\n", la[2]);  
 
-  
+  return 0;
 
 }
