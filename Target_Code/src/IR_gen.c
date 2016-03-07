@@ -423,7 +423,7 @@ quad_arg * CG(ast_node root) {
           gen_quad(ASSIGN_Q, return_temp, to_return, NULL);
 
           /* need to save return arg to a temp and then pass that temp up */
-          to_return = return_t;
+          to_return = return_temp;
           break;
         }
 

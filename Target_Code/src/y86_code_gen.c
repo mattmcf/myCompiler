@@ -127,6 +127,8 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 			break;
 
 		case SUB_Q:
+			print_nop_comment(ys_file_ptr,"subtract",to_translate->number);
+
 			get_source_value(ys_file_ptr, to_translate->args[1], EAX_R);
 			get_source_value(ys_file_ptr, to_translate->args[2], EBX_R);
 			fprintf(ys_file_ptr, "\tsubl %%ebx, %%eax\n");
@@ -134,6 +136,8 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 			break;
 
 		case MUL_Q:
+			print_nop_comment(ys_file_ptr,"multiply",to_translate->number);
+
 			get_source_value(ys_file_ptr, to_translate->args[1], EAX_R);
 			get_source_value(ys_file_ptr, to_translate->args[2], EBX_R);
 			fprintf(ys_file_ptr, "\tmull %%ebx, %%eax\n");
@@ -141,6 +145,8 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 			break;
 
 		case DIV_Q:
+			print_nop_comment(ys_file_ptr,"divide",to_translate->number);
+
 			get_source_value(ys_file_ptr, to_translate->args[1], EAX_R);
 			get_source_value(ys_file_ptr, to_translate->args[2], EBX_R);
 			fprintf(ys_file_ptr, "\tdivl %%ebx, %%eax\n");
@@ -148,6 +154,8 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 			break;
 
 		case MOD_Q:
+			print_nop_comment(ys_file_ptr,"mod",to_translate->number);
+
 			get_source_value(ys_file_ptr, to_translate->args[1], EAX_R);
 			get_source_value(ys_file_ptr, to_translate->args[2], EBX_R);
 			fprintf(ys_file_ptr, "\tmodl %%ebx, %%eax\n");
@@ -155,6 +163,8 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 			break;
 
 		case PRE_INC_Q:
+			print_nop_comment(ys_file_ptr,"pre-increment",to_translate->number);
+
 			get_source_value(ys_file_ptr, to_translate->args[1], EAX_R);
 			get_source_value(ys_file_ptr, to_translate->args[2], EBX_R);
 			fprintf(ys_file_ptr, "\taddl %%ebx, %%eax\n");
@@ -166,6 +176,8 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 			break;
 
 		case PRE_DEC_Q:
+			print_nop_comment(ys_file_ptr,"pre-decrement",to_translate->number);
+
 			get_source_value(ys_file_ptr, to_translate->args[1], EAX_R);
 			get_source_value(ys_file_ptr, to_translate->args[2], EBX_R);
 			fprintf(ys_file_ptr, "\tsubl %%ebx, %%eax\n");
@@ -177,6 +189,8 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 			break;
 
 		case POST_INC_Q:
+			print_nop_comment(ys_file_ptr,"post-increment",to_translate->number);
+
 			get_source_value(ys_file_ptr,to_translate->args[1],EAX_R);
 			// Return variable's original value
 			get_dest_value(ys_file_ptr,EAX_R,to_translate->args[0]);
@@ -188,6 +202,8 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 			break;
 
 		case POST_DEC_Q:
+			print_nop_comment(ys_file_ptr,"post-decrement",to_translate->number);
+
 			get_source_value(ys_file_ptr,to_translate->args[1],EAX_R);
 			// Return variable's original value
 			get_dest_value(ys_file_ptr,EAX_R,to_translate->args[0]);
@@ -199,6 +215,8 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 			break;
 
 		case NOT_Q:
+			print_nop_comment(ys_file_ptr,"not",to_translate->number);
+
 			get_source_value(ys_file_ptr,to_translate->args[0],EAX_R);
 			fprintf(ys_file_ptr, "\tirmovl $0, %%ebx\n");
 			fprintf(ys_file_ptr, "\tsubl %%ebx, %%eax\n");
@@ -211,6 +229,8 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 			break;
 
 		case NEG_Q:
+			print_nop_comment(ys_file_ptr,"negative operation",to_translate->number);
+
 			// Negative of an integer n = 0 - n
 			// i.e. 0 - 1 = -1, 0 - (-1) = 1
 			fprintf(ys_file_ptr, "\tmrmovl $0, %%eax\n");
@@ -230,6 +250,7 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 			// SF = 1 and ZF = 0
 			// jl
 			{
+				print_nop_comment(ys_file_ptr, "less than comparison", to_translate->number);
 				condition = LT_C;
 				comp_sub(to_translate, ys_file_ptr);
 				break;
@@ -239,6 +260,7 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 			// SF = 0 and ZF = 0
 			// jg
 			{
+				print_nop_comment(ys_file_ptr, "greater than comparison", to_translate->number);
 				condition = GT_C;
 				comp_sub(to_translate, ys_file_ptr);
 				break;
@@ -248,6 +270,7 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 			// SF = 1 or ZF = 0
 			// jle
 			{
+				print_nop_comment(ys_file_ptr, "less than or equal to comparison", to_translate->number);
 				condition = LTE_C;
 				comp_sub(to_translate, ys_file_ptr);
 				break;
@@ -257,6 +280,7 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 			// SF = 0 or ZF = 1
 			// jge
 			{
+				print_nop_comment(ys_file_ptr, "greater than or equal to comparison", to_translate->number);
 				condition = GTE_C;
 				comp_sub(to_translate, ys_file_ptr);
 				break;
@@ -266,6 +290,7 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 			// ZF = 0
 			// jne
 			{
+				print_nop_comment(ys_file_ptr, "not equal to comparison", to_translate->number);
 				condition = NE_C;
 				comp_sub(to_translate, ys_file_ptr);
 				break;
@@ -275,12 +300,14 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 			// SF = 0 and ZF = 1
 			// je
 			{
+				print_nop_comment(ys_file_ptr, "equal to comparison", to_translate->number);
 				condition = EQ_C;
 				comp_sub(to_translate, ys_file_ptr);
 				break;
 			}
 
 		case IFFALSE_Q:
+			print_nop_comment(ys_file_ptr,"If False",to_translate->number);
 			{
 				char * label = to_translate->args[1]->label;
 
@@ -364,7 +391,7 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 				 * --- set esp to bottom of local and temp space --- 
 				 * esp should be set to symnode->s.f.stk_offset for function's symbol
 				 */
-				fprintf(ys_file_ptr, "\tirmovl $%d, %%eax\n",func_sym->s.f.stk_offset);
+				fprintf(ys_file_ptr, "\tirmovl $%d, %%eax\n",func_sym->s.f.stk_offset + 4); 	// point at lowest local
 				fprintf(ys_file_ptr, "\taddl %%eax, %%esp\n");				
 			}
 			break;
@@ -391,8 +418,9 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 				symnode_t * func_sym = find_in_top_symboltable(symtab, to_translate->args[0]->label);	
 
 				/* use control link to get back to caller frame */	
-				fprintf(ys_file_ptr, "\tirmovl $%d, %%ebx\n",func_sym->s.f.stk_offset); 	// %ebx b/c return lives in %eax
-				fprintf(ys_file_ptr, "\tsubl %%ebx, %%esp\n");								
+				fprintf(ys_file_ptr, "\tirmovl $%d, %%ebx\n",func_sym->s.f.stk_offset + 4); 	// %ebx b/c return lives in %eax
+				fprintf(ys_file_ptr, "\taddl %%ebp, %%ebx\n");		
+				fprintf(ys_file_ptr, "\trrmovl %%ebx, %%esp\n");						
 			}
 			break;
 
@@ -519,7 +547,8 @@ int get_source_value(FILE * fp, quad_arg * src, my_register_t dest) {
 
 		case RETURN_Q_ARG:
 			printf("return arg\n");
-			fprintf(fp,"\trrmovl %%eax, %s\n",REGISTER_STR(dest));
+			if (dest != EAX_R) 		// RETURN already lives in %eax
+				fprintf(fp,"\trrmovl %%eax, %s\n",REGISTER_STR(dest));
 			break;
 
 		default:
@@ -652,7 +681,7 @@ void comp_sub(quad * to_translate, FILE * ys_file_ptr) {
 			break;
 	}
 
-	get_dest_value(ys_file_ptr,EAX_R, to_translate->args[0]);
+	get_dest_value(ys_file_ptr, EAX_R, to_translate->args[0]);
 }
 
 /*

@@ -682,6 +682,7 @@ void print_symhash(symhashtable_t *hashtable) {
 
         case FUNC_SYM:
           printf("RETURN_TYPE: %s, ", TYPE_NAME(node->s.f.return_type));
+          printf("STACK OFFSET: %d, ", node->s.f.stk_offset);
           printf("ARG_COUNT: %d, ", node->s.f.arg_count);
           printf("ARGS: ");
           for (int j = 0; j < node->s.f.arg_count; j++) {
