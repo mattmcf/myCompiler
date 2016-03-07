@@ -342,16 +342,13 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 			{
 				int var_size = to_translate->args[1]->symnode->s.v.byte_size;
 				fprintf(ys_file_ptr, "\tirmovl $%d, %%eax\n", var_size);
-				fprintf(ys_file_ptr, "\trmmovl %%eax, %s\n", get_dest_value(to_translate->args[0]));
+				get_dest_value(ys_file_ptr,EAX_R,to_translate->args[0]);
 				break;
 			}
 
 		case PROLOG_Q:
 			{
 				print_nop_comment(ys_file_ptr, "function prolog", to_translate->number);
-
-				//char * t1 = handle_quad_arg(to_translate->args[0]);
-				//printf("looking for %s in symboltable\n",t1);
 				symnode_t * func_sym = find_in_top_symboltable(symtab, to_translate->args[0]->label);
 
 				// error check -- probably not necessary anymore

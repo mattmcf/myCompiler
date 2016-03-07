@@ -8,26 +8,29 @@ int main() {
 
 	c = a + b;
 	y = a + b;
-	// c = a - b;
-	// c = a / b;
-	// c = a * b;
-	// c = a % b;
-	// c = !a;
-	// c = a && b;
-	// c = a || b;
-	// c = ++a;
-	// c = --a;
+	c = a - b;
+	c = a / b;
+	c = a * b;
+	c = a % b;
+	c = !a;
+	c = a && b;
+	c = a || b;
+	c = ++a;
+	c = --a;
+	c = a--;
+	c = a++;
 
-	// c = a == b;
-	// c = a < b;
-	// c = a <= b;
-	// c = a > b;
-	// c = a >= b;
-	// c = a != b;
+	c = a == b;
+	c = a < b;
+	c = a <= b;
+	c = a > b;
+	c = a >= b;
+	c = a != b;
 
-	// print a;
-	// print "hello\n";
-	// read b;
+	print a;
+	print "hello";
+	print "Enter some input!";
+	read b;
 
 	return 0;
 }
