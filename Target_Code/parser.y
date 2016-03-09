@@ -509,9 +509,6 @@ continue_stmt : CONTINUE_T ';' {
 
 /* 
  * RULE 26
- *
- * if left-child has a right sibling, then VAR_N must be assigned the
- * 	evaluated right sibling expression.
  */
 expression : var '=' expression {
 	ast_node t = create_ast_node(OP_ASSIGN_N);
