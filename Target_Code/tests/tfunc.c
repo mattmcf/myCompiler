@@ -1,3 +1,7 @@
+/*
+ * testing out various ways to declare and call functions
+ */
+
 void f2(void){
 	int b;
 }

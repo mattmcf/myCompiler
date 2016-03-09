@@ -1,3 +1,7 @@
+/*
+ * rigorously test all operations and conditionals
+ */
+
 int x, y, z = 0;
 
 int main() {

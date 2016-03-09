@@ -1,3 +1,7 @@
+/*
+ * illustrates how the compiler can handle nested array index calcuations
+ */
+
 int main() {
 	int arr1[10], arr2[10];
 

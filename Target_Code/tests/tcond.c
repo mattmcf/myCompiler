@@ -1,3 +1,7 @@
+/*
+ * file to run through condtional and loop routines
+ */
+
 int global_a = 5;
 int global_b = 9;
 

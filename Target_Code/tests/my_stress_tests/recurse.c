@@ -1,3 +1,7 @@
+/*
+ * simple recursive function
+ */
+
 int x;
 
 int main(void) {

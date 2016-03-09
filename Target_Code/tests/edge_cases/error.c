@@ -1,11 +1,9 @@
-int x;
-
 int main(void) {
 
-  int y;
+  int y, x = 3, z;
+ 
+  print x + y = 2 + 3;
 
-  x + y = 2 + 3;
-
-  return 0;
+  return x;
 
 }

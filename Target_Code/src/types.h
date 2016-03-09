@@ -66,7 +66,6 @@ typedef enum {
   NULL_DT,	
   SINGLE_DT,
   ARRAY_DT
-  // POINTER_DT; // same thing as is array?
 } modifier_t;
 
 static val_name_pair modifier_table[] = {
@@ -82,7 +81,6 @@ static val_name_pair modifier_table[] = {
 /*
  * Variable specie marking
  */
-
 typedef enum {
   GLOBAL_VAR,
   PARAMETER_VAR,

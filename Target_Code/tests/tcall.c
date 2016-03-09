@@ -1,3 +1,7 @@
+/*
+ * simple function call
+ */
+
 int int_function(int a, int b) {
 	int c;
 	int ar[100];

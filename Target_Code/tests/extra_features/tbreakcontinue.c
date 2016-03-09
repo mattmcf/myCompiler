@@ -1,3 +1,7 @@
+/*
+ * demonstarting break and continue
+ */
+
 int main(void) {
 	int e;
 	int d;

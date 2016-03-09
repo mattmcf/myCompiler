@@ -1,3 +1,8 @@
+/*
+ * This file tests a lot of array operations (global and local)
+ * as well as what happens when you pass arrays into functions
+ */
+
 int global_int;
 int global_arr[10];
 

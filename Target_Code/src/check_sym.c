@@ -145,10 +145,11 @@ void set_type(ast_node root) {
 		case OP_ASSIGN_N:
 			{
 				ast_node var = root->left_child;
-				ast_node expr = root->left_child->right_sibling;		
+				ast_node expr = root->left_child->right_sibling;
+
 				if ( (var->type == expr->type) && ((var->mod == SINGLE_DT) && (expr->mod == SINGLE_DT)) ) {
-					root->type 	= var->type;
-					root->mod 	= expr->mod;
+					root->type 		= INT_TS;
+					root->mod 		= SINGLE_DT;
 				} else {
 					type_err(root);
 					root->type 	= NULL_TS;

@@ -1,3 +1,7 @@
+/*
+ * tests features of sizeof()
+ */
+
 int sub_call(int param, int param_arr[]) {
 	int result;
 

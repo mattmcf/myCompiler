@@ -1,3 +1,7 @@
+/*
+ * nested loops demonstration
+ */
+
 int main() {
 
 	int i = 10, j;
