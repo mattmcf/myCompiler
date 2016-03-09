@@ -356,6 +356,8 @@ expression_stmt { $$ = $1; }
 | return_stmt 	{ $$ = $1; }
 | read_stmt 	{ $$ = $1; }
 | print_stmt 	{ $$ = $1; }
+| break_stmt { $$ = $1; }
+| continue_stmt { $$ = $1; }
 ;
 
 /*
@@ -493,6 +495,16 @@ print_stmt : PRINT_T expression ';' {
 	t->left_child = $2; 						
 	$$ = t; }
 | PRINT_T error ';' { $$ = NULL; }
+;
+
+break_stmt : BREAK_T ';' {
+	ast_node t = create_ast_node(BREAK_N);
+	$$ = t; }
+;
+
+continue_stmt : CONTINUE_T ';' {
+	ast_node t = create_ast_node(CONTINUE_N);
+	$$ = t; }
 ;
 
 /* 

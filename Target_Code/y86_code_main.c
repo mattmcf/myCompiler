@@ -35,6 +35,7 @@ int main(int argc, char * argv[]) {
 
   if (!noRoot && !parseError) {
   	//print_ast(root,0);
+    post_process_ast(root);
   	
     /* create empty symboltable */
     symtab = create_symboltable();

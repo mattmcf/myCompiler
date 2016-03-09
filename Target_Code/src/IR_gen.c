@@ -173,6 +173,10 @@ quad_arg * CG(ast_node root) {
           quad_arg * exit_arg = create_quad_arg(LABEL_Q_ARG);
           exit_arg->label = label_exit;
 
+          char * label_update = new_label(root, "FOR_UPDATE");
+          quad_arg * update_arg = create_quad_arg(LABEL_Q_ARG);
+          update_arg->label = label_update;
+
           CG(root->left_child);
 
           gen_quad(LABEL_Q, test_arg, NULL, NULL);
@@ -180,6 +184,9 @@ quad_arg * CG(ast_node root) {
           quad_arg * arg1 = CG(root->left_child->right_sibling);
           gen_quad(IFFALSE_Q, arg1, exit_arg, NULL);
           CG(root->left_child->right_sibling->right_sibling->right_sibling);
+
+          gen_quad(LABEL_Q, update_arg, NULL, NULL);
+
           CG(root->left_child->right_sibling->right_sibling);
 
           gen_quad(GOTO_Q, test_arg, NULL, NULL);
@@ -359,17 +366,70 @@ quad_arg * CG(ast_node root) {
 
       case BREAK_N:
         {
-          // Go one level up
-          fprintf(stderr, "Cannot handle break statements yet\n");
-          exit(1);
+          // Skip to the exit of current loop
+          ast_node loop = lookup_parent_block(root);
+          
+          if (loop == NULL) {
+            fprintf(stderr, "error line %d: break statement not in loop statement\n", root->line_number);
+            exit(1);
+          }
+
+          char * break_label;
+
+          switch (loop->node_type) {
+            case WHILE_N:
+              break_label = new_label(loop, "WHILE_EXIT");
+              break;
+            case FOR_STMT_N:
+              break_label = new_label(loop, "FOR_EXIT");
+              break;
+            case DO_WHILE_N:
+              break_label = new_label(loop, "DO_WHILE_EXIT");
+              break;
+            default:
+              break;
+          }
+
+          quad_arg * break_arg = create_quad_arg(LABEL_Q_ARG);
+          break_arg->label = break_label;
+
+          gen_quad(GOTO_Q, break_arg, NULL, NULL);
+
           break;
         }
 
       case CONTINUE_N:
         {
           // Go to start of loop (next iteration of loop)
-          fprintf(stderr,"cannot handle continue statements yet\n");
-          exit(1);
+          ast_node loop = lookup_parent_block(root);
+
+          if (loop == NULL) {
+            fprintf(stderr, "error line %d: continue statement not in loop statement\n", root->line_number);
+            exit(1);
+          }
+
+          char * continue_label;
+
+          switch (loop->node_type) {
+            case WHILE_N:
+              continue_label = new_label(loop, "WHILE_TEST");
+              break;
+            case FOR_STMT_N:
+              // Need to update before jumping to test in for loops
+              continue_label = new_label(loop, "FOR_UPDATE");
+              break;
+            case DO_WHILE_N:
+              continue_label = new_label(loop, "DO_WHILE_TEST");
+              break;
+            default:
+              break;
+          }
+
+          quad_arg * continue_arg = create_quad_arg(LABEL_Q_ARG);
+          continue_arg->label = continue_label;
+
+          gen_quad(GOTO_Q, continue_arg, NULL, NULL);
+
           break;
         }
 
