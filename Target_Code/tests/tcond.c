@@ -11,79 +11,61 @@ int main(void) {
 	int f = 5;
 	int h[12];
 
-	// while (a < 10) {
-	// 	int hello = 2;
+	print "Feed me a number!";
+	read c;
 
-	// 	if (hello == 2) {
-	// 		break;
-	// 	}
-	// }
+	print c;
 
-	// print "Broke out of loop!";
+	print "Should print 2 WOOs";
 
-	for (e = 0; e < 2; ++e) {
-		for (d = 0; d < 10; ++d) {
-			if (d == 2) {
-				break;
-			}
-
-			print "Inner:";
-			print d;
-		}
-
-		print "Outer:";
-		print e;
+	while (b > 8 && a < 10) {
+		print "WOO!";
+		++a;
+		--b;
 	}
 
-	// print "Feed me a number!";
-	// read c;
+	print "DONE!";
 
-	// print c;
+	print "Should print 4 YAYs";
 
-	// while (b > 8 && a < 10) {
-	// 	print "WOO!";
-	// 	++a;
-	// 	--b;
-	// }
+	for (c = 0; c < 4; ++c) {
+		print "YAY!";
+	}
 
-	// print "DONE!";
+	print "DONE AGAIN!";
 
-	// for (c = 0; c < 4; ++c) {
-	// 	print "YAY!";
-	// }
+	print "Should print 6 WAHOOs";
 
-	// print "DONE AGAIN!";
+	do {
+		print "WAHOO!";
+		--g;
+	} while (g >= 0);
 
-	// do {
-	// 	print "WAHOO!";
-	// 	--g;
-	// } while (g >= 0);
+	print "DONE YET AGAIN!";
 
-	// print "DONE YET AGAIN!";
+	// Increment and decrement operator tests
+	d = f--;
 
-	// // Increment and decrement operator tests
-	// d = f--;
+	print "d after post decrement. Expected 5";
+	print d; // d = 5
+	print "f after post decrement. Expected 4";
+	print f; // f = 4
 
-	// print "d after post decrement";
-	// print d; // d = 5
-	// print "f after post decrement";
-	// print f; // f = 4
+	e = --f;
 
-	// e = --f;
+	print "e after pre decrement. Expected 3";
+	print e; // e = 3
+	print "f after pre decrement. Expected 3";
+	print f; // f = 3
 
-	// print "e after pre decrement";
-	// print e; // e = 3
-	// print "f after pre decrement";
-	// print f; // f = 3
+	// Size of tests
+	print "SIZEOF c (int). Expected 4";
+	d = sizeof(c); 
+	print d; // 4
 
-	// // Size of tests
-	// print "SIZEOF c (int)";
-	// d = sizeof(c); 
-	// print d; // 4
-
-	// print "SIZEOF h (array)";
-	// d = sizeof(h);
-	// print d; // 48
+	print "SIZEOF h (array). Expected 48";
+	d = sizeof(h);
+	print d; // 48
 
 	return 0;
 }
