@@ -69,6 +69,17 @@ void post_process_ast(ast_node root) {
   }
 }
 
+ast_node lookup_parent_block(ast_node root) {
+  ast_node parent_node = root->parent;
+
+  // If not a control structure, keep going up
+  while (parent_node != NULL && parent_node->node_type != WHILE_N && parent_node->node_type != DO_WHILE_N && parent_node->node_type != FOR_STMT_N) {
+    parent_node = parent_node->parent;
+  }
+
+  return parent_node;
+}
+
 /* Print the contents of a subtree of an abstract syntax tree, given
    the root of the subtree and the depth of the subtree root. */
 void print_ast(ast_node root, int depth) {

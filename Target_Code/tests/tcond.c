@@ -11,8 +11,28 @@ int main(void) {
 	int f = 5;
 	int h[12];
 
-	while (a < 10) {
-		break;
+	// while (a < 10) {
+	// 	int hello = 2;
+
+	// 	if (hello == 2) {
+	// 		break;
+	// 	}
+	// }
+
+	// print "Broke out of loop!";
+
+	for (e = 0; e < 2; ++e) {
+		for (d = 0; d < 10; ++d) {
+			if (d == 2) {
+				break;
+			}
+
+			print "Inner:";
+			print d;
+		}
+
+		print "Outer:";
+		print e;
 	}
 
 	// print "Feed me a number!";

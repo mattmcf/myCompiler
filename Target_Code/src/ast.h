@@ -157,10 +157,15 @@ struct ast_node_struct {
    node. */
 ast_node create_ast_node(ast_node_type node_type);
 
-/*
-  Post process the tree to add parent pointers
+/**
+ * Post process the tree to add parent pointers
  */
 void post_process_ast(ast_node root);
+
+/**
+ * Look up ast node that represents parent block
+ */
+ast_node lookup_parent_block(ast_node root);
 
 /*
  * returns line number of left most child.
