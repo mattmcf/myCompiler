@@ -1,9 +1,9 @@
 #!/bin/bash
 
 # /*
-#  * build_ys.c
+#  * build_ys.sh
 #  *
-#  * USAGE: ./build_ys.c [INPUT FILE] [OUTPUT NAME] [optional: -g]
+#  * USAGE: ./build_ys.sh [INPUT FILE] [OUTPUT NAME] [optional: '-g']
 #  *
 #  * 1) creates compiler
 #  * 2) compiles specified .c file into .ys file
