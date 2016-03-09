@@ -13,6 +13,8 @@ We've implemented a compiler that can generate Y86 executable for a subset of C 
 * `sizeof()`
 * `break` and `continue` statements
 
+Note: In order to run the `.ys` files this compiler produces, download the simulator linked in the `simulator_code/` directory and follow the readme instructions there. This is the y86 CPU simulator.
+
 ## Files Structure
 The file structure our our compiler is as follows:
 
@@ -34,9 +36,13 @@ Top - Level Files
 * `Makefile` : create `./gen_target_code` which generates the `.ys` file
 * `y86_code_main.c` : source for generation of target code (`.ys` file)
 
-Instructions for running tests:
+Instructions for compiling y86 code (produce `.ys` file):
 
-`cd Target_Code`
+`make`
+
+`./generate_target_code <INPUT_FILE> <OUTPUT_NAME_PREFIX>`
+
+Instructions for running tests:
 
 `./build_ys.sh tests/<input_file_name> <output_file_name> [Optional: -g]`
 
