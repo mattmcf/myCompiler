@@ -3,6 +3,9 @@
 (For more enjoyable reading, please see https://github.com/MattRMcFarland/myCompiler/tree/master/Target_Code)
 
 ## General Overview
+We've implemented a compiler that can generate Y86 exectuable for a subset of set. The subset of C includes the follow features... 
+
+## Files Structure
 The file structure our our compiler is as follows:
 
 We added a source directory to manage the increasing number of source files we created:
@@ -47,10 +50,10 @@ For the final submission of the compiler, we simply ironed out the bugs from the
 
 
 ## Testing Files
-All test files live in the tests directory. There are three new subdirectories have been added there:
+All test files live in the `tests/` directory. There are three new subdirectories have been added there:
 * `edge_cases/`: Includes the stress-tests provided by instructors
 * `extra_features/`: Includes test files that demonstrate our extra features
-* `my_stress_tests`: Includes some functions and files that push the compiler
+* `my_stress_tests/`: Includes some functions and files that push the compiler
 
 Important test files are highlighted below. Most of the files in `tests/` are rudimentary tests.
 
@@ -58,7 +61,7 @@ Important test files are highlighted below. Most of the files in `tests/` are ru
 This file highlighted a contested "dark corner" of our formal grammar. Although `gcc` does not compile this file because it prevents the assignment to expressions, our compiler does not throw an error for this file. Our compiler interprets `x + y = 2 + 3` as `x + (y = 2 + 3)` (which `gcc` can compile). We decided not to alter the grammar that was given to us and to default to the latter interpretation of expressions. The `%right` associativity given to the `=` token means that our parser will default to the latter understanding of assignments in the context of other operations. The only way to prevent this without altering the grammar would be to ban the use of assignments as operands to other expressions, which we believe would result in a "less correct" compiler than the difference between `x + y = 2 + 3` as `x + (y = 2 + 3)`.
 
 ### `extra_features/inc_dec.c`
-This file illustrates how the post increment and post decrement operations work. Note: We encountered an interesting issue here when trying to doubly increment or decrement (`((a)++)++`). This fails our test file, but it also fails in `gcc` because you cannot increment the value of an expression, only a varable (because the value must be stored somewhere and gcc doesn't allow for the assignment to an expression).
+This file illustrates how the post increment and post decrement operations work. Note: We encountered an interesting issue here when trying to doubly increment or decrement (`((a)++)++`). This fails our test file, but it also fails in `gcc` because you cannot increment the value of an expression. Only variables can be incremented / decremented because the value must be stored somewhere and gcc doesn't allow for the assignment to an expression.
 
 ### `extra_features/sizeof.c`
 Shows all the use cases of sizeof. Highlights include:
@@ -73,16 +76,16 @@ Shows all the use cases of sizeof. Highlights include:
 Testing the functionality of break and continue in various for loops and while statements. 
 
 ### `my_stress_tests/factorial.c`
-Factorial implementation with some logic. This can compute the factorial of the numbers [0-13] (too larger means overflow).
+Factorial implementation with some logic. This can compute the factorial of the numbers 0 - 13 (too larger means overflow).
 
 ### `my_stress_tests/recurse.c`
 Simple recursion fuction. Prints decrement input until zero.
 
 ### `my_stress_tests/sort.c`
-This is an implementation of the selection sort algorithm with swap-in-place and pass array by value to the sorting function (since the sort function can manipulate values in the array without copying them).
+This is an implementation of the selection sort algorithm with swap-in-place and pass array by value to the sorting function (since the sort function can manipulate values in the array without copying them). There's a lot of looping, conditional testing and array manipulation that occurs here.
 
-### `my_stress_tsts/test_simple.c` 
-This test stretches the parsing, type checking and AST tree creation.
+### `my_stress_tests/test_simple.c` 
+This test stretches the parsing, type checking and AST tree creation. This file makes A LOT of temps.
 
 ### `tops.c`
 Exhaustively tests all operatons and expected outputs.
