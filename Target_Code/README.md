@@ -1,9 +1,17 @@
- # Target Code Generation Readme
+# My_Compiler
 ## Matt McFarland and Yondon Fu - Delights (CS 57 - 16W)
 (For more enjoyable reading, please see https://github.com/MattRMcFarland/myCompiler/tree/master/Target_Code)
 
 ## General Overview
-We've implemented a compiler that can generate Y86 exectuable for a subset of set. The subset of C includes the follow features... 
+We've implemented a compiler that can generate Y86 executable for a subset of C that has the same functionality as `gcc`. This subset includes the following features:
+* 32 bits integer and integer arrays (pass array by value)
+* `for`, `while`, `do-while` loop structures
+* Standard boolean operations and conditional testing (`!`,`&&`,`||`,`<`,`<=`,`>`,`>=`,`==`,`!=`)
+* `if` and `if else` statements
+* pre-increment / decrement as well as post-increment and decrement
+* `print` and `read` IO functions 
+* `sizeof()`
+* `break` and `continue` statements
 
 ## Files Structure
 The file structure our our compiler is as follows:
