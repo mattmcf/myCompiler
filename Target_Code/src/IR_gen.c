@@ -361,7 +361,7 @@ quad_arg * CG(ast_node root) {
         {
           // Go one level up
           fprintf(stderr, "Cannot handle break statements yet\n");
-          exit(1);
+          // exit(1);
           break;
         }
 
@@ -369,7 +369,7 @@ quad_arg * CG(ast_node root) {
         {
           // Go to start of loop (next iteration of loop)
           fprintf(stderr,"cannot handle continue statements yet\n");
-          exit(1);
+          // exit(1);
           break;
         }
 

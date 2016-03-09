@@ -56,6 +56,19 @@ int get_line_number(ast_node root) {
   return to_return;
 }
 
+void post_process_ast(ast_node root) {
+  if (root == NULL) {
+    return;
+  }
+
+  ast_node child;
+
+  for (child = root->left_child; child != NULL; child = child->right_sibling) {
+    child->parent = root;
+    post_process_ast(child);
+  }
+}
+
 /* Print the contents of a subtree of an abstract syntax tree, given
    the root of the subtree and the depth of the subtree root. */
 void print_ast(ast_node root, int depth) {
@@ -107,6 +120,7 @@ void print_ast(ast_node root, int depth) {
     printf(" (scope: %d-%d %s)", hashtable->level, hashtable->sibno, hashtable->name);
 
   printf(" [Line Number: %d -- (#%d)]", get_line_number(root),root->id);
+  printf(" [Parent: %d]", root->parent != NULL ? root->parent->id : -1);
   printf("\n");
   
 

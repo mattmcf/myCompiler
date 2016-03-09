@@ -11,55 +11,59 @@ int main(void) {
 	int f = 5;
 	int h[12];
 
-	print "Feed me a number!";
-	read c;
-
-	print c;
-
-	while (b > 8 && a < 10) {
-		print "WOO!";
-		++a;
-		--b;
+	while (a < 10) {
+		break;
 	}
 
-	print "DONE!";
+	// print "Feed me a number!";
+	// read c;
 
-	for (c = 0; c < 4; ++c) {
-		print "YAY!";
-	}
+	// print c;
 
-	print "DONE AGAIN!";
+	// while (b > 8 && a < 10) {
+	// 	print "WOO!";
+	// 	++a;
+	// 	--b;
+	// }
 
-	do {
-		print "WAHOO!";
-		--g;
-	} while (g >= 0);
+	// print "DONE!";
 
-	print "DONE YET AGAIN!";
+	// for (c = 0; c < 4; ++c) {
+	// 	print "YAY!";
+	// }
 
-	// Increment and decrement operator tests
-	d = f--;
+	// print "DONE AGAIN!";
 
-	print "d after post decrement";
-	print d; // d = 5
-	print "f after post decrement";
-	print f; // f = 4
+	// do {
+	// 	print "WAHOO!";
+	// 	--g;
+	// } while (g >= 0);
 
-	e = --f;
+	// print "DONE YET AGAIN!";
 
-	print "e after pre decrement";
-	print e; // e = 3
-	print "f after pre decrement";
-	print f; // f = 3
+	// // Increment and decrement operator tests
+	// d = f--;
 
-	// Size of tests
-	print "SIZEOF c (int)";
-	d = sizeof(c); 
-	print d; // 4
+	// print "d after post decrement";
+	// print d; // d = 5
+	// print "f after post decrement";
+	// print f; // f = 4
 
-	print "SIZEOF h (array)";
-	d = sizeof(h);
-	print d; // 48
+	// e = --f;
+
+	// print "e after pre decrement";
+	// print e; // e = 3
+	// print "f after pre decrement";
+	// print f; // f = 3
+
+	// // Size of tests
+	// print "SIZEOF c (int)";
+	// d = sizeof(c); 
+	// print d; // 4
+
+	// print "SIZEOF h (array)";
+	// d = sizeof(h);
+	// print d; // 48
 
 	return 0;
 }

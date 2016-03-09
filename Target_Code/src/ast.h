@@ -135,6 +135,7 @@ typedef struct ast_node_struct *ast_node;
 struct ast_node_struct {
   ast_node_type node_type;
   ast_node left_child, right_sibling;
+  ast_node parent;
 
   // scope information
   int id;                       // unique id
@@ -155,6 +156,11 @@ struct ast_node_struct {
 /* Create a node with a given token type and return a pointer to the
    node. */
 ast_node create_ast_node(ast_node_type node_type);
+
+/*
+  Post process the tree to add parent pointers
+ */
+void post_process_ast(ast_node root);
 
 /*
  * returns line number of left most child.

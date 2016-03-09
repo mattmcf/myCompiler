@@ -13,7 +13,7 @@
 %{
 #include <string.h>
 #include "parser.tab.h"
-//#include "toktypes.h"
+// #include "toktypes.h"
 int kwLookup(char *); 
 
 #define MAXTOKENLENGTH 201
