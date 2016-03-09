@@ -1,4 +1,4 @@
-# Target Code Generation Readme
+ # Target Code Generation Readme
 ## Matt McFarland and Yondon Fu - Delights (CS 57 - 16W)
 (For more enjoyable reading, please see https://github.com/MattRMcFarland/myCompiler/tree/master/Target_Code)
 
@@ -28,6 +28,14 @@ Instructions for running tests:
 `cd Target_Code`
 
 `./build_ys.sh tests/<input_file_name> <output_file_name>`
+
+## Extra Features
+
+### Sizeof()
+
+### Break and Continue
+
+### Post Increment and Post Decrement
 
 ## Implementation Specifics
 
