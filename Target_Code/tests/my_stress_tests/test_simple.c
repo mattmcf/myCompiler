@@ -1,3 +1,7 @@
+/*
+ * stress test the compiler with expressions
+ */
+
 int a = 100;
 int b = 200;
 int global_arr[100];
