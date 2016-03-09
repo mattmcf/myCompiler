@@ -1,6 +1,6 @@
 # My_Compiler
 ## Matt McFarland and Yondon Fu - Delights (CS 57 - 16W)
-(For more enjoyable reading, please see https://github.com/MattRMcFarland/myCompiler/tree/master/Target_Code)
+See Yondon's github at [https://github.com/yondonfu]
 
 ## General Overview
 We've implemented a compiler that can generate Y86 executable for a subset of C that has the same functionality as `gcc`. This subset includes the following features:
