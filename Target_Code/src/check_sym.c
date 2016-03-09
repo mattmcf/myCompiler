@@ -248,7 +248,6 @@ void set_type(ast_node root) {
 				root->type 	= NULL_TS;
 				root->mod 	= NULL_DT;
 			}
-
 			break;
 
 		/* 
@@ -549,6 +548,29 @@ int check_call(ast_node root) {
 }
 
 int check_sizeof(ast_node root) {
+
+	ast_node var = root->left_child;
+	symnode_t * sym = find_symnode(var->scope_table, var->left_child->value_string);
+	if (!sym) {
+		fprintf(stderr,"Invalid \'sizeof()\' call. Couldn't find symbol %s\n.",root->left_child->value_string);
+		return 1;
+	}
+
+	/*
+	 * sizeof() on an array parameter handle (not an element of the parameter array)
+	 * is not supported because we don't know which array was passed into the function.
+	 * GCC does not support sizeof() for parameter array pointers either (returns sizeof int *, but
+	 * since we aren't supporting pointer data types, it doesn't make sense to return the size
+	 * of a datatype that isn't supported).
+	 */
+	if (sym->s.v.specie == PARAMETER_VAR &&  		// argument is parameter
+		sym->s.v.modifier == ARRAY_DT && 			// and is an array handle
+		var->left_child->right_sibling == NULL) 	// and isn't indexed for an element
+	{
+		fprintf(stderr,"Syntax error: \'sizeof()\' not supported for parameter arrays (symbol %s)\n",sym->name);
+		return 1;
+	}
+
 	root->type = INT_TS;
 	root->mod = SINGLE_DT;
 	return 0;

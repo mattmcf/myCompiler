@@ -577,9 +577,9 @@ quad_arg * CG_math_op(ast_node root, quad_op op) {
 
     if (op == NOT_Q || op == NEG_Q) {
       // Special case for not
-      gen_quad(op, arg1, NULL, NULL);
+      gen_quad(op, arg3, arg1, NULL);
 
-      return arg1;
+      return arg3;
     } else {
       // Special case for increment and decrement
       arg2 = create_quad_arg(INT_LITERAL_Q_ARG);

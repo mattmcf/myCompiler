@@ -221,7 +221,7 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 		case NOT_Q:
 			print_nop_comment(ys_file_ptr,"not",to_translate->number);
 
-			get_source_value(ys_file_ptr,to_translate->args[0],EAX_R);
+			get_source_value(ys_file_ptr,to_translate->args[1],EAX_R);
 			fprintf(ys_file_ptr, "\tirmovl $0, %%ebx\n");
 			fprintf(ys_file_ptr, "\tsubl %%ebx, %%eax\n");
 
@@ -370,30 +370,32 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 			break;
 
 		case SIZEOF_Q:
-			{
-				int var_size = to_translate->args[1]->symnode->s.v.byte_size;
-				fprintf(ys_file_ptr, "\tirmovl $%d, %%eax\n", var_size);
-				get_dest_value(ys_file_ptr,EAX_R,to_translate->args[0]);
-				break;
+			print_nop_comment(ys_file_ptr,"sizeof", to_translate->number);
+
+			// get size based on call
+			if (to_translate->args[1]->type == SYMBOL_ARR_Q_ARG && 			// is an array
+				to_translate->args[1]->int_literal != PASS_ARR_POINTER) {	// and are getting sizeof an element in array
+				fprintf(ys_file_ptr, "\tirmovl $%d, %%eax\n", TYPE_SIZE(to_translate->args[1]->symnode->s.v.type));
+
+			} else {														// else accessing singular / array
+				fprintf(ys_file_ptr, "\tirmovl $%d, %%eax\n", to_translate->args[1]->symnode->s.v.byte_size);
 			}
+
+			// put size evaluation in destination temp
+			get_dest_value(ys_file_ptr, EAX_R, to_translate->args[0]);
+			break;
 
 		case PROLOG_Q:
 			{
 				print_nop_comment(ys_file_ptr, "function prolog", to_translate->number);
 				symnode_t * func_sym = find_in_top_symboltable(symtab, to_translate->args[0]->label);
 
-				// error check -- probably not necessary anymore
-				if (!func_sym) {
-					fprintf(stderr,"error during code generation: couldn't find function symbol %s\n", to_translate->args[0]->label);
-					exit(1);
-				}
-
 				fprintf(ys_file_ptr, "%s:\n",to_translate->args[0]->label);
 				fprintf(ys_file_ptr, "\tpushl %%ebp\n");			
-				fprintf(ys_file_ptr, "\trrmovl %%esp, %%ebp\n"); 		// move esp to ebp
+				fprintf(ys_file_ptr, "\trrmovl %%esp, %%ebp\n"); 								// move esp to ebp
 				/* 
 				 * --- set esp to bottom of local and temp space --- 
-				 * esp should be set to symnode->s.f.stk_offset for function's symbol
+				 * --- esp should be set to symnode->s.f.stk_offset for function's symbol ---
 				 */
 				fprintf(ys_file_ptr, "\tirmovl $%d, %%eax\n",func_sym->s.f.stk_offset + 4); 	// point at lowest local
 				fprintf(ys_file_ptr, "\taddl %%eax, %%esp\n");				
@@ -404,24 +406,26 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 			print_nop_comment(ys_file_ptr, "function epilog", to_translate->number);
 
 			fprintf(ys_file_ptr, "\trrmovl %%ebp, %%esp\n");
-			fprintf(ys_file_ptr, "\tpopl %%ebp\n"); 						// return to old frame pointer
+			fprintf(ys_file_ptr, "\tpopl %%ebp\n"); 											// return to old frame pointer
 			fprintf(ys_file_ptr, "\tret\n");
 			break;
 
 		case PRECALL_Q:
 			print_nop_comment(ys_file_ptr, "function precall", to_translate->number);
-			fprintf(ys_file_ptr, "\tcall %s\n",to_translate->args[0]->label); 								// pushes ret addr on stack				
+			fprintf(ys_file_ptr, "\tcall %s\n",to_translate->args[0]->label); 					// pushes ret addr on stack				
 			break;
 
 		case POSTRET_Q:
-			// return value is in %eax	
 			{
 				print_nop_comment(ys_file_ptr, "post return", to_translate->number);
 
 				/* make a post return label */
 				symnode_t * func_sym = find_in_top_symboltable(symtab, to_translate->args[0]->label);	
 
-				/* use control link to get back to caller frame */	
+				/* 
+				 * --- use control link to get back to caller frame ---
+				 * --- manhandle stack pointer to point back at bottom of temps and locals ---
+				 */	
 				fprintf(ys_file_ptr, "\tirmovl $%d, %%ebx\n",func_sym->s.f.stk_offset + 4); 	// %ebx b/c return lives in %eax
 				fprintf(ys_file_ptr, "\taddl %%ebp, %%ebx\n");		
 				fprintf(ys_file_ptr, "\trrmovl %%ebx, %%esp\n");						
@@ -470,7 +474,7 @@ void print_code(quad * to_translate, FILE * ys_file_ptr) {
 			break;
 
 		case STRING_Q:
-			/* update -- wait to do this until all the text has been translated. */
+			/* wait to add strings until all the text has been translated. */
 			break;
 
 		case LABEL_Q:			
@@ -534,7 +538,7 @@ int get_source_value(FILE * fp, quad_arg * src, my_register_t dest) {
 				 */
 				if (src->int_literal != PASS_ARR_POINTER) {
 					/* get temp that holds index */
-					fprintf(fp,"\tmrmovl $%d(%%ebp), %%ebx\n",((symnode_t *) src->temp->temp_symnode)->s.v.offset_of_frame_pointer);
+					fprintf(fp,"\tmrmovl $%d(%%ebp), %%ebx\n", ((symnode_t *)src->temp->temp_symnode)->s.v.offset_of_frame_pointer);
 					fprintf(fp,"\tshll $2, %%ebx\n");
 					fprintf(fp,"\taddl %%ebx, %%edi\n");
 					fprintf(fp,"\tmrmovl (%%edi), %s\n", REGISTER_STR(dest));					
@@ -557,8 +561,6 @@ int get_source_value(FILE * fp, quad_arg * src, my_register_t dest) {
 			break;
 
 		default:
-			fprintf(stderr,"seeing null arguments / getting value from bad arg\n");
-			exit(1);
 			break;
 	}
 	return 0;
@@ -573,7 +575,7 @@ int get_dest_value(FILE * fp, my_register_t src, quad_arg * dest) {
 	switch(dest->type){
 		case TEMP_VAR_Q_ARG:
 			printf("temp variable symbol %s\n", ((symnode_t *) dest->temp->temp_symnode)->name);
-			fprintf(fp,"\trmmovl %s, $%d(%%ebp)\n",REGISTER_STR(src),((symnode_t *) dest->temp->temp_symnode)->s.v.offset_of_frame_pointer);
+			fprintf(fp,"\trmmovl %s, $%d(%%ebp)\n",REGISTER_STR(src), ((symnode_t *)dest->temp->temp_symnode)->s.v.offset_of_frame_pointer);
 			break;
 
 		case SYMBOL_VAR_Q_ARG:
@@ -594,15 +596,14 @@ int get_dest_value(FILE * fp, my_register_t src, quad_arg * dest) {
 			 * get array pointer into %edi 
 			 */
 			if (dest->symnode->s.v.specie == GLOBAL_VAR)	{					// get absolute address of pointer if global
-				fprintf(fp,"\tirmovl 0x%x, %%edi\n",dest->symnode->s.v.offset_of_frame_pointer);
-				//sprintf(t1,"0x%x, %%edi\n",src->symnode->s.v.offset_of_frame_pointer);
+				fprintf(fp,"\tirmovl 0x%x, %%edi\n", dest->symnode->s.v.offset_of_frame_pointer);
 
 			} else if (dest->symnode->s.v.offset_of_frame_pointer > 0) {		// need get address out of memory for parameter
 				fprintf(fp,"\tmrmovl $%d(%%ebp), %%edi\n", dest->symnode->s.v.offset_of_frame_pointer);
 
 			} else {															// else get relative address based addition to FP 
 				fprintf(fp,"\trrmovl %%ebp, %%edi\n");
-				fprintf(fp,"\tirmovl $%d, %%ebx\n",dest->symnode->s.v.offset_of_frame_pointer);
+				fprintf(fp,"\tirmovl $%d, %%ebx\n", dest->symnode->s.v.offset_of_frame_pointer);
 				fprintf(fp,"\taddl %%ebx, %%edi\n");
 			}
 
@@ -632,8 +633,6 @@ int get_dest_value(FILE * fp, my_register_t src, quad_arg * dest) {
 		case LABEL_Q_ARG:			
 		case INT_LITERAL_Q_ARG:	
 		default:
-			fprintf(stderr,"destination argument doesn't make sense\n");
-			exit(1);
 			break;
 	}
 
@@ -696,7 +695,7 @@ void print_nop_comment(FILE * ys_ptr, char * msg, int id) {
 	if (!msg || !ys_ptr)
 		return;
 
-	fprintf(ys_ptr, "\tnop # (quad %d) -- %s\n",id,msg);
+	fprintf(ys_ptr, "\tnop # \t\t\t(quad %d) -- %s\n",id,msg);
 	return;
 }
 
@@ -713,12 +712,13 @@ void translate_string(FILE * ys_file_ptr, quad * string_to_add) {
 	fprintf(ys_file_ptr,"%s:\n",string_to_add->args[0]->label);
 
 	// generate ascii bytes
-
 	int len = strlen(string_to_add->args[1]->label);
 	for (int i = 0; i < len; i++) {
 		fprintf(ys_file_ptr,"\t.byte 0x%x\n",string_to_add->args[1]->label[i]);
 	}
-	fprintf(ys_file_ptr,"\t.byte 0x0\n"); 	// null terminator
+
+	// add null terminator
+	fprintf(ys_file_ptr,"\t.byte 0x0\n"); 	
 
 	return;
 }

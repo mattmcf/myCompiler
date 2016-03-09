@@ -376,7 +376,7 @@ void set_node_var(symnode_t *node, var_symbol *var) {
   node->s.v.type = var->type;
   node->s.v.modifier = var->modifier;
 
-  //ode->s.v.m = SINGLE_DT;
+  //node->s.v.m = SINGLE_DT;
   node->s.v.specie = var->specie;
   node->s.v.byte_size = var->byte_size;
   //node->s.v.offset_of_frame_pointer = var->offset_of_frame_pointer;

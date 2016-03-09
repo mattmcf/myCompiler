@@ -3,12 +3,12 @@
 # /*
 #  * build_ys.c
 #  *
-#  * USAGE: ./build_ys.c [INPUT FILE] [OUTPUT NAME]
+#  * USAGE: ./build_ys.c [INPUT FILE] [OUTPUT NAME] [optional: -g]
 #  *
 #  * 1) creates compiler
 #  * 2) compiles specified .c file into .ys file
 #  * 3) assembles .yo file
-#  * 4) initiates y86 graphical simulation
+#  * 4) initiates y86 (if '-g' is given, then invokes graphical simulator)
 #  */
 
 make clean > /dev/null
@@ -51,6 +51,6 @@ fi
 
 EXECUTABLE="$2.yo"
 echo "Running .yo executable $EXECUTABLE"
-ssim -g $EXECUTABLE
+ssim $3 $EXECUTABLE
 
 
