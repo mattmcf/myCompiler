@@ -41,13 +41,27 @@ For the final submission of the compiler, we simply ironed out the bugs from the
 
 ## Extra Features
 
-### Sizeof()
+### sizeof()
+
+To implement the sizeof operator we added a `byte_size` field to the `var_symbol` structs contained in our `symnode` structs. Whenever we add a `symnode` to our symbol table, we call `handle_func_decl_node`, which might handle function argument variables, or `handle_var_decl_node`, which might handle variable declarations. In each function, if we find an integer variable, we set the `byte_size` to 4 and if we find an array variable, we set the `byte_size` to 4 * length of the array.
+
+In `y86_code_gen.c`, we handle SIZEOF_Q quads by first checking if the argument for the operator is an array, an element in the array or just an integer variable. If the argument is an array or an integer variable, we just move the value of the `byte_size` field into the temp that is returned by the sizeof operation. If the argument is an element in an array, we grab the corresponding size for the type of the array element (will be 4 for an integer) and move that value into the temp returned by the sizeof operation.
 
 ### Break and Continue
 
+To implement break and continue statements, we needed a way to jump to parent control structures from a particular break or continue node, so we added pointers from all AST nodes to their parents. We use the function `post_process_ast` in `ast.c` to recursively add parent pointers for all nodes in an AST after first generating the AST using our parser.
+
+We also define a `lookup_parent_block` function in `ast.c` to find the AST node that represents the parent control structure for a given break or continue AST node. The function follows parent pointers up from an AST node until it reaches a parent that represents a control structure and then returns that node. If there are no parents that represent control structures, the function returns NULL.
+
+We handle quad generation for break and continue AST nodes in `IR_gen.c`. For a break node, we find the parent control structure using `lookup_parent_block` and switch on the type of the control structure. We create an exit label based on the control structure's node ID and the type of control structure (ex. for a while loop we create a label of the format ID_WHILE_EXIT). We then generate a GOTO_Q quad that jumps to this exit label. For a continue node, we find the parent control structure using `lookup_parent_block` and switch on the type of the control structure. We create a test label (indicates the testing portion of a loop) based on the control structure's node ID and the type of control structure (ex. for a while loop we create a label of the format ID_WHILE_TEST). Note that the label for a for loop is slightly different because we need to make sure to update the for loop variable before jumping to the test portion of the loop. Consequently, we instead create a label that designates the update portion of the label of the form ID_FOR_UPDATE. We then generate a GOTO_Q quad that jumps to this label.
+
 ### Post Increment and Post Decrement
 
+Originally our compiler only supported pre increment and pre decrement operations. In this final submission we also implemented post increment and post decrement operations. Increment and decrement operations work similarly, one increases a variable by 1 while the other decreases a variable by 1, so for the purposes of explaining pre operations and post operations we will just talk about increment.
 
+Both pre increment and post increment increase the value of a variable. The main difference between the two operations is in the value they return. Pre increment returns the increased value of the variable. Post increment returns the original value of the variable before it is increased.
+
+In our implementation we separate our original INC_Q quads into a PRE_INC_Q quad and a POST_INC_Q quad. In `y86_code_gen.c`, when we find a PRE_INC_Q quad we update the variable using an addition operation and also move the updated value into a temp that is returned by the operation. When we find a POST_INC_Q quad, we first move the original value of the variable into a temp that is returned by the operation and then we update the variable using an addition operation.
 
 ## Testing Files
 All test files live in the `tests/` directory. There are three new subdirectories have been added there:
